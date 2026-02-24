@@ -1,0 +1,912 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>IELTS Master</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: #0A0F1E;
+    --card: #111827;
+    --card2: #1a2236;
+    --accent: #4F8EF7;
+    --accent2: #7C5CFC;
+    --gold: #F5C518;
+    --green: #22D3A5;
+    --red: #FF5A7E;
+    --text: #F0F4FF;
+    --muted: #7B8AB0;
+    --border: rgba(79,142,247,0.15);
+  }	∙	{ margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+font-family: ‘DM Sans’, sans-serif;
+background: var(–bg);
+color: var(–text);
+min-height: 100vh;
+overflow-x: hidden;
+}
+/* BG decoration */
+body::before {
+content: ‘’;
+position: fixed;
+top: -200px; right: -200px;
+width: 500px; height: 500px;
+background: radial-gradient(circle, rgba(79,142,247,0.08) 0%, transparent 70%);
+pointer-events: none;
+z-index: 0;
+}
+/* SCREENS */
+.screen { display: none; min-height: 100vh; position: relative; z-index: 1; }
+.screen.active { display: block; }
+/* ===== HOME SCREEN ===== */
+.home-header {
+padding: 30px 20px 0;
+display: flex;
+justify-content: space-between;
+align-items: flex-start;
+}
+.user-greeting { }
+.user-greeting .hello { font-size: 13px; color: var(–muted); }
+.user-greeting .name { font-size: 20px; font-weight: 600; margin-top: 2px; }
+.score-badge {
+background: linear-gradient(135deg, var(–accent2), var(–accent));
+border-radius: 16px;
+padding: 10px 16px;
+text-align: center;
+}
+.score-badge .label { font-size: 10px; color: rgba(255,255,255,0.7); }
+.score-badge .score { font-size: 22px; font-weight: 700; font-family: ‘Playfair Display’, serif; }
+.hero-section {
+margin: 30px 20px 0;
+background: linear-gradient(135deg, #1a2a4a, #1e1a3a);
+border: 1px solid var(–border);
+border-radius: 24px;
+padding: 24px;
+position: relative;
+overflow: hidden;
+}
+.hero-section::after {
+content: ‘📖’;
+position: absolute;
+right: 20px; bottom: 10px;
+font-size: 60px;
+opacity: 0.12;
+}
+.hero-section h2 {
+font-family: ‘Playfair Display’, serif;
+font-size: 22px;
+line-height: 1.3;
+margin-bottom: 8px;
+}
+.hero-section p { font-size: 13px; color: var(–muted); margin-bottom: 18px; }
+.hero-btn {
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+border: none;
+border-radius: 14px;
+color: white;
+font-size: 14px;
+font-weight: 600;
+padding: 12px 22px;
+cursor: pointer;
+transition: transform 0.15s, opacity 0.15s;
+}
+.hero-btn:active { transform: scale(0.97); opacity: 0.9; }
+/* Progress bars */
+.progress-section { padding: 24px 20px 0; }
+.progress-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 14px; }
+.progress-item {
+display: flex;
+align-items: center;
+gap: 12px;
+margin-bottom: 14px;
+}
+.progress-icon { font-size: 20px; width: 36px; text-align: center; }
+.progress-info { flex: 1; }
+.progress-label { font-size: 13px; font-weight: 500; margin-bottom: 5px; }
+.progress-bar-wrap { background: rgba(255,255,255,0.08); border-radius: 6px; height: 6px; }
+.progress-bar { height: 6px; border-radius: 6px; transition: width 0.8s ease; }
+.progress-val { font-size: 12px; color: var(–muted); min-width: 28px; text-align: right; }
+/* Sections grid */
+.sections-grid { padding: 24px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.section-card {
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 20px;
+padding: 18px 16px;
+cursor: pointer;
+transition: transform 0.15s, background 0.15s;
+position: relative;
+overflow: hidden;
+}
+.section-card:active { transform: scale(0.97); background: var(–card2); }
+.section-card .s-icon { font-size: 28px; margin-bottom: 10px; }
+.section-card .s-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.section-card .s-count { font-size: 11px; color: var(–muted); }
+.section-card .s-band {
+position: absolute;
+top: 12px; right: 12px;
+background: rgba(79,142,247,0.15);
+border-radius: 8px;
+padding: 3px 8px;
+font-size: 12px;
+font-weight: 700;
+color: var(–accent);
+}
+/* Bottom nav */
+.bottom-nav {
+position: fixed;
+bottom: 0; left: 0; right: 0;
+background: rgba(10,15,30,0.95);
+backdrop-filter: blur(20px);
+border-top: 1px solid var(–border);
+display: flex;
+padding: 10px 0 20px;
+z-index: 100;
+}
+.nav-item {
+flex: 1;
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 4px;
+cursor: pointer;
+padding: 6px;
+transition: opacity 0.15s;
+}
+.nav-item .nav-icon { font-size: 22px; }
+.nav-item .nav-label { font-size: 10px; color: var(–muted); }
+.nav-item.active .nav-label { color: var(–accent); }
+.nav-item.active .nav-icon { filter: drop-shadow(0 0 6px var(–accent)); }
+.page-spacer { height: 100px; }
+/* ===== SECTION SCREEN ===== */
+.section-header {
+padding: 20px 20px 0;
+display: flex;
+align-items: center;
+gap: 12px;
+}
+.back-btn {
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 12px;
+width: 38px; height: 38px;
+display: flex; align-items: center; justify-content: center;
+cursor: pointer;
+font-size: 18px;
+}
+.section-title { font-size: 20px; font-weight: 700; }
+.lesson-list { padding: 20px; }
+.lesson-card {
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 18px;
+padding: 16px 18px;
+margin-bottom: 12px;
+cursor: pointer;
+display: flex;
+align-items: center;
+gap: 14px;
+transition: transform 0.15s;
+}
+.lesson-card:active { transform: scale(0.98); }
+.lesson-num {
+width: 40px; height: 40px;
+border-radius: 12px;
+display: flex; align-items: center; justify-content: center;
+font-size: 16px; font-weight: 700;
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+flex-shrink: 0;
+}
+.lesson-num.done { background: linear-gradient(135deg, var(–green), #16a08a); }
+.lesson-num.locked { background: rgba(255,255,255,0.07); color: var(–muted); }
+.lesson-info { flex: 1; }
+.lesson-name { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.lesson-desc { font-size: 12px; color: var(–muted); }
+.lesson-arrow { color: var(–muted); font-size: 16px; }
+/* ===== QUIZ SCREEN ===== */
+.quiz-header {
+padding: 20px;
+display: flex;
+align-items: center;
+gap: 12px;
+}
+.quiz-progress-wrap { flex: 1; }
+.quiz-progress-bar-bg { background: rgba(255,255,255,0.1); border-radius: 6px; height: 6px; }
+.quiz-progress-fill { height: 6px; border-radius: 6px; background: linear-gradient(90deg, var(–accent), var(–accent2)); transition: width 0.4s; }
+.quiz-count { font-size: 13px; color: var(–muted); margin-bottom: 6px; }
+.question-card {
+margin: 10px 20px 0;
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 24px;
+padding: 24px;
+}
+.question-type { font-size: 11px; color: var(–accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.question-text { font-size: 17px; font-weight: 600; line-height: 1.5; font-family: ‘Playfair Display’, serif; }
+.options-list { padding: 16px 20px; }
+.option-btn {
+width: 100%;
+background: var(–card);
+border: 1.5px solid var(–border);
+border-radius: 16px;
+padding: 14px 16px;
+color: var(–text);
+font-size: 14px;
+font-weight: 500;
+text-align: left;
+cursor: pointer;
+margin-bottom: 10px;
+transition: all 0.15s;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+.option-btn:active { transform: scale(0.99); }
+.option-btn.selected { border-color: var(–accent); background: rgba(79,142,247,0.12); }
+.option-btn.correct { border-color: var(–green); background: rgba(34,211,165,0.12); }
+.option-btn.wrong { border-color: var(–red); background: rgba(255,90,126,0.1); }
+.opt-letter {
+width: 28px; height: 28px;
+border-radius: 8px;
+background: rgba(255,255,255,0.07);
+display: flex; align-items: center; justify-content: center;
+font-size: 12px; font-weight: 700;
+flex-shrink: 0;
+}
+.option-btn.correct .opt-letter { background: var(–green); color: #000; }
+.option-btn.wrong .opt-letter { background: var(–red); color: #fff; }
+.explain-box {
+margin: 0 20px 16px;
+background: rgba(34,211,165,0.08);
+border: 1px solid rgba(34,211,165,0.2);
+border-radius: 16px;
+padding: 14px 16px;
+font-size: 13px;
+color: var(–green);
+display: none;
+}
+.explain-box.show { display: block; }
+.next-btn {
+margin: 0 20px;
+width: calc(100% - 40px);
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+border: none;
+border-radius: 16px;
+color: white;
+font-size: 15px;
+font-weight: 600;
+padding: 15px;
+cursor: pointer;
+display: none;
+transition: transform 0.15s;
+}
+.next-btn.show { display: block; }
+.next-btn:active { transform: scale(0.98); }
+/* ===== RESULT SCREEN ===== */
+.result-screen-inner {
+padding: 60px 24px 40px;
+text-align: center;
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+}
+.result-emoji { font-size: 70px; margin-bottom: 20px; animation: bounce 0.6s ease; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }
+.result-title { font-family: ‘Playfair Display’, serif; font-size: 28px; margin-bottom: 8px; }
+.result-sub { color: var(–muted); font-size: 15px; margin-bottom: 30px; }
+.result-score-big {
+font-size: 72px;
+font-weight: 700;
+font-family: ‘Playfair Display’, serif;
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+margin-bottom: 6px;
+}
+.result-band { font-size: 14px; color: var(–muted); margin-bottom: 36px; }
+.result-tip {
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 20px;
+padding: 18px 20px;
+text-align: left;
+margin-bottom: 24px;
+width: 100%;
+}
+.result-tip-label { font-size: 11px; color: var(–accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.result-tip-text { font-size: 14px; line-height: 1.6; }
+.result-actions { display: flex; gap: 12px; width: 100%; }
+.result-btn {
+flex: 1;
+padding: 14px;
+border-radius: 16px;
+font-size: 14px;
+font-weight: 600;
+cursor: pointer;
+transition: transform 0.15s;
+border: none;
+}
+.result-btn:active { transform: scale(0.97); }
+.result-btn.primary { background: linear-gradient(135deg, var(–accent), var(–accent2)); color: white; }
+.result-btn.secondary { background: var(–card); border: 1px solid var(–border); color: var(–text); }
+/* ===== SPEAKING SCREEN ===== */
+.phrases-list { padding: 16px 20px; }
+.phrase-card {
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 18px;
+padding: 16px 18px;
+margin-bottom: 12px;
+}
+.phrase-cat { font-size: 10px; color: var(–accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.phrase-en { font-size: 15px; font-weight: 600; margin-bottom: 6px; font-family: ‘Playfair Display’, serif; }
+.phrase-ru { font-size: 13px; color: var(–muted); margin-bottom: 10px; }
+.phrase-example { font-size: 12px; color: rgba(240,244,255,0.6); font-style: italic; line-height: 1.5; }
+/* ===== PROGRESS SCREEN ===== */
+.progress-screen-content { padding: 20px; }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.stat-box {
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 18px;
+padding: 18px;
+text-align: center;
+}
+.stat-box .stat-val { font-size: 28px; font-weight: 700; font-family: ‘Playfair Display’, serif; background: linear-gradient(135deg, var(–accent), var(–accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.stat-box .stat-label { font-size: 12px; color: var(–muted); margin-top: 4px; }
+.tips-section { margin-top: 4px; }
+.tips-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 14px; }
+.tip-item {
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 16px;
+padding: 14px 16px;
+margin-bottom: 10px;
+font-size: 13px;
+line-height: 1.6;
+}
+.tip-item strong { color: var(–accent); }
+</style>
+</head>
+<body><!-- ===== HOME ===== --><div id="screen-home" class="screen active">
+  <div class="home-header">
+    <div class="user-greeting">
+      <div class="hello">👋 Hello,</div>
+      <div class="name" id="user-name">Student</div>
+    </div>
+    <div class="score-badge">
+      <div class="label">Your Band</div>
+      <div class="score" id="home-band">–</div>
+    </div>
+  </div><div class="hero-section" style="margin-top:20px;">
+    <h2>Ready for<br>your IELTS?</h2>
+    <p>Start today's practice session and improve your score step by step.</p>
+    <button class="hero-btn" onclick="openSection('speaking')">🎯 Start Practice</button>
+  </div><div class="progress-section">
+    <h3>📊 Your Progress</h3>
+    <div class="progress-item">
+      <div class="progress-icon">🎤</div>
+      <div class="progress-info">
+        <div class="progress-label">Speaking</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="pb-speaking" style="width:0%;background:linear-gradient(90deg,#4F8EF7,#7C5CFC)"></div></div>
+      </div>
+      <div class="progress-val" id="pv-speaking">0%</div>
+    </div>
+    <div class="progress-item">
+      <div class="progress-icon">👂</div>
+      <div class="progress-info">
+        <div class="progress-label">Listening</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="pb-listening" style="width:0%;background:linear-gradient(90deg,#22D3A5,#4F8EF7)"></div></div>
+      </div>
+      <div class="progress-val" id="pv-listening">0%</div>
+    </div>
+    <div class="progress-item">
+      <div class="progress-icon">📖</div>
+      <div class="progress-info">
+        <div class="progress-label">Reading</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="pb-reading" style="width:0%;background:linear-gradient(90deg,#F5C518,#FF5A7E)"></div></div>
+      </div>
+      <div class="progress-val" id="pv-reading">0%</div>
+    </div>
+    <div class="progress-item">
+      <div class="progress-icon">✍️</div>
+      <div class="progress-info">
+        <div class="progress-label">Writing</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="pb-writing" style="width:0%;background:linear-gradient(90deg,#FF5A7E,#7C5CFC)"></div></div>
+      </div>
+      <div class="progress-val" id="pv-writing">0%</div>
+    </div>
+  </div><div class="sections-grid">
+    <div class="section-card" onclick="openSection('speaking')">
+      <div class="s-icon">🎤</div>
+      <div class="s-name">Speaking</div>
+      <div class="s-count">12 topics</div>
+      <div class="s-band" id="band-speaking">–</div>
+    </div>
+    <div class="section-card" onclick="openSection('listening')">
+      <div class="s-icon">👂</div>
+      <div class="s-name">Listening</div>
+      <div class="s-count">10 tests</div>
+      <div class="s-band" id="band-listening">–</div>
+    </div>
+    <div class="section-card" onclick="openSection('reading')">
+      <div class="s-icon">📖</div>
+      <div class="s-name">Reading</div>
+      <div class="s-count">8 texts</div>
+      <div class="s-band" id="band-reading">–</div>
+    </div>
+    <div class="section-card" onclick="openSection('writing')">
+      <div class="s-icon">✍️</div>
+      <div class="s-name">Writing</div>
+      <div class="s-count">6 tasks</div>
+      <div class="s-band" id="band-writing">–</div>
+    </div>
+  </div>
+  <div class="page-spacer"></div>
+</div><!-- ===== SECTION ===== --><div id="screen-section" class="screen">
+  <div class="section-header">
+    <div class="back-btn" onclick="showHome()">←</div>
+    <div class="section-title" id="section-title">Section</div>
+  </div>
+  <div class="lesson-list" id="lesson-list"></div>
+  <div class="page-spacer"></div>
+</div><!-- ===== SPEAKING PHRASES ===== --><div id="screen-phrases" class="screen">
+  <div class="section-header">
+    <div class="back-btn" onclick="showScreen('screen-section')">←</div>
+    <div class="section-title">Key Phrases</div>
+  </div>
+  <div class="phrases-list" id="phrases-list"></div>
+  <div class="page-spacer"></div>
+</div><!-- ===== QUIZ ===== --><div id="screen-quiz" class="screen">
+  <div class="quiz-header">
+    <div class="back-btn" onclick="showScreen('screen-section')">←</div>
+    <div class="quiz-progress-wrap">
+      <div class="quiz-count" id="quiz-count">Question 1 of 5</div>
+      <div class="quiz-progress-bar-bg"><div class="quiz-progress-fill" id="quiz-fill" style="width:20%"></div></div>
+    </div>
+  </div>
+  <div class="question-card">
+    <div class="question-type" id="q-type">Grammar</div>
+    <div class="question-text" id="q-text"></div>
+  </div>
+  <div class="options-list" id="options-list"></div>
+  <div class="explain-box" id="explain-box"></div>
+  <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next →</button>
+  <div class="page-spacer"></div>
+</div><!-- ===== RESULT ===== --><div id="screen-result" class="screen">
+  <div class="result-screen-inner">
+    <div class="result-emoji" id="result-emoji">🎉</div>
+    <div class="result-title" id="result-title">Well Done!</div>
+    <div class="result-sub" id="result-sub">You completed the quiz</div>
+    <div class="result-score-big" id="result-score">8</div>
+    <div class="result-band" id="result-band">IELTS Band Score</div>
+    <div class="result-tip">
+      <div class="result-tip-label">💡 Study Tip</div>
+      <div class="result-tip-text" id="result-tip-text"></div>
+    </div>
+    <div class="result-actions">
+      <button class="result-btn secondary" onclick="showHome()">🏠 Home</button>
+      <button class="result-btn primary" id="retry-btn">🔄 Try Again</button>
+    </div>
+  </div>
+</div><!-- ===== PROGRESS ===== --><div id="screen-progress" class="screen">
+  <div class="section-header" style="margin-bottom:4px;">
+    <div class="section-title">My Progress</div>
+  </div>
+  <div class="progress-screen-content">
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-val" id="stat-tests">0</div><div class="stat-label">Tests Done</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-streak">0🔥</div><div class="stat-label">Day Streak</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-correct">0%</div><div class="stat-label">Accuracy</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-band">–</div><div class="stat-label">Est. Band</div></div>
+    </div>
+    <div class="tips-section">
+      <h3>🎯 IELTS Tips</h3>
+      <div class="tip-item"><strong>Speaking:</strong> Use linking words like "Furthermore", "In contrast", "As a result" to connect your ideas smoothly.</div>
+      <div class="tip-item"><strong>Writing Task 2:</strong> Always write 3 body paragraphs. State your opinion in the first sentence of each paragraph.</div>
+      <div class="tip-item"><strong>Reading:</strong> Skim the text first (30 sec), then read questions, then find answers. Never read word by word.</div>
+      <div class="tip-item"><strong>Listening:</strong> Read the questions BEFORE listening. Predict what type of answer you need (number, name, place).</div>
+      <div class="tip-item"><strong>Vocabulary:</strong> Learn 10 new words daily. Always learn them in context — with a sentence, not just definition.</div>
+    </div>
+  </div>
+  <div class="page-spacer"></div>
+</div><!-- Bottom Nav --><div class="bottom-nav">
+  <div class="nav-item active" id="nav-home" onclick="showHome()">
+    <div class="nav-icon">🏠</div>
+    <div class="nav-label">Home</div>
+  </div>
+  <div class="nav-item" id="nav-practice" onclick="openSection('reading')">
+    <div class="nav-icon">📚</div>
+    <div class="nav-label">Practice</div>
+  </div>
+  <div class="nav-item" id="nav-speaking" onclick="openSection('speaking')">
+    <div class="nav-icon">🎤</div>
+    <div class="nav-label">Speaking</div>
+  </div>
+  <div class="nav-item" id="nav-progress" onclick="showProgress()">
+    <div class="nav-icon">📊</div>
+    <div class="nav-label">Progress</div>
+  </div>
+</div><script>
+// ===== DATA =====
+const SECTIONS = {
+  speaking: {
+    title: '🎤 Speaking',
+    lessons: [
+      { name: 'Part 1 - About Yourself', desc: 'Talk about your life, hobbies, family', type: 'phrases', key: 'intro' },
+      { name: 'Part 2 - Cue Card', desc: 'Describe a person, place or experience', type: 'phrases', key: 'cuecard' },
+      { name: 'Part 3 - Discussion', desc: 'Abstract topics & opinion questions', type: 'phrases', key: 'discussion' },
+      { name: 'Fluency & Coherence', desc: 'Linking words & discourse markers', type: 'quiz', quiz: 'speaking_grammar' },
+      { name: 'Lexical Resource', desc: 'Advanced vocabulary for speaking', type: 'phrases', key: 'vocab' },
+    ]
+  },
+  listening: {
+    title: '👂 Listening',
+    lessons: [
+      { name: 'Section 1 - Conversations', desc: 'Everyday social conversations', type: 'quiz', quiz: 'listening1' },
+      { name: 'Section 2 - Monologue', desc: 'Public information talks', type: 'quiz', quiz: 'listening2' },
+      { name: 'Section 3 - Discussion', desc: 'Academic discussion between students', type: 'quiz', quiz: 'listening1' },
+      { name: 'Section 4 - Lecture', desc: 'Academic monologue or lecture', type: 'quiz', quiz: 'listening2' },
+      { name: 'Keywords & Synonyms', desc: 'Recognise paraphrasing in audio', type: 'quiz', quiz: 'speaking_grammar' },
+    ]
+  },
+  reading: {
+    title: '📖 Reading',
+    lessons: [
+      { name: 'True / False / Not Given', desc: 'The trickiest question type', type: 'quiz', quiz: 'reading_tfng' },
+      { name: 'Matching Headings', desc: 'Match paragraphs to headings', type: 'quiz', quiz: 'reading_match' },
+      { name: 'Gap Fill', desc: 'Complete sentences from the text', type: 'quiz', quiz: 'reading_tfng' },
+      { name: 'Multiple Choice', desc: 'Choose the correct answer', type: 'quiz', quiz: 'reading_match' },
+      { name: 'Summary Completion', desc: 'Fill in summary with text words', type: 'quiz', quiz: 'reading_tfng' },
+    ]
+  },
+  writing: {
+    title: '✍️ Writing',
+    lessons: [
+      { name: 'Task 1 - Line Graphs', desc: 'Describe trends over time', type: 'quiz', quiz: 'writing' },
+      { name: 'Task 1 - Bar Charts', desc: 'Compare categories and data', type: 'quiz', quiz: 'writing' },
+      { name: 'Task 2 - Opinion Essay', desc: 'Agree or disagree structure', type: 'quiz', quiz: 'writing' },
+      { name: 'Task 2 - Discussion', desc: 'Both sides + your opinion', type: 'quiz', quiz: 'writing' },
+      { name: 'Grammar for Writing', desc: 'Complex sentences, conditionals', type: 'quiz', quiz: 'speaking_grammar' },
+      { name: 'Cohesion & Coherence', desc: 'Linking words for academic writing', type: 'phrases', key: 'writing_phrases' },
+    ]
+  }
+};
+
+const QUIZZES = {
+  speaking_grammar: [
+    { type: 'Grammar', q: 'Choose the correct sentence for IELTS Speaking:', opts: ['I am agree with this opinion.', 'I tend to agree with this opinion.', 'I am agreeing with this.', 'This opinion I agree.'], ans: 1, explain: '"I tend to agree" is natural and sophisticated. Never say "I am agree" — that is a common error.' },
+    { type: 'Vocabulary', q: 'Which word BEST completes: "This issue has become increasingly ___."', opts: ['big', 'much', 'prevalent', 'very'], ans: 2, explain: '"Prevalent" means widespread. Using academic vocabulary boosts your Lexical Resource score.' },
+    { type: 'Linking Words', q: 'Choose the best linking word: "The city is modern. ___, it lacks green spaces."', opts: ['Also', 'However', 'Because', 'Therefore'], ans: 1, explain: '"However" shows contrast. Use contrast linkers when introducing an opposing idea.' },
+    { type: 'Tenses', q: 'Which is CORRECT for IELTS?', opts: ['I have went to London last year.', 'I went to London last year.', 'I have go to London last year.', 'I was go to London last year.'], ans: 1, explain: 'Use Simple Past (went) with time expressions like "last year". Present Perfect is for unspecified past.' },
+    { type: 'Fluency', q: 'What should you say if you need time to think in Speaking?', opts: ['Erm... I don\'t know...', 'That\'s a thought-provoking question. Let me consider...', 'Hmm what?', 'I am not understanding.'], ans: 1, explain: 'Buying time professionally shows fluency. "That\'s a thought-provoking question" impresses examiners.' },
+  ],
+  listening1: [
+    { type: 'Listening Strategy', q: 'Before the audio plays, you should:', opts: ['Listen immediately', 'Read the questions and predict answers', 'Write your name', 'Close your eyes'], ans: 1, explain: 'Always read questions first. This prepares your brain to listen for specific information.' },
+    { type: 'Gap Fill', q: 'The customer\'s booking reference is B___45. What letter is most likely missing?', opts: ['A', 'O', 'I', 'Any letter is possible'], ans: 3, explain: 'In gap fills, any answer is possible. Never assume — always listen carefully to the audio.' },
+    { type: 'Numbers', q: 'How do you write "fifteen hundred" as a number?', opts: ['150', '1500', '15000', '15,00'], ans: 1, explain: '1500 = fifteen hundred. Number spelling is common in Listening Section 1. Practice number dictation.' },
+    { type: 'Spelling', q: 'The speaker spells: M-A-C-K-E-N-Z-I-E. What is the name?', opts: ['Makensie', 'Mackenzie', 'Mackensie', 'Makenzie'], ans: 1, explain: 'In IELTS Listening, names are often spelled out. Write exactly what you hear.' },
+    { type: 'Distraction', q: 'The speaker says: "The meeting is at 3pm — oh wait, no, it\'s at 4pm." What time is correct?', opts: ['3pm', '4pm', 'Both are correct', 'Neither'], ans: 1, explain: 'IELTS often uses self-correction as distraction. Always take the FINAL answer given.' },
+  ],
+  listening2: [
+    { type: 'Strategy', q: 'In IELTS Listening, you hear the audio:', opts: ['Three times', 'Twice', 'Once only', 'As many times as you want'], ans: 2, explain: 'The audio plays ONCE only in the real exam. Practice with this constraint from the start.' },
+    { type: 'Note Completion', q: 'Which answer style is WRONG for note completion?', opts: ['2015', 'approximately 2015', 'north', 'library'], ans: 1, explain: 'Keep answers concise. "Approximately 2015" is too wordy — just write "2015".' },
+    { type: 'Maps', q: 'In map questions, directions come from your ___:', opts: ['left', 'right', 'perspective (the map)', 'perspective (real life)'], ans: 2, explain: 'Always use the MAP\'S orientation, not real life. North on the map is always up.' },
+    { type: 'Academic', q: 'Section 4 is the most difficult because:', opts: ['It is very long', 'It is a monologue with no pause', 'It has many speakers', 'It plays three times'], ans: 1, explain: 'Section 4 is an academic lecture with NO PAUSE. It tests sustained concentration.' },
+    { type: 'Vocabulary', q: '"The population has soared" means:', opts: ['decreased', 'stayed the same', 'increased rapidly', 'fluctuated'], ans: 2, explain: '"Soar" means to rise quickly and dramatically. Key vocabulary for graphs and statistics.' },
+  ],
+  reading_tfng: [
+    { type: 'True/False/NG', q: 'Text: "Coffee was first discovered in Ethiopia." Question: "Coffee originated in Africa." Answer:', opts: ['True', 'False', 'Not Given'], ans: 0, explain: 'Ethiopia is in Africa, so the statement is TRUE. Always check geography and facts carefully.' },
+    { type: 'True/False/NG', q: 'Text: "The study was conducted in 2019." Question: "The research took place recently." Answer:', opts: ['True', 'False', 'Not Given'], ans: 2, explain: '"Recently" is not defined in the text. If the text doesn\'t confirm or deny — it\'s NOT GIVEN.' },
+    { type: 'True/False/NG', q: 'Text: "All participants were female." Question: "Some participants were male." Answer:', opts: ['True', 'False', 'Not Given'], ans: 1, explain: 'If ALL were female, then NONE were male. This directly contradicts the question — FALSE.' },
+    { type: 'Strategy', q: 'In T/F/NG, "Not Given" means:', opts: ['The answer is wrong', 'The information is not in the text', 'You didn\'t find it yet', 'It\'s probably true'], ans: 1, explain: 'NG means the passage neither confirms nor contradicts the statement. Don\'t use outside knowledge.' },
+    { type: 'Skimming', q: 'The best strategy for Reading is to read:', opts: ['Every word slowly', 'Questions first, then find answers', 'The last paragraph only', 'Randomly'], ans: 1, explain: 'Read questions → skim text → find keywords → read that section carefully. This saves time.' },
+  ],
+  reading_match: [
+    { type: 'Matching', q: 'Matching Headings tests your ability to find:', opts: ['Specific facts', 'Main idea of each paragraph', 'Author\'s name', 'Date of publication'], ans: 1, explain: 'Each heading summarizes the MAIN IDEA of a paragraph, not specific details.' },
+    { type: 'Paraphrasing', q: '"Surge in demand" in the text = ___ in the question:', opts: ['lack of interest', 'rapid increase in popularity', 'steady supply', 'decreased need'], ans: 1, explain: 'IELTS always paraphrases. "Surge" = rapid increase. Learn synonym pairs to spot paraphrasing.' },
+    { type: 'Time Management', q: 'You have 60 minutes for Reading. How much time per passage?', opts: ['10 minutes', '20 minutes', '30 minutes', '5 minutes'], ans: 1, explain: '3 passages × 20 minutes each = 60 minutes. Stick to this strictly in practice.' },
+    { type: 'Keywords', q: 'When scanning for answers, focus on:', opts: ['Prepositions', 'Articles (a, the)', 'Nouns and verbs', 'Conjunctions'], ans: 2, explain: 'Nouns and verbs carry meaning. They\'re the easiest to spot when scanning quickly.' },
+    { type: 'Vocabulary', q: '"The data corroborates the hypothesis" means the data:', opts: ['contradicts the theory', 'supports the theory', 'ignores the theory', 'creates the theory'], ans: 1, explain: '"Corroborate" = confirm or support. Academic vocabulary in Reading is often formal and precise.' },
+  ],
+  writing: [
+    { type: 'Task 2 Structure', q: 'A strong Task 2 essay has:', opts: ['1 paragraph', '2 paragraphs', '4-5 paragraphs', 'As many as possible'], ans: 2, explain: 'Introduction + 2-3 body paragraphs + Conclusion = ideal structure. Always include all 4 parts.' },
+    { type: 'Task Achievement', q: 'Task 2 minimum word count is:', opts: ['150 words', '200 words', '250 words', '300 words'], ans: 2, explain: 'Write AT LEAST 250 words for Task 2. Under 250 words = automatic score penalty.' },
+    { type: 'Task 1', q: 'Task 1 (Academic) requires you to describe:', opts: ['Your opinion on a topic', 'A graph, chart, map or diagram', 'A story', 'A letter'], ans: 1, explain: 'Task 1 Academic = describe visual data. Task 1 General = write a formal/informal letter.' },
+    { type: 'Grammar Range', q: 'Which sentence shows better Grammar Range?', opts: ['The city is big.', 'The city, which has grown significantly, is now one of the largest in the region.', 'Big city is here.', 'There is big city.'], ans: 1, explain: 'Relative clauses, complex sentences, and varied structures score higher in Grammar Range.' },
+    { type: 'Coherence', q: 'Which linking phrase is BEST to introduce a contrasting idea?', opts: ['In addition', 'Furthermore', 'On the other hand', 'For instance'], ans: 2, explain: '"On the other hand" signals contrast. Using correct linking phrases shows Coherence & Cohesion skill.' },
+  ]
+};
+
+const PHRASES = {
+  intro: [
+    { cat: 'Introducing yourself', en: 'I come from a pretty small town, but I\'ve been living in the city for...', ru: 'Я из небольшого города, но живу в мегаполисе...', ex: '"I come from a pretty small town in the south, but I\'ve been living in the capital for about three years."' },
+    { cat: 'Hobbies', en: 'I\'m really into... / I\'m quite keen on...', ru: 'Я очень увлекаюсь... / Мне очень нравится...', ex: '"I\'m really into photography — I find it a great way to explore creativity."' },
+    { cat: 'Opinion', en: 'Personally, I believe that... / From my perspective...', ru: 'Лично я считаю... / С моей точки зрения...', ex: '"Personally, I believe that learning a language opens many doors."' },
+    { cat: 'Frequency', en: 'I tend to... / I generally... / I occasionally...', ru: 'Я обычно... / Как правило... / Иногда...', ex: '"I tend to spend my weekends outdoors whenever the weather allows."' },
+  ],
+  cuecard: [
+    { cat: 'Starting your talk', en: 'I\'d like to talk about... / The person/place I\'ve chosen is...', ru: 'Я хотел бы рассказать о... / Я выбрал...', ex: '"I\'d like to talk about my grandmother, who has had a profound influence on my life."' },
+    { cat: 'Describing feelings', en: 'What struck me most was... / I was particularly impressed by...', ru: 'Больше всего меня поразило... / Я был особенно впечатлён...', ex: '"What struck me most was the incredible architecture of the old town."' },
+    { cat: 'Adding detail', en: 'What made it special was... / The reason I remember it is...', ru: 'Особенным его делало... / Я запомнил это потому что...', ex: '"What made it special was the warmth of the local people."' },
+    { cat: 'Concluding', en: 'All in all, I would say... / Looking back, I think...', ru: 'В целом я бы сказал... / Оглядываясь назад...', ex: '"All in all, I would say it was one of the most memorable experiences of my life."' },
+  ],
+  discussion: [
+    { cat: 'Giving opinions', en: 'It seems to me that... / I\'m inclined to think that...', ru: 'Мне кажется что... / Я склонен считать что...', ex: '"It seems to me that technology has transformed the way we communicate fundamentally."' },
+    { cat: 'Agreeing partially', en: 'There\'s certainly some truth in that, however...', ru: 'В этом определённо есть доля правды, однако...', ex: '"There\'s certainly some truth in that, however, we must also consider the drawbacks."' },
+    { cat: 'Speculating', en: 'It\'s hard to say for certain, but I would imagine...', ru: 'Сложно сказать наверняка, но я полагаю...', ex: '"It\'s hard to say for certain, but I would imagine the situation will improve over time."' },
+    { cat: 'Complex structures', en: 'Were I to... / Had I known... / It\'s not so much... as...', ru: 'Если бы я... / Знай я... / Дело не столько в... сколько...', ex: '"Were I to choose between the two, I would undoubtedly opt for the former."' },
+  ],
+  vocab: [
+    { cat: 'Instead of "good"', en: 'beneficial / advantageous / commendable / exceptional', ru: 'полезный / выгодный / похвальный / исключительный', ex: '"Regular exercise has proven to be highly beneficial for mental health."' },
+    { cat: 'Instead of "bad"', en: 'detrimental / devastating / counterproductive / alarming', ru: 'вредный / разрушительный / контрпродуктивный / тревожный', ex: '"Excessive screen time can be detrimental to children\'s development."' },
+    { cat: 'Instead of "increase"', en: 'surge / soar / escalate / skyrocket / rise sharply', ru: 'резко вырасти / взлететь / нарастать / взлететь до небес', ex: '"Housing prices have skyrocketed in most major cities over the past decade."' },
+    { cat: 'Instead of "decrease"', en: 'plummet / decline / dwindle / diminish / drop significantly', ru: 'резко упасть / снижаться / таять / уменьшаться', ex: '"The number of traditional bookshops has dwindled dramatically in recent years."' },
+    { cat: 'Opinions & views', en: 'From my vantage point / I\'m a firm believer that / I\'d argue that', ru: 'С моей точки зрения / Я твёрдо убеждён / Я бы утверждал что', ex: '"I\'d argue that environmental education should begin at primary school level."' },
+  ],
+  writing_phrases: [
+    { cat: 'Introduction', en: 'In recent years, there has been a growing debate about...', ru: 'В последние годы всё больше дискутируется вопрос о...', ex: '"In recent years, there has been a growing debate about the role of technology in education."' },
+    { cat: 'Adding points', en: 'Furthermore / Moreover / In addition to this / What is more,', ru: 'Более того / Кроме того / В дополнение / Что немаловажно', ex: '"Furthermore, studies suggest that exercise improves academic performance significantly."' },
+    { cat: 'Contrast', en: 'Nevertheless / Nonetheless / On the contrary / Despite this,', ru: 'Тем не менее / Вопреки этому / Напротив / Несмотря на это', ex: '"Nevertheless, there are compelling arguments on the other side of this debate."' },
+    { cat: 'Conclusion', en: 'To conclude, it is evident that... / Taking everything into account,', ru: 'В заключение очевидно что... / Принимая всё во внимание,', ex: '"To conclude, it is evident that both individual and collective action is required."' },
+    { cat: 'Cause & Effect', en: 'This has led to... / As a consequence... / This can be attributed to...', ru: 'Это привело к... / Как следствие... / Это объясняется...', ex: '"Rapid urbanisation has led to a severe shortage of affordable housing."' },
+  ]
+};
+
+// ===== STATE =====
+let state = JSON.parse(localStorage.getItem('ielts_state') || '{}');
+if (!state.progress) state.progress = { speaking: 0, listening: 0, reading: 0, writing: 0 };
+if (!state.bands) state.bands = { speaking: null, listening: null, reading: null, writing: null };
+if (!state.tests) state.tests = 0;
+if (!state.correct) state.correct = 0;
+if (!state.total) state.total = 0;
+if (!state.streak) state.streak = 0;
+
+let currentSection = null;
+let currentQuiz = null;
+let currentQ = 0;
+let quizScore = 0;
+let answered = false;
+
+function saveState() { localStorage.setItem('ielts_state', JSON.stringify(state)); }
+
+// ===== TELEGRAM INIT =====
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  const user = tg.initDataUnsafe?.user;
+  if (user) {
+    document.getElementById('user-name').textContent = user.first_name || 'Student';
+  }
+}
+
+// ===== NAVIGATION =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showHome() {
+  showScreen('screen-home');
+  updateHomeUI();
+  setActiveNav('nav-home');
+}
+
+function showProgress() {
+  updateProgressScreen();
+  showScreen('screen-progress');
+  setActiveNav('nav-progress');
+}
+
+function setActiveNav(id) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+function updateHomeUI() {
+  ['speaking','listening','reading','writing'].forEach(s => {
+    const pct = state.progress[s];
+    document.getElementById('pb-' + s).style.width = pct + '%';
+    document.getElementById('pv-' + s).textContent = pct + '%';
+    const band = state.bands[s];
+    document.getElementById('band-' + s).textContent = band ? band.toFixed(1) : '–';
+  });
+  const allBands = Object.values(state.bands).filter(b => b !== null);
+  const avgBand = allBands.length ? (allBands.reduce((a,b)=>a+b,0)/allBands.length).toFixed(1) : '–';
+  document.getElementById('home-band').textContent = avgBand;
+}
+
+// ===== SECTION =====
+function openSection(key) {
+  currentSection = key;
+  const sec = SECTIONS[key];
+  document.getElementById('section-title').textContent = sec.title;
+  const list = document.getElementById('lesson-list');
+  list.innerHTML = '';
+  sec.lessons.forEach((lesson, i) => {
+    const done = state.progress[key] >= Math.round(((i+1)/sec.lessons.length)*100);
+    const div = document.createElement('div');
+    div.className = 'lesson-card';
+    div.innerHTML = `
+      <div class="lesson-num ${done ? 'done' : ''}">${done ? '✓' : i+1}</div>
+      <div class="lesson-info">
+        <div class="lesson-name">${lesson.name}</div>
+        <div class="lesson-desc">${lesson.desc}</div>
+      </div>
+      <div class="lesson-arrow">›</div>
+    `;
+    div.onclick = () => openLesson(lesson);
+    list.appendChild(div);
+  });
+  showScreen('screen-section');
+  setActiveNav('');
+}
+
+function openLesson(lesson) {
+  if (lesson.type === 'phrases') {
+    openPhrases(lesson.key);
+  } else {
+    startQuiz(lesson.quiz);
+  }
+}
+
+// ===== PHRASES =====
+function openPhrases(key) {
+  const phrases = PHRASES[key] || [];
+  const list = document.getElementById('phrases-list');
+  list.innerHTML = '';
+  phrases.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'phrase-card';
+    div.innerHTML = `
+      <div class="phrase-cat">${p.cat}</div>
+      <div class="phrase-en">${p.en}</div>
+      <div class="phrase-ru">${p.ru}</div>
+      <div class="phrase-example">Example: ${p.ex}</div>
+    `;
+    list.appendChild(div);
+  });
+  showScreen('screen-phrases');
+  updateProgress(currentSection, 20);
+}
+
+function updateProgress(section, add) {
+  state.progress[section] = Math.min(100, (state.progress[section] || 0) + add);
+  saveState();
+}
+
+// ===== QUIZ =====
+function startQuiz(quizKey) {
+  currentQuiz = QUIZZES[quizKey];
+  currentQ = 0;
+  quizScore = 0;
+  answered = false;
+  renderQuestion();
+  showScreen('screen-quiz');
+}
+
+function renderQuestion() {
+  const q = currentQuiz[currentQ];
+  const total = currentQuiz.length;
+  document.getElementById('quiz-count').textContent = `Question ${currentQ+1} of ${total}`;
+  document.getElementById('quiz-fill').style.width = ((currentQ+1)/total*100) + '%';
+  document.getElementById('q-type').textContent = q.type;
+  document.getElementById('q-text').textContent = q.q;
+  
+  const optList = document.getElementById('options-list');
+  optList.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<div class="opt-letter">${String.fromCharCode(65+i)}</div>${opt}`;
+    btn.onclick = () => selectAnswer(i);
+    optList.appendChild(btn);
+  });
+
+  document.getElementById('explain-box').classList.remove('show');
+  document.getElementById('next-btn').classList.remove('show');
+  answered = false;
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  const q = currentQuiz[currentQ];
+  const btns = document.querySelectorAll('.option-btn');
+  
+  btns.forEach((btn, i) => {
+    if (i === q.ans) btn.classList.add('correct');
+    else if (i === idx && i !== q.ans) btn.classList.add('wrong');
+    btn.onclick = null;
+  });
+
+  if (idx === q.ans) {
+    quizScore++;
+    state.correct++;
+  }
+  state.total++;
+  
+  const explain = document.getElementById('explain-box');
+  explain.textContent = '💡 ' + q.explain;
+  explain.classList.add('show');
+  document.getElementById('next-btn').classList.add('show');
+  document.getElementById('next-btn').textContent = currentQ < currentQuiz.length-1 ? 'Next →' : 'See Results';
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= currentQuiz.length) {
+    showResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+// ===== RESULT =====
+const TIPS = {
+  speaking_grammar: 'Practice speaking for 10 minutes daily. Record yourself and listen back — notice your mistakes.',
+  listening1: 'Listen to English podcasts every day. BBC Radio 4 and TED Talks are excellent for IELTS preparation.',
+  listening2: 'Practice with authentic IELTS listening tests. Focus especially on Section 3 and 4 which are harder.',
+  reading_tfng: 'The key to T/F/NG is NEVER using outside knowledge. Only use what the passage says.',
+  reading_match: 'For Matching Headings, always read the paragraph first, then match — don\'t do it in reverse.',
+  writing: 'Write one Task 2 essay every week. Ask a teacher or use online tools to get feedback on your work.',
+};
+
+function showResult() {
+  const total = currentQuiz.length;
+  const pct = quizScore / total;
+  const band = (pct * 4 + 5).toFixed(1); // rough band estimation 5.0-9.0
+  
+  state.tests++;
+  state.bands[currentSection] = parseFloat(band);
+  updateProgress(currentSection, 25);
+  saveState();
+
+  let emoji = '😊';
+  let title = 'Good Effort!';
+  if (pct >= 0.9) { emoji = '🏆'; title = 'Outstanding!'; }
+  else if (pct >= 0.7) { emoji = '🎉'; title = 'Well Done!'; }
+  else if (pct >= 0.5) { emoji = '💪'; title = 'Keep Going!'; }
+  else { emoji = '📚'; title = 'Keep Studying!'; }
+
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-sub').textContent = `You got ${quizScore} out of ${total} correct`;
+  document.getElementById('result-score').textContent = band;
+  document.getElementById('result-band').textContent = 'Estimated IELTS Band';
+  document.getElementById('result-tip-text').textContent = TIPS[Object.keys(QUIZZES).find(k => QUIZZES[k] === currentQuiz)] || 'Keep practicing daily for best results!';
+  
+  document.getElementById('retry-btn').onclick = () => startQuiz(Object.keys(QUIZZES).find(k => QUIZZES[k] === currentQuiz));
+  
+  showScreen('screen-result');
+}
+
+// ===== PROGRESS SCREEN =====
+function updateProgressScreen() {
+  document.getElementById('stat-tests').textContent = state.tests;
+  document.getElementById('stat-streak').textContent = state.streak + '🔥';
+  const acc = state.total > 0 ? Math.round(state.correct/state.total*100) : 0;
+  document.getElementById('stat-correct').textContent = acc + '%';
+  const bands = Object.values(state.bands).filter(b => b !== null);
+  const avg = bands.length ? (bands.reduce((a,b)=>a+b,0)/bands.length).toFixed(1) : '–';
+  document.getElementById('stat-band').textContent = avg;
+}
+
+// ===== INIT =====
+updateHomeUI();
+
+// Increment streak daily
+const today = new Date().toDateString();
+if (state.lastDay !== today) {
+  state.lastDay = today;
+  state.streak = (state.streak || 0) + 1;
+  saveState();
+}
+</script></body>
+</html>
