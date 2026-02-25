@@ -14,7 +14,7 @@ ContextTypes, ConversationHandler
 
 # ── Токен бота (замени на свой от @BotFather) ──────────────────────────────
 
-BOT_TOKEN = “ВАШ_ТОКЕН_ЗДЕСЬ”
+BOT_TOKEN = “8689181136:AAE8mkgNdjtPfwSCWimNG2UG2tLzR8BNpy4”
 
 # ── Логирование ────────────────────────────────────────────────────────────
 
