@@ -6,7 +6,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(**name**)
 
-TOKEN = ‘8447477957:AAHAEm48qRPkQJcWf8cn7XrZejYFuHoO-z0’
+TOKEN = ‘8768072723:AAFnAKprrqCVFnyiaYanbBVR1Y7mzlkr3YY’
 WEBAPP_URL = ‘https://zagifasarkulova-sys.github.io/Ismail/’
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
