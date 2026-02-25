@@ -1,85 +1,1452 @@
+“””
+EnglishMaster Bot — бот для изучения английского языка
+Установка: pip install python-telegram-bot==20.7
+Запуск:    python bot.py
+“””
+
 import logging
-from telegram import (
-    Update, WebAppInfo,
-    InlineKeyboardButton, InlineKeyboardMarkup,
-    MenuButtonWebApp, ReplyKeyboardMarkup, KeyboardButton
-)
-from telegram.ext import Application, CommandHandler, ContextTypes
-
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
+import json
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import (
+Application, CommandHandler, CallbackQueryHandler,
+ContextTypes, ConversationHandler
 )
 
-TOKEN = "8768072723:AAFnAKprrqCVFnyiaYanbBVR1Y7mzlkr3YY"
-WEBAPP_URL = "https://zagifasarkulova-sys.github.io/Ismail/"
+# ── Токен бота (замени на свой от @BotFather) ──────────────────────────────
 
+BOT_TOKEN = “ВАШ_ТОКЕН_ЗДЕСЬ”
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    name = user.first_name if user.first_name else "друг"
+# ── Логирование ────────────────────────────────────────────────────────────
 
-    keyboard = [
-        [KeyboardButton(text="📱 Открыть приложение", web_app=WebAppInfo(url=WEBAPP_URL))]
-    ]
-    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+logging.basicConfig(format=”%(asctime)s - %(name)s - %(levelname)s - %(message)s”, level=logging.INFO)
+logger = logging.getLogger(**name**)
 
-    await update.message.reply_text(
-        f"👋 Привет, {name}!\n\n"
-        "🎓 Добро пожаловать в *English Learn* — твой личный репетитор английского!\n\n"
-        "📚 Что тебя ждёт внутри:\n"
-        "• 🗣 Словарный запас по темам\n"
-        "• 📖 Грамматические правила\n"
-        "• 🧪 Тесты и квизы\n"
-        "• 🃏 Флэшкарты для запоминания слов\n"
-        "• 📊 Твой прогресс и статистика\n\n"
-        "👇 Нажми кнопку ниже чтобы начать!",
-        reply_markup=reply_markup,
-        parse_mode="Markdown"
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ДАННЫЕ: ГРАММАТИКА, СЛОВА, ФРАЗЫ
+
+# ══════════════════════════════════════════════════════════════════════════════
+
+DATA = {
+“A1”: {
+“name”: “A1 — Начинающий”,
+“desc”: “Первые шаги. Базовые слова, простые предложения, знакомство.”,
+“grammar”: [
+{
+“title”: “Глагол to be (am / is / are)”,
+“explanation”: (
+“📌 *Глагол TO BE — am / is / are*\n\n”
+“Используется когда говоришь КТО ты или КАКОЙ ты.\n\n”
+“📐 *Формула:*\n”
+“`I + am`\n”
+“`He / She / It + is`\n”
+“`You / We / They + are`\n\n”
+“✅ *Утверждение:*\n”
+“• I am a student. *(Я студент.)*\n”
+“• She is happy. *(Она счастлива.)*\n”
+“• They are friends. *(Они друзья.)*\n\n”
+“❌ *Отрицание:*\n”
+“• I’m not tired.\n”
+“• He isn’t a doctor.\n”
+“• They aren’t at home.\n\n”
+“❓ *Вопрос:*\n”
+“• Am I late?\n”
+“• Is she a teacher?\n”
+“• Are they ready?\n\n”
+“💡 *Краткие ответы:*\n”
+“Are you a student? — Yes, I am. / No, I’m not.”
+),
+“tasks”: [
+“Заполни: I ___ a student. She ___ my friend.”,
+“Составь предложение: (he / a doctor / is)”,
+“Сделай отрицание: ‘They are happy’ →”,
+“Переведи на английский: Я не устал.”,
+“Составь вопрос: (you / are / tired)?”,
+“Заполни: We ___ from Moscow. It ___ cold today.”,
+“Напиши 3 предложения о себе с am / is / are.”,
+“Исправь ошибку: ‘She am a nurse.’”,
+“Переведи диалог: — Ты студент? — Да, я студент.”,
+“Составь краткие ответы: Are you tired? (Yes) / Is he happy? (No)”,
+],
+“quiz”: [
+{“q”: “I ___ a student.”, “opts”: [“am”, “is”, “are”, “be”], “ans”: 0},
+{“q”: “She ___ from London.”, “opts”: [“am”, “are”, “is”, “be”], “ans”: 2},
+{“q”: “Как сказать ‘Они не друзья’?”, “opts”: [“They aren’t friends”, “They isn’t friends”, “They am not friends”, “They be not friends”], “ans”: 0},
+{“q”: “They ___ happy today.”, “opts”: [“am”, “is”, “are”, “be”], “ans”: 2},
+{“q”: “’___ she a doctor?’ — правильный вопрос?”, “opts”: [“Am”, “Is”, “Are”, “Be”], “ans”: 1},
+{“q”: “Краткий ответ на ‘Are you ready?’ (отрицательный):”, “opts”: [“No, I am not”, “No, I is not”, “No, he isn’t”, “Yes, I am”], “ans”: 0},
+{“q”: “We ___ students.”, “opts”: [“am”, “is”, “are”, “been”], “ans”: 2},
+{“q”: “Найди ошибку: ‘He are my brother.’”, “opts”: [“He is my brother”, “He am my brother”, “He be my brother”, “He was my brother”], “ans”: 0},
+{“q”: “It ___ cold outside.”, “opts”: [“am”, “are”, “is”, “be”], “ans”: 2},
+{“q”: “Краткий ответ: Is she tired? (Yes)”, “opts”: [“Yes, she is”, “Yes, she are”, “Yes, she am”, “Yes, is she”], “ans”: 0},
+{“q”: “Отрицание от ‘I am busy’:”, “opts”: [“I’m not busy”, “I isn’t busy”, “I aren’t busy”, “I amn’t busy”], “ans”: 0},
+{“q”: “You and I ___ a team.”, “opts”: [“am”, “is”, “are”, “be”], “ans”: 2},
+{“q”: “Вопрос к ‘He is a pilot’:”, “opts”: [“Is he a pilot?”, “Are he a pilot?”, “Am he a pilot?”, “He is a pilot?”], “ans”: 0},
+{“q”: “Переведи: ‘Мы не в школе.’”, “opts”: [“We aren’t at school”, “We isn’t at school”, “We am not at school”, “We not are at school”], “ans”: 0},
+{“q”: “My name ___ Alex.”, “opts”: [“am”, “are”, “is”, “be”], “ans”: 2},
+],
+},
+{
+“title”: “Present Simple (настоящее простое время)”,
+“explanation”: (
+“📌 *Present Simple — настоящее простое время*\n\n”
+“Используется для регулярных действий, привычек, фактов.\n\n”
+“📐 *Формула:*\n”
+“`I / You / We / They + V (base)`\n”
+“`He / She / It + V + s/es`\n\n”
+“✅ *Примеры:*\n”
+“• I work every day. *(Я работаю каждый день.)*\n”
+“• She works in a café. *(Она работает в кафе.)*\n\n”
+“❌ *Отрицание:*\n”
+“• I don’t like fish.\n”
+“• He doesn’t play football.\n\n”
+“❓ *Вопрос:*\n”
+“• Do you like pizza? — Yes, I do. / No, I don’t.\n”
+“• Does she live here? — Yes, she does.\n\n”
+“⏰ *Маркеры времени:*\n”
+“always, usually, often, sometimes, never, every day/week”
+),
+“tasks”: [
+“Поставь глагол: He (go) ___ to school every day.”,
+“Сделай отрицание: ‘She likes coffee’ →”,
+“Составь вопрос: (you / live / in Moscow)?”,
+“Переведи: Они никогда не едят мясо.”,
+“Исправь: ‘He don’t work here.’”,
+“Напиши 5 предложений о своей рутине.”,
+“Заполни: She ___ (watch) TV every evening.”,
+“Ответь: Does he play guitar? → No, …”,
+“Добавь -s или -es: teach, go, wash, play, study”,
+“Переведи: Мы обычно пьём чай утром.”,
+],
+“quiz”: [
+{“q”: “She ___ English every day.”, “opts”: [“study”, “studies”, “studied”, “studying”], “ans”: 1},
+{“q”: “They ___ play football on weekends.”, “opts”: [“don’t”, “doesn’t”, “isn’t”, “aren’t”], “ans”: 0},
+{“q”: “___ he work here?”, “opts”: [“Do”, “Does”, “Is”, “Are”], “ans”: 1},
+{“q”: “I ___ like spinach.”, “opts”: [“don’t”, “doesn’t”, “isn’t”, “aren’t”], “ans”: 0},
+{“q”: “He always ___ to bed at 10.”, “opts”: [“go”, “goes”, “going”, “went”], “ans”: 1},
+{“q”: “Маркер Present Simple:”, “opts”: [“yesterday”, “now”, “every day”, “tomorrow”], “ans”: 2},
+{“q”: “‘Does she live here?’ — краткий ответ (Yes):”, “opts”: [“Yes, she does”, “Yes, she do”, “Yes, she is”, “Yes, she lives”], “ans”: 0},
+{“q”: “We ___ meet every Friday.”, “opts”: [“do”, “does”, “are”, “am”], “ans”: 0},
+{“q”: “‘He teach English’ — ошибка:”, “opts”: [“He teaches English”, “He is teach English”, “He do teach English”, “He teaching English”], “ans”: 0},
+{“q”: “She never ___ late.”, “opts”: [“is”, “are”, “am”, “be”], “ans”: 0},
+{“q”: “My cat ___ milk every morning.”, “opts”: [“drink”, “drinks”, “drinking”, “drank”], “ans”: 1},
+{“q”: “___ they speak Russian?”, “opts”: [“Do”, “Does”, “Are”, “Is”], “ans”: 0},
+{“q”: “Отрицание: ‘She plays piano’ →”, “opts”: [“She doesn’t play piano”, “She don’t plays piano”, “She isn’t play piano”, “She not plays piano”], “ans”: 0},
+{“q”: “He usually ___ to work by bus.”, “opts”: [“go”, “goes”, “going”, “gone”], “ans”: 1},
+{“q”: “Переведи: ‘Она не говорит по-французски.’”, “opts”: [“She doesn’t speak French”, “She don’t speak French”, “She isn’t speak French”, “She speaks not French”], “ans”: 0},
+],
+},
+{
+“title”: “Артикли a / an / the”,
+“explanation”: (
+“📌 *Артикли: A / AN / THE*\n\n”
+“🔹 *A / AN* — неопределённый артикль\n”
+“Используется при первом упоминании или когда предмет один из многих.\n\n”
+“`A + согласная:` a dog, a cat, a book\n”
+“`AN + гласная (a,e,i,o,u):` an apple, an egg, an hour\n\n”
+“• I have *a* dog. *(у меня есть собака — любая)*\n\n”
+“🔹 *THE* — определённый артикль\n”
+“Используется когда предмет уже известен или единственный.\n\n”
+“• *The* dog is in the garden. *(та самая собака)*\n”
+“• *The* sun rises in the east. *(единственное солнце)*\n\n”
+“🔹 *Без артикля:*\n”
+“Имена, страны (в большинстве), языки, множественное число в общем смысле.\n”
+“• I love *cats*. / She speaks *English*.”
+),
+“tasks”: [
+“Вставь a, an или the: I saw ___ cat. ___ cat was black.”,
+“Вставь: She is ___ engineer. He is ___ honest man.”,
+“Вставь: ___ sun rises in the east.”,
+“Убери лишний артикль: ‘I love the music.’”,
+“Составь 2 предложения: сначала a/an, потом the.”,
+“Вставь: Can I have ___ apple and ___ orange?”,
+“Вставь: We went to ___ park. ___ park was beautiful.”,
+“Переведи: Это книга. Книга интересная.”,
+“Исправь: ‘She is an university student.’”,
+“Когда не нужен артикль? Приведи 5 примеров.”,
+],
+“quiz”: [
+{“q”: “’___ apple a day keeps the doctor away.’”, “opts”: [“A”, “An”, “The”, “—”], “ans”: 1},
+{“q”: “‘She is ___ teacher.’”, “opts”: [“a”, “an”, “the”, “—”], “ans”: 0},
+{“q”: “’___ Eiffel Tower is in Paris.’”, “opts”: [“A”, “An”, “The”, “—”], “ans”: 2},
+{“q”: “‘I love ___ dogs.’ (в общем смысле)”, “opts”: [“a”, “an”, “the”, “—”], “ans”: 3},
+{“q”: “‘He is ___ honest person.’”, “opts”: [“a”, “an”, “the”, “—”], “ans”: 1},
+{“q”: “‘Pass me ___ salt, please.’ (конкретная)”, “opts”: [“a”, “an”, “the”, “—”], “ans”: 2},
+{“q”: “‘I have ___ umbrella.’”, “opts”: [“a”, “an”, “the”, “—”], “ans”: 1},
+{“q”: “’___ Russia is a big country.’”, “opts”: [“A”, “An”, “The”, “—”], “ans”: 3},
+{“q”: “‘She plays ___ piano.’”, “opts”: [“a”, “an”, “the”, “—”], “ans”: 2},
+{“q”: “‘I saw ___ movie. ___ movie was great.’”, “opts”: [“a / the”, “the / a”, “an / the”, “the / the”], “ans”: 0},
+{“q”: “‘He is ___ engineer.’”, “opts”: [“a”, “an”, “the”, “—”], “ans”: 0},
+{“q”: “’___ sun is bright today.’”, “opts”: [“A”, “An”, “The”, “—”], “ans”: 2},
+{“q”: “‘She speaks ___ English.’”, “opts”: [“a”, “an”, “the”, “—”], “ans”: 3},
+{“q”: “‘There is ___ cat under the table.’”, “opts”: [“a”, “an”, “the”, “—”], “ans”: 0},
+{“q”: “‘Can I open ___ window?’ (конкретное)”, “opts”: [“a”, “an”, “the”, “—”], “ans”: 2},
+],
+},
+],
+“words”: [
+(“hello”,“привет”,”[həˈloʊ]”), (“goodbye”,“до свидания”,”[ˌɡʊdˈbaɪ]”),
+(“please”,“пожалуйста”,”[pliːz]”), (“thank you”,“спасибо”,”[θæŋk juː]”),
+(“sorry”,“извините”,”[ˈsɒri]”), (“yes”,“да”,”[jɛs]”),
+(“no”,“нет”,”[noʊ]”), (“good”,“хороший”,”[ɡʊd]”),
+(“bad”,“плохой”,”[bæd]”), (“big”,“большой”,”[bɪɡ]”),
+(“small”,“маленький”,”[smɔːl]”), (“hot”,“горячий”,”[hɒt]”),
+(“cold”,“холодный”,”[koʊld]”), (“fast”,“быстрый”,”[fɑːst]”),
+(“slow”,“медленный”,”[sloʊ]”), (“new”,“новый”,”[njuː]”),
+(“old”,“старый”,”[oʊld]”), (“happy”,“счастливый”,”[ˈhæpi]”),
+(“sad”,“грустный”,”[sæd]”), (“tired”,“усталый”,”[ˈtaɪəd]”),
+(“hungry”,“голодный”,”[ˈhʌŋɡri]”), (“thirsty”,“хочу пить”,”[ˈθɜːsti]”),
+(“water”,“вода”,”[ˈwɔːtər]”), (“food”,“еда”,”[fuːd]”),
+(“bread”,“хлеб”,”[brɛd]”), (“milk”,“молоко”,”[mɪlk]”),
+(“apple”,“яблоко”,”[ˈæpəl]”), (“orange”,“апельсин”,”[ˈɒrɪndʒ]”),
+(“cat”,“кошка”,”[kæt]”), (“dog”,“собака”,”[dɒɡ]”),
+(“house”,“дом”,”[haʊs]”), (“school”,“школа”,”[skuːl]”),
+(“book”,“книга”,”[bʊk]”), (“pen”,“ручка”,”[pɛn]”),
+(“table”,“стол”,”[ˈteɪbəl]”), (“chair”,“стул”,”[tʃɛr]”),
+(“door”,“дверь”,”[dɔːr]”), (“window”,“окно”,”[ˈwɪndoʊ]”),
+(“car”,“машина”,”[kɑːr]”), (“bus”,“автобус”,”[bʌs]”),
+(“day”,“день”,”[deɪ]”), (“night”,“ночь”,”[naɪt]”),
+(“morning”,“утро”,”[ˈmɔːrnɪŋ]”), (“evening”,“вечер”,”[ˈiːvnɪŋ]”),
+(“red”,“красный”,”[rɛd]”), (“blue”,“синий”,”[bluː]”),
+(“green”,“зелёный”,”[ɡriːn]”), (“white”,“белый”,”[waɪt]”),
+(“black”,“чёрный”,”[blæk]”), (“yellow”,“жёлтый”,”[ˈjɛloʊ]”),
+(“mother”,“мама”,”[ˈmʌðər]”), (“father”,“папа”,”[ˈfɑːðər]”),
+(“friend”,“друг”,”[frɛnd]”), (“teacher”,“учитель”,”[ˈtiːtʃər]”),
+(“student”,“студент”,”[ˈstjuːdənt]”), (“doctor”,“врач”,”[ˈdɒktər]”),
+(“work”,“работать”,”[wɜːrk]”), (“go”,“идти”,”[ɡoʊ]”),
+(“eat”,“есть”,”[iːt]”), (“drink”,“пить”,”[drɪŋk]”),
+(“sleep”,“спать”,”[sliːp]”), (“read”,“читать”,”[riːd]”),
+(“write”,“писать”,”[raɪt]”), (“listen”,“слушать”,”[ˈlɪsən]”),
+(“speak”,“говорить”,”[spiːk]”), (“see”,“видеть”,”[siː]”),
+(“know”,“знать”,”[noʊ]”), (“want”,“хотеть”,”[wɒnt]”),
+(“like”,“нравиться”,”[laɪk]”), (“love”,“любить”,”[lʌv]”),
+(“have”,“иметь”,”[hæv]”), (“need”,“нуждаться”,”[niːd]”),
+(“come”,“приходить”,”[kʌm]”), (“give”,“давать”,”[ɡɪv]”),
+(“take”,“брать”,”[teɪk]”), (“make”,“делать”,”[meɪk]”),
+(“Monday”,“понедельник”,”[ˈmʌndeɪ]”), (“Tuesday”,“вторник”,”[ˈtjuːzdeɪ]”),
+(“Wednesday”,“среда”,”[ˈwɛnzdeɪ]”), (“Thursday”,“четверг”,”[ˈθɜːrzdeɪ]”),
+(“Friday”,“пятница”,”[ˈfraɪdeɪ]”), (“Saturday”,“суббота”,”[ˈsætərdeɪ]”),
+(“Sunday”,“воскресенье”,”[ˈsʌndeɪ]”), (“summer”,“лето”,”[ˈsʌmər]”),
+(“winter”,“зима”,”[ˈwɪntər]”), (“spring”,“весна”,”[sprɪŋ]”),
+(“autumn”,“осень”,”[ˈɔːtəm]”), (“city”,“город”,”[ˈsɪti]”),
+(“country”,“страна”,”[ˈkʌntri]”), (“street”,“улица”,”[striːt]”),
+(“park”,“парк”,”[pɑːrk]”), (“money”,“деньги”,”[ˈmʌni]”),
+(“price”,“цена”,”[praɪs]”), (“ticket”,“билет”,”[ˈtɪkɪt]”),
+(“weather”,“погода”,”[ˈwɛðər]”), (“rain”,“дождь”,”[reɪn]”),
+],
+“phrases”: [
+(“What is your name?”, “Как тебя зовут?”),
+(“My name is …”, “Меня зовут …”),
+(“How are you?”, “Как дела?”),
+(“I’m fine, thanks!”, “Хорошо, спасибо!”),
+(“Where are you from?”, “Откуда ты?”),
+(“I’m from Russia.”, “Я из России.”),
+(“How old are you?”, “Сколько тебе лет?”),
+(“I’m 20 years old.”, “Мне 20 лет.”),
+(“Nice to meet you!”, “Приятно познакомиться!”),
+(“Good morning!”, “Доброе утро!”),
+(“Good night!”, “Спокойной ночи!”),
+(“See you later!”, “До встречи!”),
+(“Excuse me.”, “Извините.”),
+(“Can you help me?”, “Вы можете мне помочь?”),
+(“I don’t understand.”, “Я не понимаю.”),
+(“Please repeat.”, “Повторите, пожалуйста.”),
+(“Speak slowly, please.”, “Говорите медленно, пожалуйста.”),
+(“What does … mean?”, “Что значит …?”),
+(“How do you say … in English?”, “Как сказать … по-английски?”),
+(“I’m a student.”, “Я студент.”),
+(“I’m learning English.”, “Я учу английский.”),
+(“I like music.”, “Мне нравится музыка.”),
+(“I don’t like vegetables.”, “Мне не нравятся овощи.”),
+(“What time is it?”, “Который час?”),
+(“It’s two o’clock.”, “Два часа.”),
+(“How much is it?”, “Сколько это стоит?”),
+(“It’s five dollars.”, “Пять долларов.”),
+(“Where is the toilet?”, “Где туалет?”),
+(“Straight ahead.”, “Прямо.”),
+(“Turn left / right.”, “Повернуть налево / направо.”),
+(“I need a taxi.”, “Мне нужно такси.”),
+(“I’m hungry.”, “Я голоден.”),
+(“Can I have the menu?”, “Можно меню?”),
+(“I’ll have a coffee.”, “Я возьму кофе.”),
+(“The bill, please.”, “Счёт, пожалуйста.”),
+(“Happy birthday!”, “С днём рождения!”),
+(“Congratulations!”, “Поздравляю!”),
+(“Good luck!”, “Удачи!”),
+(“No problem!”, “Не проблема!”),
+(“Of course!”, “Конечно!”),
+(“I think so.”, “Я так думаю.”),
+(“I don’t know.”, “Я не знаю.”),
+(“I’m sorry.”, “Мне жаль.”),
+(“It’s OK.”, “Всё хорошо.”),
+(“I love you.”, “Я люблю тебя.”),
+(“Take care!”, “Береги себя!”),
+(“Have a nice day!”, “Хорошего дня!”),
+(“Well done!”, “Молодец!”),
+(“That’s great!”, “Это здорово!”),
+(“I agree.”, “Я согласен.”),
+],
+},
+
+```
+"A2": {
+    "name": "A2 — Элементарный",
+    "desc": "Прошлое время, сравнения, модальные глаголы.",
+    "grammar": [
+        {
+            "title": "Past Simple (прошедшее время)",
+            "explanation": (
+                "📌 *Past Simple — прошедшее простое время*\n\n"
+                "Используется для действий, завершённых в прошлом.\n\n"
+                "📐 *Формула:*\n"
+                "`Правильные: V + ed` → worked, played, visited\n"
+                "`Неправильные: особая форма` → go→went, eat→ate, see→saw\n\n"
+                "✅ *Примеры:*\n"
+                "• I worked yesterday. _(Я работал вчера.)_\n"
+                "• She went to Paris last year.\n\n"
+                "❌ *Отрицание:*\n"
+                "`didn't + V (base)`\n"
+                "• I didn't go to school yesterday.\n"
+                "• He didn't eat breakfast.\n\n"
+                "❓ *Вопрос:*\n"
+                "`Did + subject + V (base)?`\n"
+                "• Did you see that film? — Yes, I did. / No, I didn't.\n\n"
+                "⏰ *Маркеры:*\n"
+                "yesterday, last night/week/year, ago, in [год]"
+            ),
+            "tasks": [
+                "Поставь в Past Simple: She (visit) ___ her grandmother last Sunday.",
+                "Сделай отрицание: 'He played tennis yesterday' →",
+                "Составь вопрос: (you / eat / breakfast / this morning)?",
+                "Переведи: Мы не смотрели телевизор вчера вечером.",
+                "Заполни: I (go) ___ to the cinema last week.",
+                "Напиши 5 предложений о том, что ты делал вчера.",
+                "Неправильные глаголы Past Simple: buy, come, drink, fly, give",
+                "Исправь: 'She didn't went to work.'",
+                "Краткий ответ: Did they win the game? (No)",
+                "Переведи: Ты был в Лондоне? — Да, я был там в 2022 году.",
+            ],
+            "quiz": [
+                {"q": "She ___ a letter yesterday.", "opts": ["write","writes","wrote","written"], "ans": 2},
+                {"q": "They ___ play football last week.", "opts": ["didn't","doesn't","weren't","hadn't"], "ans": 0},
+                {"q": "___ you see that film?", "opts": ["Do","Does","Did","Were"], "ans": 2},
+                {"q": "He ___ to bed early last night.", "opts": ["go","goes","went","gone"], "ans": 2},
+                {"q": "'Did she come?' — краткий ответ (No):", "opts": ["No, she didn't","No, she doesn't","No, she wasn't","No, she hadn't"], "ans": 0},
+                {"q": "Past Simple от 'eat':", "opts": ["eated","ate","eaten","eat"], "ans": 1},
+                {"q": "I ___ not sleep well last night.", "opts": ["do","did","was","have"], "ans": 1},
+                {"q": "We ___ to Paris last summer.", "opts": ["go","goes","went","going"], "ans": 2},
+                {"q": "Past Simple от 'buy':", "opts": ["buyed","bought","buying","buys"], "ans": 1},
+                {"q": "'He didn't finished homework.' — правильно:", "opts": ["He didn't finish his homework","He didn't finished","He not finished","He isn't finish"], "ans": 0},
+                {"q": "Маркер Past Simple:", "opts": ["now","tomorrow","yesterday","usually"], "ans": 2},
+                {"q": "Past Simple от 'fly':", "opts": ["flyed","flew","flied","flown"], "ans": 1},
+                {"q": "She ___ the piano when she was young.", "opts": ["play","plays","played","playing"], "ans": 2},
+                {"q": "'___ it rain yesterday?' — правильный вопрос?", "opts": ["Do","Does","Did","Was"], "ans": 2},
+                {"q": "Past Simple от 'have':", "opts": ["haved","has","had","having"], "ans": 2},
+            ],
+        },
+        {
+            "title": "Степени сравнения прилагательных",
+            "explanation": (
+                "📌 *Степени сравнения прилагательных*\n\n"
+                "🔹 *Сравнительная степень (Comparative):*\n"
+                "`Короткие: adj + er + than`\n"
+                "• tall → taller than, big → bigger than\n\n"
+                "`Длинные: more + adj + than`\n"
+                "• interesting → more interesting than\n\n"
+                "• He is taller than his brother.\n"
+                "• This book is more interesting than that one.\n\n"
+                "🔹 *Превосходная степень (Superlative):*\n"
+                "`Короткие: the + adj + est`\n"
+                "• tall → the tallest\n\n"
+                "`Длинные: the most + adj`\n"
+                "• the most interesting\n\n"
+                "• She is the smartest in the class.\n\n"
+                "⚠️ *Исключения:*\n"
+                "• good → better → the best\n"
+                "• bad → worse → the worst\n"
+                "• far → farther → the farthest"
+            ),
+            "tasks": [
+                "Образуй сравнительную степень: big, funny, expensive, happy, good",
+                "Образуй превосходную степень: small, interesting, bad, hot, beautiful",
+                "Составь предложение: Moscow / big / city / Russia",
+                "Переведи: Этот фильм лучше, чем тот.",
+                "Исправь: 'She is more tall than me.'",
+                "Сравни 3 предмета, используя все три степени.",
+                "Вставь: This test is ___ (difficult) than yesterday's.",
+                "Переведи: Самая красивая страна в мире.",
+                "Составь вопрос: Which is ___ (fast) — a car or a bus?",
+                "Сравни лето и зиму, используя 5 прилагательных.",
+            ],
+            "quiz": [
+                {"q": "'big' → сравнительная:", "opts": ["more big","bigger","bigest","most big"], "ans": 1},
+                {"q": "'interesting' → превосходная:", "opts": ["most interesting","more interesting","interestingest","the most interesting"], "ans": 3},
+                {"q": "'good' → сравнительная:", "opts": ["gooder","more good","better","best"], "ans": 2},
+                {"q": "She is ___ student in the class.", "opts": ["the smartest","smarter","most smart","smartest"], "ans": 0},
+                {"q": "This bag is ___ than that one.", "opts": ["more heavy","heavier","heaviest","most heavy"], "ans": 1},
+                {"q": "'bad' → превосходная:", "opts": ["the baddest","the worst","the more bad","the badder"], "ans": 1},
+                {"q": "He runs ___ than me.", "opts": ["more fast","fastest","faster","most fast"], "ans": 2},
+                {"q": "This is ___ film I've ever seen.", "opts": ["the bored","the most boring","most boring","more boring"], "ans": 1},
+                {"q": "'far' → сравнительная:", "opts": ["more far","farther","farer","furthest"], "ans": 1},
+                {"q": "Today is ___ (hot) day of the year.", "opts": ["hotter","more hot","the hottest","hottest"], "ans": 2},
+                {"q": "His car is ___ than mine.", "opts": ["more expensive","expensiver","most expensive","the most expensive"], "ans": 0},
+                {"q": "'happy' → сравнительная:", "opts": ["happyer","more happy","happier","the happiest"], "ans": 2},
+                {"q": "Mount Everest is ___ mountain in the world.", "opts": ["the highest","higher","more high","the most high"], "ans": 0},
+                {"q": "This pizza is ___ than that one.", "opts": ["gooder","more good","better","best"], "ans": 2},
+                {"q": "'small' → превосходная:", "opts": ["smaller","the smallest","most small","more small"], "ans": 1},
+            ],
+        },
+        {
+            "title": "Modal verbs: can, must, should",
+            "explanation": (
+                "📌 *Модальные глаголы: CAN / MUST / SHOULD*\n\n"
+                "🔹 *CAN* — умею, могу (способность, разрешение)\n"
+                "`can + V (base)`\n"
+                "• I can swim. _(Я умею плавать.)_\n"
+                "• She can't drive. _(Она не умеет водить.)_\n"
+                "• Can I open the window? _(разрешение)_\n\n"
+                "🔹 *MUST* — должен (обязанность, запрет)\n"
+                "`must + V`\n"
+                "• You must wear a seatbelt.\n"
+                "• You mustn't smoke here. _(запрет!)_\n\n"
+                "🔹 *SHOULD* — следует (совет, рекомендация)\n"
+                "`should + V`\n"
+                "• You should sleep more.\n"
+                "• You shouldn't eat so much sugar.\n\n"
+                "💡 *Важно:* после модальных глаголов всегда инфинитив без TO!\n"
+                "✅ She can swim. ❌ She can to swim."
+            ),
+            "tasks": [
+                "Вставь can/can't: She ___ play piano. Humans ___ fly.",
+                "Переведи: Ты должен сделать домашнее задание.",
+                "Дай совет с should: 'I have a headache.'",
+                "Составь 3 вопроса с can для партнёра.",
+                "Исправь: 'She must to go to the doctor.'",
+                "Вставь must/mustn't: You ___ run in the corridors.",
+                "Переведи: Тебе следует больше читать.",
+                "Чем отличаются must и should? 2 примера каждого.",
+                "Напиши что ты can/can't do (5 предложений).",
+                "Дай 5 советов другу, используя should/shouldn't.",
+            ],
+            "quiz": [
+                {"q": "She ___ speak three languages.", "opts": ["can","must","should","would"], "ans": 0},
+                {"q": "You ___ not smoke here — it's forbidden.", "opts": ["should","can","must","would"], "ans": 2},
+                {"q": "You look tired. You ___ go to bed early.", "opts": ["can","must","should","would"], "ans": 2},
+                {"q": "'Can he swim?' — краткий ответ (Yes):", "opts": ["Yes, he can","Yes, he must","Yes, he does","Yes, he should"], "ans": 0},
+                {"q": "You ___ wear a helmet when cycling.", "opts": ["should","would","can","might"], "ans": 0},
+                {"q": "'Must' в отрицании означает:", "opts": ["не нужно","запрещено","не умею","не советую"], "ans": 1},
+                {"q": "I ___ drive — I don't have a licence.", "opts": ["can't","mustn't","shouldn't","wouldn't"], "ans": 0},
+                {"q": "Children ___ eat more vegetables.", "opts": ["should","must not","can't","would"], "ans": 0},
+                {"q": "'She can to dance.' — правильно:", "opts": ["She can dance","She must dance","She should dance","She could dance"], "ans": 0},
+                {"q": "Patients ___ use phones here. (запрет)", "opts": ["mustn't","shouldn't","can","must"], "ans": 0},
+                {"q": "___ I use your phone?", "opts": ["Must","Should","Can","Would"], "ans": 2},
+                {"q": "You ___ be late for the exam. (очень важно)", "opts": ["mustn't","shouldn't","can't","wouldn't"], "ans": 0},
+                {"q": "'He should goes.' — правильно:", "opts": ["He should go","He must goes","He can goes","He would goes"], "ans": 0},
+                {"q": "I ___ lift 100kg — I'm very strong.", "opts": ["can","must","should","would"], "ans": 0},
+                {"q": "Значение 'should':", "opts": ["совет","жёсткое требование","способность","прошедшее"], "ans": 0},
+            ],
+        },
+    ],
+    "words": [
+        ("buy","покупать","[baɪ]"), ("sell","продавать","[sɛl]"),
+        ("travel","путешествовать","[ˈtrævəl]"), ("visit","посещать","[ˈvɪzɪt]"),
+        ("arrive","прибывать","[əˈraɪv]"), ("leave","уходить","[liːv]"),
+        ("start","начинать","[stɑːrt]"), ("finish","заканчивать","[ˈfɪnɪʃ]"),
+        ("open","открывать","[ˈoʊpən]"), ("close","закрывать","[kloʊz]"),
+        ("pay","платить","[peɪ]"), ("receive","получать","[rɪˈsiːv]"),
+        ("choose","выбирать","[tʃuːz]"), ("decide","решать","[dɪˈsaɪd]"),
+        ("remember","помнить","[rɪˈmɛmbər]"), ("forget","забывать","[fərˈɡɛt]"),
+        ("find","находить","[faɪnd]"), ("lose","терять","[luːz]"),
+        ("win","побеждать","[wɪn]"), ("try","пробовать","[traɪ]"),
+        ("wait","ждать","[weɪt]"), ("meet","встречать","[miːt]"),
+        ("send","отправлять","[sɛnd]"), ("call","звонить","[kɔːl]"),
+        ("ask","спрашивать","[æsk]"), ("answer","отвечать","[ˈɑːnsər]"),
+        ("think","думать","[θɪŋk]"), ("believe","верить","[bɪˈliːv]"),
+        ("hope","надеяться","[hoʊp]"), ("agree","соглашаться","[əˈɡriː]"),
+        ("help","помогать","[hɛlp]"), ("learn","учить","[lɜːrn]"),
+        ("teach","преподавать","[tiːtʃ]"), ("study","изучать","[ˈstʌdi]"),
+        ("kitchen","кухня","[ˈkɪtʃɪn]"), ("bedroom","спальня","[ˈbɛdruːm]"),
+        ("bathroom","ванная","[ˈbæθruːm]"), ("living room","гостиная",""),
+        ("garden","сад","[ˈɡɑːrdən]"), ("hospital","больница","[ˈhɒspɪtəl]"),
+        ("airport","аэропорт","[ˈɛrpɔːrt]"), ("station","вокзал","[ˈsteɪʃən]"),
+        ("market","рынок","[ˈmɑːrkɪt]"), ("restaurant","ресторан","[ˈrɛstrɒnt]"),
+        ("interesting","интересный","[ˈɪntrəstɪŋ]"), ("boring","скучный","[ˈbɔːrɪŋ]"),
+        ("difficult","трудный","[ˈdɪfɪkəlt]"), ("easy","лёгкий","[ˈiːzi]"),
+        ("expensive","дорогой","[ɪkˈspɛnsɪv]"), ("cheap","дешёвый","[tʃiːp]"),
+        ("beautiful","красивый","[ˈbjuːtɪfəl]"), ("clean","чистый","[kliːn]"),
+        ("dirty","грязный","[ˈdɜːrti]"), ("safe","безопасный","[seɪf]"),
+        ("dangerous","опасный","[ˈdeɪndʒərəs]"), ("healthy","здоровый","[ˈhɛlθi]"),
+        ("sick","больной","[sɪk]"), ("medicine","лекарство","[ˈmɛdsɪn]"),
+        ("headache","головная боль","[ˈhɛdeɪk]"), ("fever","жар","[ˈfiːvər]"),
+        ("strong","сильный","[strɒŋ]"), ("weak","слабый","[wiːk]"),
+        ("tall","высокий","[tɔːl]"), ("short","низкий","[ʃɔːrt]"),
+        ("hobby","хобби","[ˈhɒbi]"), ("sport","спорт","[spɔːrt]"),
+        ("music","музыка","[ˈmjuːzɪk]"), ("dance","танцевать","[dæns]"),
+        ("cook","готовить","[kʊk]"), ("draw","рисовать","[drɔː]"),
+        ("swim","плавать","[swɪm]"), ("run","бегать","[rʌn]"),
+        ("police","полиция","[pəˈliːs]"), ("bank","банк","[bæŋk]"),
+        ("passport","паспорт","[ˈpɑːspɔːrt]"), ("weather","погода","[ˈwɛðər]"),
+        ("rain","дождь","[reɪn]"), ("snow","снег","[snoʊ]"),
+        ("sunny","солнечный","[ˈsʌni]"), ("cloudy","облачный","[ˈklaʊdi]"),
+        ("windy","ветреный","[ˈwɪndi]"), ("temperature","температура","[ˈtɛmprɪtʃər]"),
+        ("population","население","[ˌpɒpjʊˈleɪʃən]"), ("environment","среда","[ɪnˈvaɪrənmənt]"),
+        ("technology","технология","[tɛkˈnɒlədʒi]"), ("information","информация",""),
+        ("education","образование","[ˌɛdʒʊˈkeɪʃən]"), ("communication","общение",""),
+        ("responsible","ответственный","[rɪˈspɒnsɪbəl]"), ("confident","уверенный","[ˈkɒnfɪdənt]"),
+        ("creative","творческий","[kriˈeɪtɪv]"), ("patient","терпеливый","[ˈpeɪʃənt]"),
+        ("polite","вежливый","[pəˈlaɪt]"), ("honest","честный","[ˈɒnɪst]"),
+        ("generous","щедрый","[ˈdʒɛnərəs]"), ("brave","смелый","[breɪv]"),
+        ("successful","успешный","[səkˈsɛsfəl]"), ("professional","профессиональный",""),
+    ],
+    "phrases": [
+        ("What did you do yesterday?", "Что ты делал вчера?"),
+        ("I went to the cinema.", "Я ходил в кино."),
+        ("How was your weekend?", "Как прошли выходные?"),
+        ("It was great / terrible!", "Было отлично / ужасно!"),
+        ("Can I have a table for two?", "Можно столик на двоих?"),
+        ("I'd like to order...", "Я бы хотел заказать..."),
+        ("Is service included?", "Обслуживание включено?"),
+        ("I'm allergic to...", "У меня аллергия на..."),
+        ("Can you recommend something?", "Можете что-нибудь посоветовать?"),
+        ("What's the weather like today?", "Какая сегодня погода?"),
+        ("It's raining / snowing.", "Идёт дождь / снег."),
+        ("It's warm / cold / hot.", "Тепло / холодно / жарко."),
+        ("Where can I buy a ticket?", "Где я могу купить билет?"),
+        ("How much does it cost?", "Сколько это стоит?"),
+        ("That's too expensive!", "Это слишком дорого!"),
+        ("Can I try it on?", "Могу я это примерить?"),
+        ("I'll take it!", "Я возьму это!"),
+        ("Do you have it in another size?", "Есть ли это в другом размере?"),
+        ("I have a headache.", "У меня болит голова."),
+        ("I need to see a doctor.", "Мне нужно к врачу."),
+        ("Take this medicine twice a day.", "Принимайте лекарство дважды в день."),
+        ("I'm better now.", "Мне уже лучше."),
+        ("What are your hobbies?", "Какие у тебя хобби?"),
+        ("I enjoy reading / painting.", "Мне нравится читать / рисовать."),
+        ("In my free time, I...", "В свободное время я..."),
+        ("Let's meet at 7 pm.", "Давай встретимся в 7 вечера."),
+        ("Sorry, I'm busy then.", "Извини, я тогда занят."),
+        ("Can we reschedule?", "Можем ли мы перенести?"),
+        ("I agree with you.", "Я с тобой согласен."),
+        ("I disagree.", "Я не согласен."),
+        ("That's a good idea!", "Это хорошая идея!"),
+        ("I'm not sure about that.", "Я не уверен в этом."),
+        ("What do you think?", "Что ты думаешь?"),
+        ("In my opinion...", "По-моему..."),
+        ("I'd prefer...", "Я бы предпочёл..."),
+        ("It depends.", "Это зависит."),
+        ("Let me think...", "Дайте подумаю..."),
+        ("Could you repeat that?", "Не могли бы вы повторить?"),
+        ("What do you mean?", "Что вы имеете в виду?"),
+        ("Are you sure?", "Ты уверен?"),
+        ("Absolutely!", "Абсолютно!"),
+        ("Not exactly.", "Не совсем."),
+        ("To be honest...", "Честно говоря..."),
+        ("As far as I know...", "Насколько я знаю..."),
+        ("I've heard that...", "Я слышал, что..."),
+        ("Mind if I join you?", "Вы не против, если я присоединюсь?"),
+        ("Better late than never.", "Лучше поздно, чем никогда."),
+        ("I'll keep that in mind.", "Я буду иметь это в виду."),
+        ("That's easier said than done.", "Легче сказать, чем сделать."),
+        ("I couldn't agree more.", "Я полностью согласен."),
+    ],
+},
+
+"B1": {
+    "name": "B1 — Средний",
+    "desc": "Present Perfect, условные предложения, страдательный залог.",
+    "grammar": [
+        {
+            "title": "Present Perfect (have/has + V3)",
+            "explanation": (
+                "📌 *Present Perfect — Have/Has + V3*\n\n"
+                "Используется когда прошлое действие СВЯЗАНО с настоящим.\n\n"
+                "📐 *Формула:*\n"
+                "`I/You/We/They + have + V3`\n"
+                "`He/She/It + has + V3`\n\n"
+                "✅ *Примеры:*\n"
+                "• I have finished my homework. _(только что закончил)_\n"
+                "• She has visited Japan. _(опыт в жизни)_\n"
+                "• They haven't eaten yet. _(ещё не ели)_\n\n"
+                "⏰ *Маркеры:*\n"
+                "just, already, yet, ever, never, recently, lately\n"
+                "since [момент], for [период]\n\n"
+                "• Have you *ever* been to London?\n"
+                "• I've *just* seen him.\n"
+                "• He hasn't called *yet*.\n"
+                "• I've lived here *since* 2019 / *for* 5 years.\n\n"
+                "💡 *VS Past Simple:*\n"
+                "Past Simple = когда именно (yesterday)\n"
+                "Present Perfect = опыт или результат"
+            ),
+            "tasks": [
+                "Составь с just: She (finish) her essay.",
+                "Вставь ever/never: Have you ___ eaten sushi? I've ___ tried it.",
+                "Составь вопросы с yet: (they / arrive)?",
+                "Чем 'I saw him' отличается от 'I've seen him'? Объясни.",
+                "Поставь V3: write, go, eat, see, take, make, speak, break",
+                "Переведи: Я никогда не был в Австралии.",
+                "Напиши 5 предложений о своём жизненном опыте.",
+                "Вставь since или for: I've lived here ___ 2019 / ___ 5 years.",
+                "Исправь: 'Have you went to the shop?'",
+                "Составь вопросы Have you ever...? на 5 тем.",
+            ],
+            "quiz": [
+                {"q": "She ___ already ___ her homework.", "opts": ["have / done","has / done","have / did","has / did"], "ans": 1},
+                {"q": "___ you ever ___ sushi?", "opts": ["Have / eaten","Has / eaten","Did / eat","Have / ate"], "ans": 0},
+                {"q": "They ___ arrived ___.", "opts": ["haven't / yet","haven't / already","hasn't / yet","didn't / yet"], "ans": 0},
+                {"q": "Маркер Present Perfect:", "opts": ["yesterday","just","last week","ago"], "ans": 1},
+                {"q": "I ___ in this city since 2018.", "opts": ["live","lived","have lived","am living"], "ans": 2},
+                {"q": "'She has went.' — правильно:", "opts": ["She has gone","She went","She has go","She goes"], "ans": 0},
+                {"q": "He ___ just ___ the letter.", "opts": ["has / written","have / written","has / wrote","did / write"], "ans": 0},
+                {"q": "'Have you seen that film?' — краткий Yes:", "opts": ["Yes, I have","Yes, I did","Yes, I had","Yes, I do"], "ans": 0},
+                {"q": "I've never ___ to Antarctica.", "opts": ["been","be","went","go"], "ans": 0},
+                {"q": "'For' используется с:", "opts": ["периодом времени","точной датой","маркером just","вопросами"], "ans": 0},
+                {"q": "She ___ for this company for 10 years.", "opts": ["has worked","worked","works","have worked"], "ans": 0},
+                {"q": "___ they finished the project yet?", "opts": ["Have","Has","Did","Do"], "ans": 0},
+                {"q": "I've already ___ lunch.", "opts": ["had","have","has","having"], "ans": 0},
+                {"q": "We ___ met before, have we?", "opts": ["haven't","didn't","weren't","don't"], "ans": 0},
+                {"q": "'Since' используется с:", "opts": ["точным моментом","периодом","никогда","вопросами"], "ans": 0},
+            ],
+        },
+        {
+            "title": "Условные предложения (Conditionals 0, 1, 2)",
+            "explanation": (
+                "📌 *Условные предложения (Conditionals)*\n\n"
+                "🔹 *Zero Conditional* — общие факты, законы природы:\n"
+                "`If + Present Simple, + Present Simple`\n"
+                "• If you heat water to 100°C, it boils.\n\n"
+                "🔹 *First Conditional* — реальное будущее условие:\n"
+                "`If + Present Simple, + will + V`\n"
+                "• If it rains, I will stay home.\n"
+                "• If she studies hard, she'll pass the exam.\n\n"
+                "🔹 *Second Conditional* — нереальное/маловероятное:\n"
+                "`If + Past Simple, + would + V`\n"
+                "• If I had a million dollars, I would travel the world.\n"
+                "• If she were me, she would quit.\n\n"
+                "⚠️ *Важно:* В 1st Conditional НЕ используется will после if!\n"
+                "✅ If it rains, I'll stay. ❌ If it will rain, I'll stay.\n\n"
+                "💡 *Were* во 2nd Conditional используется для всех лиц!\n"
+                "• If I were you... / If he were here..."
+            ),
+            "tasks": [
+                "Определи тип: 'If I win the lottery, I'll buy a house.'",
+                "Составь 1st Conditional: если ты позвонишь, я отвечу.",
+                "Составь 2nd Conditional: что бы ты сделал, если бы был президентом?",
+                "Переведи: Если он не придёт, мы начнём без него.",
+                "Вставь: If water freezes, it ___ (become) ice.",
+                "Исправь: 'If I will see him, I'll tell him.'",
+                "Напиши 5 предложений 2nd Conditional о мечтах.",
+                "Чем 1st Conditional отличается от 2nd? Объясни.",
+                "Переведи: Если бы у меня было время, я бы выучил испанский.",
+                "Вставь: If it (rain) ___ tomorrow, we (cancel) ___ the trip.",
+            ],
+            "quiz": [
+                {"q": "'If I had wings, I ___ fly.' — тип?", "opts": ["Zero","First","Second","Third"], "ans": 2},
+                {"q": "If you heat ice, it ___ (melt).", "opts": ["melts","will melt","would melt","melted"], "ans": 0},
+                {"q": "If she ___ hard, she will pass.", "opts": ["studies","study","studied","will study"], "ans": 0},
+                {"q": "If I were you, I ___ see a doctor.", "opts": ["will","would","should","shall"], "ans": 1},
+                {"q": "'If it rains' — какое время используется?", "opts": ["Past Simple","Present Simple","Future Simple","Present Perfect"], "ans": 1},
+                {"q": "Second Conditional выражает:", "opts": ["реальное будущее","нереальное/маловероятное","факты","прошлое"], "ans": 1},
+                {"q": "If they ___ the bus, they'll be late.", "opts": ["miss","will miss","missed","would miss"], "ans": 0},
+                {"q": "If I ___ a car, I would drive to work.", "opts": ["had","have","would have","will have"], "ans": 0},
+                {"q": "'If I will come' — правильно:", "opts": ["If I come","If I came","If I would come","If I shall come"], "ans": 0},
+                {"q": "Zero Conditional для:", "opts": ["фактов и законов природы","мечт","реальных условий","прошлых событий"], "ans": 0},
+                {"q": "If she ___ here, she'd help us.", "opts": ["were","is","will be","has been"], "ans": 0},
+                {"q": "'If you don't eat, you ___ hungry.'", "opts": ["will get","would get","get","got"], "ans": 0},
+                {"q": "First Conditional выражает:", "opts": ["реальное будущее условие","нереальное","факты","маловероятное"], "ans": 0},
+                {"q": "If I spoke French, I ___ move to Paris.", "opts": ["would","will","should","shall"], "ans": 0},
+                {"q": "'Were' во 2nd Conditional:", "opts": ["для всех лиц","только he/she/it","только I","только they"], "ans": 0},
+            ],
+        },
+        {
+            "title": "Passive Voice (страдательный залог)",
+            "explanation": (
+                "📌 *Passive Voice — Страдательный залог*\n\n"
+                "Используется когда важен объект действия, а не исполнитель.\n\n"
+                "📐 *Формула:*\n"
+                "`to be (в нужном времени) + V3`\n\n"
+                "🔹 *Present Simple Passive:*\n"
+                "`am / is / are + V3`\n"
+                "• English is spoken worldwide.\n"
+                "• Rice is grown in Asia.\n\n"
+                "🔹 *Past Simple Passive:*\n"
+                "`was / were + V3`\n"
+                "• The letter was written by Anna.\n"
+                "• The houses were built in 1990.\n\n"
+                "🔹 *Future Simple Passive:*\n"
+                "`will be + V3`\n"
+                "• The report will be published tomorrow.\n\n"
+                "💡 *By + agent* — кем выполнено (если важно):\n"
+                "• The Mona Lisa was painted by Leonardo da Vinci."
+            ),
+            "tasks": [
+                "Переведи в пассив: 'They build houses.' →",
+                "Переведи в пассив: 'Shakespeare wrote Hamlet.'",
+                "Составь: The windows / clean / every week.",
+                "Переведи: Этот фильм был снят в 2020 году.",
+                "Вставь by: 'The cake was made ___ my mother.'",
+                "Из пассива в актив: 'The book was read by students.'",
+                "5 предложений о своём городе (пассив).",
+                "Present Passive: Rice ___ grown in Asia.",
+                "Future Passive: The new stadium ___ open next year.",
+                "Исправь: 'The letter was writed by John.'",
+            ],
+            "quiz": [
+                {"q": "The book ___ by millions of people.", "opts": ["read","is read","is reading","reads"], "ans": 1},
+                {"q": "Past Passive от 'build':", "opts": ["was build","was built","is built","were build"], "ans": 1},
+                {"q": "The film ___ by Spielberg.", "opts": ["directed","was directed","is directed","direct"], "ans": 1},
+                {"q": "'By' в пассиве указывает на:", "opts": ["объект","исполнителя","время","место"], "ans": 1},
+                {"q": "Future Passive: The letter ___.", "opts": ["will sent","will be sent","is sent","was sent"], "ans": 1},
+                {"q": "English ___ in many countries.", "opts": ["speak","speaks","is spoken","spoken"], "ans": 2},
+                {"q": "Passive Past: 'They built the bridge' →", "opts": ["The bridge was built","The bridge built","The bridge is built","The bridge were built"], "ans": 0},
+                {"q": "'Is written' — это:", "opts": ["Present Passive","Past Passive","Future Passive","Active"], "ans": 0},
+                {"q": "'Was stolen' — это:", "opts": ["Present Passive","Past Passive","Future Passive","Active"], "ans": 1},
+                {"q": "'Will be opened' — это:", "opts": ["Present Passive","Past Passive","Future Passive","Active"], "ans": 2},
+                {"q": "The concert ___ next Friday.", "opts": ["is cancelled","was cancelled","will be cancelled","cancel"], "ans": 2},
+                {"q": "Пассив нужен когда:", "opts": ["важен исполнитель","важен объект/результат","говорим о будущем","говорим о привычках"], "ans": 1},
+                {"q": "'The windows were cleaned.' — кто чистил?", "opts": ["неизвестно / неважно","исполнитель указан","сами окна","будущее"], "ans": 0},
+                {"q": "The cake ___ (bake) by my mother yesterday.", "opts": ["was baked","is baked","will be baked","baked"], "ans": 0},
+                {"q": "Пассив образуется с помощью:", "opts": ["have + V3","to be + V3","did + V","will + V"], "ans": 1},
+            ],
+        },
+    ],
+    "words": [
+        ("achieve","достигать","[əˈtʃiːv]"), ("develop","развивать","[dɪˈvɛləp]"),
+        ("improve","улучшать","[ɪmˈpruːv]"), ("increase","увеличивать","[ɪnˈkriːs]"),
+        ("create","создавать","[kriˈeɪt]"), ("manage","управлять","[ˈmænɪdʒ]"),
+        ("provide","обеспечивать","[prəˈvaɪd]"), ("require","требовать","[rɪˈkwaɪər]"),
+        ("suggest","предлагать","[səˈdʒɛst]"), ("discuss","обсуждать","[dɪˈskʌs]"),
+        ("consider","рассматривать","[kənˈsɪdər]"), ("compare","сравнивать","[kəmˈpɛr]"),
+        ("describe","описывать","[dɪˈskraɪb]"), ("experience","опыт","[ɪkˈspɪriəns]"),
+        ("opportunity","возможность","[ˌɒpəˈtjuːnɪti]"), ("challenge","вызов","[ˈtʃælɪndʒ]"),
+        ("solution","решение","[səˈluːʃən]"), ("benefit","польза","[ˈbɛnɪfɪt]"),
+        ("advantage","преимущество","[ədˈvɑːntɪdʒ]"), ("situation","ситуация",""),
+        ("environment","среда","[ɪnˈvaɪrənmənt]"), ("society","общество","[səˈsaɪɪti]"),
+        ("culture","культура","[ˈkʌltʃər]"), ("tradition","традиция","[trəˈdɪʃən]"),
+        ("government","правительство","[ˈɡʌvənmənt]"), ("economy","экономика","[ɪˈkɒnəmi]"),
+        ("research","исследование","[rɪˈsɜːrtʃ]"), ("interview","интервью","[ˈɪntəvjuː]"),
+        ("pollution","загрязнение","[pəˈluːʃən]"), ("climate","климат","[ˈklaɪmɪt]"),
+        ("energy","энергия","[ˈɛnədʒi]"), ("recycle","перерабатывать","[ˌriːˈsaɪkəl]"),
+        ("global","глобальный","[ˈɡloʊbəl]"), ("local","местный","[ˈloʊkəl]"),
+        ("politics","политика","[ˈpɒlɪtɪks]"), ("election","выборы","[ɪˈlɛkʃən]"),
+        ("law","закон","[lɔː]"), ("rights","права","[raɪts]"),
+        ("freedom","свобода","[ˈfriːdəm]"), ("peace","мир","[piːs]"),
+        ("relationship","отношения","[rɪˈleɪʃənʃɪp]"), ("community","сообщество",""),
+        ("argue","спорить","[ˈɑːrɡjuː]"), ("convince","убеждать","[kənˈvɪns]"),
+        ("prove","доказывать","[pruːv]"), ("claim","утверждать","[kleɪm]"),
+        ("admit","признавать","[ədˈmɪt]"), ("deny","отрицать","[dɪˈnaɪ]"),
+        ("promise","обещать","[ˈprɒmɪs]"), ("refuse","отказывать","[rɪˈfjuːz]"),
+        ("accept","принимать","[əkˈsɛpt]"), ("reject","отвергать","[rɪˈdʒɛkt]"),
+        ("apologize","извиняться","[əˈpɒlədʒaɪz]"), ("forgive","прощать","[fəˈɡɪv]"),
+        ("complain","жаловаться","[kəmˈpleɪn]"), ("criticize","критиковать",""),
+        ("praise","хвалить","[preɪz]"), ("affect","влиять","[əˈfɛkt]"),
+        ("influence","влияние","[ˈɪnfluəns]"), ("prevent","предотвращать","[prɪˈvɛnt]"),
+        ("protect","защищать","[prəˈtɛkt]"), ("threat","угроза","[θrɛt]"),
+        ("issue","проблема/вопрос","[ˈɪʃuː]"), ("support","поддержка","[səˈpɔːrt]"),
+        ("donate","жертвовать","[doʊˈneɪt]"), ("volunteer","волонтёр","[ˌvɒlənˈtɪər]"),
+        ("efficient","эффективный","[ɪˈfɪʃənt]"), ("independent","независимый",""),
+        ("ambitious","амбициозный","[æmˈbɪʃəs]"), ("flexible","гибкий","[ˈflɛksɪbəl]"),
+        ("curious","любознательный","[ˈkjʊəriəs]"), ("loyal","верный","[ˈlɔɪəl]"),
+        ("conflict","конфликт","[ˈkɒnflɪkt]"), ("military","военный","[ˈmɪlɪtəri]"),
+        ("national","национальный",""), ("international","международный",""),
+        ("transport","транспорт","[ˈtrænspɔːrt]"), ("resource","ресурс","[rɪˈzɔːrs]"),
+        ("decrease","уменьшать","[dɪˈkriːs]"), ("organize","организовывать",""),
+        ("design","проектировать","[dɪˈzaɪn]"), ("application","заявление",""),
+        ("qualification","квалификация",""), ("result","результат","[rɪˈzʌlt]"),
+        ("population","население","[ˌpɒpjʊˈleɪʃən]"), ("information","информация",""),
+        ("communication","общение",""), ("education","образование",""),
+        ("technology","технология",""), ("responsible","ответственный",""),
+        ("professional","профессиональный",""), ("confident","уверенный",""),
+        ("creative","творческий",""), ("patient","терпеливый",""),
+        ("polite","вежливый",""), ("honest","честный",""),
+        ("generous","щедрый",""), ("brave","смелый",""),
+        ("successful","успешный",""), ("independent","независимый",""),
+    ],
+    "phrases": [
+        ("I'd like to talk about...", "Я хотел бы поговорить о..."),
+        ("Could you clarify that?", "Не могли бы вы уточнить это?"),
+        ("As far as I'm concerned...", "Что касается меня..."),
+        ("From my point of view...", "С моей точки зрения..."),
+        ("It seems to me that...", "Мне кажется, что..."),
+        ("I'm afraid I disagree.", "Боюсь, что я не согласен."),
+        ("On the one hand... on the other hand...", "С одной стороны... с другой..."),
+        ("In addition to that...", "В дополнение к этому..."),
+        ("As a result of...", "В результате..."),
+        ("It is worth noting that...", "Стоит отметить, что..."),
+        ("What I'm trying to say is...", "Что я пытаюсь сказать..."),
+        ("Let me put it another way.", "Позвольте сказать иначе."),
+        ("That's a fair point.", "Это справедливое замечание."),
+        ("I take your point, but...", "Я понимаю вашу точку зрения, но..."),
+        ("Have you ever considered...?", "Вы задумывались о...?"),
+        ("It's been a while since...", "Прошло время с тех пор, как..."),
+        ("The thing is...", "Дело в том, что..."),
+        ("Speaking of which...", "Кстати об этом..."),
+        ("That reminds me...", "Это напоминает мне..."),
+        ("By the way...", "Кстати..."),
+        ("Come to think of it...", "Если подумать..."),
+        ("It's no big deal.", "Это не страшно."),
+        ("That's easier said than done.", "Легче сказать, чем сделать."),
+        ("It depends on the situation.", "Это зависит от ситуации."),
+        ("I couldn't agree more.", "Я полностью согласен."),
+        ("I see where you're coming from.", "Я понимаю, откуда ты исходишь."),
+        ("What are the pros and cons?", "Каковы плюсы и минусы?"),
+        ("It's a double-edged sword.", "Это палка о двух концах."),
+        ("I'm in two minds about it.", "Я сомневаюсь насчёт этого."),
+        ("The bottom line is...", "В конечном счёте..."),
+        ("At the end of the day...", "В конце концов..."),
+        ("Long story short...", "Если коротко..."),
+        ("I'm not in a position to...", "Я не в состоянии..."),
+        ("It's out of my hands.", "Это не в моих силах."),
+        ("I'll do my best.", "Я сделаю всё возможное."),
+        ("I'm working on it.", "Я работаю над этим."),
+        ("Let's get back to the point.", "Давайте вернёмся к теме."),
+        ("That's beside the point.", "Это не по теме."),
+        ("I'd like to add that...", "Я хотел бы добавить, что..."),
+        ("To sum up...", "Подводя итог..."),
+        ("In conclusion...", "В заключение..."),
+        ("All things considered...", "Принимая всё во внимание..."),
+        ("Not to mention...", "Не говоря уже о..."),
+        ("What's more...", "Более того..."),
+        ("I've been thinking about...", "Я думал о..."),
+        ("Could we move on to...?", "Можем перейти к...?"),
+        ("I'd like to add that...", "Я хотел бы добавить, что..."),
+        ("I'm afraid that's not correct.", "Боюсь, это неверно."),
+        ("Would you mind if I...?", "Вы не против, если я...?"),
+        ("I'd rather...", "Я бы предпочёл..."),
+    ],
+},
+```
+
+}
+
+# B2 и C1 — упрощённые копии для прототипа
+
+DATA[“B2”] = {
+“name”: “B2 — Выше среднего”,
+“desc”: “Future Perfect, Mixed Conditionals, Reported Speech.”,
+“grammar”: DATA[“B1”][“grammar”],
+“words”: DATA[“B1”][“words”],
+“phrases”: DATA[“B1”][“phrases”],
+}
+DATA[“C1”] = {
+“name”: “C1 — Продвинутый”,
+“desc”: “Инверсия, Subjunctive Mood, Cleft Sentences, академический стиль.”,
+“grammar”: DATA[“B1”][“grammar”],
+“words”: DATA[“B1”][“words”],
+“phrases”: DATA[“B1”][“phrases”],
+}
+
+LEVELS = [“A1”, “A2”, “B1”, “B2”, “C1”]
+LEVEL_EMOJI = {“A1”: “🟢”, “A2”: “🟡”, “B1”: “🔵”, “B2”: “🟣”, “C1”: “🔴”}
+
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ХРАНИЛИЩЕ СОСТОЯНИЯ ПОЛЬЗОВАТЕЛЕЙ (в памяти)
+
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Структура: users[user_id] = {
+
+# “level”: “A1”,
+
+# “grammar_idx”: 0,
+
+# “quiz_q”: 0,
+
+# “quiz_score”: 0,
+
+# “word_idx”: 0,
+
+# “phrase_idx”: 0,
+
+# “progress”: {“A1”: 0, “A2”: 0, “B1”: 0, “B2”: 0, “C1”: 0},
+
+# “completed_topics”: {“A1”: [], “A2”: [], …}
+
+# }
+
+users = {}
+
+def get_user(uid):
+if uid not in users:
+users[uid] = {
+“level”: None,
+“grammar_idx”: 0,
+“quiz_q”: 0,
+“quiz_score”: 0,
+“word_idx”: 0,
+“phrase_idx”: 0,
+“progress”: {lvl: 0 for lvl in LEVELS},
+“completed_topics”: {lvl: [] for lvl in LEVELS},
+}
+return users[uid]
+
+# ══════════════════════════════════════════════════════════════════════════════
+
+# КЛАВИАТУРЫ
+
+# ══════════════════════════════════════════════════════════════════════════════
+
+def kb_start():
+return InlineKeyboardMarkup([
+[InlineKeyboardButton(“🚀 Начать обучение”, callback_data=“choose_level”)],
+[InlineKeyboardButton(“ℹ️ О боте”, callback_data=“about”)],
+])
+
+def kb_choose_level():
+rows = []
+for lvl in LEVELS:
+rows.append([InlineKeyboardButton(
+f”{LEVEL_EMOJI[lvl]} {DATA[lvl][‘name’]}”,
+callback_data=f”level_{lvl}”
+)])
+return InlineKeyboardMarkup(rows)
+
+def kb_level_menu(lvl):
+d = DATA[lvl]
+return InlineKeyboardMarkup([
+[InlineKeyboardButton(f”📖 Грамматика ({len(d[‘grammar’])} темы)”, callback_data=“grammar_list”)],
+[InlineKeyboardButton(f”📚 Слова ({len(d[‘words’])} слов)”, callback_data=“words_start”)],
+[InlineKeyboardButton(f”💬 Фразы ({len(d[‘phrases’])} фраз)”, callback_data=“phrases_start”)],
+[InlineKeyboardButton(“📊 Мой прогресс”, callback_data=“my_progress”)],
+[InlineKeyboardButton(“🔄 Сменить уровень”, callback_data=“choose_level”)],
+])
+
+def kb_grammar_list(lvl):
+d = DATA[lvl]
+rows = []
+for i, g in enumerate(d[“grammar”]):
+rows.append([InlineKeyboardButton(
+f”{‘✅’ if i in users.get(’*tmp’, {}).get(‘completed’, []) else ‘📌’} {i+1}. {g[‘title’]}”,
+callback_data=f”grammar*{i}”
+)])
+rows.append([InlineKeyboardButton(“← Назад в меню”, callback_data=“level_menu”)])
+return InlineKeyboardMarkup(rows)
+
+def kb_grammar_topic(idx, total):
+rows = [
+[InlineKeyboardButton(“📝 10 заданий для тетради”, callback_data=“show_tasks”)],
+[InlineKeyboardButton(“🧪 Пройти тест (15 вопросов)”, callback_data=“start_quiz”)],
+[InlineKeyboardButton(“🔄 Повторить объяснение”, callback_data=f”grammar_{idx}”)],
+]
+if idx + 1 < total:
+rows.append([InlineKeyboardButton(f”Следующая тема →”, callback_data=f”grammar_{idx+1}”)])
+rows.append([InlineKeyboardButton(“← К списку тем”, callback_data=“grammar_list”)])
+return InlineKeyboardMarkup(rows)
+
+def kb_after_tasks(idx):
+return InlineKeyboardMarkup([
+[InlineKeyboardButton(“🧪 Перейти к тесту (15 вопросов)”, callback_data=“start_quiz”)],
+[InlineKeyboardButton(“← Вернуться к объяснению”, callback_data=f”grammar_{idx}”)],
+[InlineKeyboardButton(“← К списку тем”, callback_data=“grammar_list”)],
+])
+
+def kb_quiz_options(opts, q_idx):
+rows = []
+letters = [“A”, “B”, “C”, “D”]
+for i, opt in enumerate(opts):
+rows.append([InlineKeyboardButton(
+f”{letters[i]}) {opt}”,
+callback_data=f”quiz_ans_{i}”
+)])
+return InlineKeyboardMarkup(rows)
+
+def kb_after_result():
+return InlineKeyboardMarkup([
+[InlineKeyboardButton(“📖 К другим темам”, callback_data=“grammar_list”)],
+[InlineKeyboardButton(“🧪 Пройти тест снова”, callback_data=“start_quiz”)],
+[InlineKeyboardButton(“🔄 Повторить тему”, callback_data=“repeat_grammar”)],
+[InlineKeyboardButton(“← Меню уровня”, callback_data=“level_menu”)],
+])
+
+def kb_words(idx, total):
+rows = []
+if idx + 1 < total:
+rows.append([InlineKeyboardButton(f”Следующее слово → ({idx+1}/{total})”, callback_data=“word_next”)])
+if idx > 0:
+rows.append([InlineKeyboardButton(“← Предыдущее”, callback_data=“word_prev”)])
+if idx + 1 >= total:
+rows.append([InlineKeyboardButton(“🔄 Начать сначала”, callback_data=“words_start”)])
+rows.append([InlineKeyboardButton(“← Меню уровня”, callback_data=“level_menu”)])
+return InlineKeyboardMarkup(rows)
+
+def kb_phrases(idx, total):
+rows = []
+if idx + 1 < total:
+rows.append([InlineKeyboardButton(f”Следующая фраза → ({idx+1}/{total})”, callback_data=“phrase_next”)])
+if idx > 0:
+rows.append([InlineKeyboardButton(“← Предыдущая”, callback_data=“phrase_prev”)])
+if idx + 1 >= total:
+rows.append([InlineKeyboardButton(“🔄 Начать сначала”, callback_data=“phrases_start”)])
+rows.append([InlineKeyboardButton(“← Меню уровня”, callback_data=“level_menu”)])
+return InlineKeyboardMarkup(rows)
+
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ТЕКСТЫ
+
+# ══════════════════════════════════════════════════════════════════════════════
+
+def text_welcome():
+return (
+“👋 *Привет! Я EnglishMaster* — твой личный репетитор английского языка\!\n\n”
+“📖 *Что я умею:*\n”
+“• Объяснять грамматику с примерами\n”
+“• Давать задания для тетради\n”
+“• Проводить тесты на 15 вопросов\n”
+“• Учить слова с транскрипцией\n”
+“• Учить полезные фразы\n”
+“• Следить за твоим прогрессом\n\n”
+“🔬 *Основан на:*\n”
+“📊 Система CEFR \(A1→C1\)\n”
+“🧠 Spaced Repetition \(интервальное повторение\)\n”
+“💬 Коммуникативный метод\n\n”
+“Готов начать? 🚀”
+)
+
+def text_about():
+return (
+“ℹ️ *О боте EnglishMaster*\n\n”
+“Бот создан для системного изучения английского языка\.\n\n”
+“📋 *Система CEFR:*\n”
+“🟢 A1 — Начинающий\n”
+“🟡 A2 — Элементарный\n”
+“🔵 B1 — Средний\n”
+“🟣 B2 — Выше среднего\n”
+“🔴 C1 — Продвинутый\n\n”
+“📌 *В каждом уровне:*\n”
+“✅ Грамматические темы с объяснениями\n”
+“✅ 10 заданий для отработки в тетради\n”
+“✅ 15\-вопросный тест с проверкой\n”
+“✅ 80\-100 слов с транскрипцией\n”
+“✅ 50 полезных фраз\n”
+“✅ Система прогресса”
+)
+
+def text_level_menu(lvl, progress):
+d = DATA[lvl]
+pct = progress[“progress”][lvl]
+bar = “█” * (pct // 10) + “░” * (10 - pct // 10)
+return (
+f”🎯 *{d[‘name’]}*\n\n”
+f”*{d[‘desc’]}*\n\n”
+f”📊 *Прогресс уровня:*\n”
+f”`{bar}` {pct}%\n\n”
+f”📌 Грамматических тем: *{len(d[‘grammar’])}*\n”
+f”📚 Слов: *{len(d[‘words’])}*\n”
+f”💬 Фраз: *{len(d[‘phrases’])}*\n\n”
+f”Выбери раздел:”
+)
+
+def text_grammar_list(lvl, completed):
+d = DATA[lvl]
+lines = [f”📖 *Грамматика — {lvl}*\n\nВыбери тему:\n”]
+for i, g in enumerate(d[“grammar”]):
+status = “✅” if i in completed else “📌”
+lines.append(f”{status} {i+1}\. {escape_md(g[‘title’])}”)
+lines.append(”\n_Каждая тема: объяснение → задания → тест_”)
+return “\n”.join(lines)
+
+def text_grammar_topic(lvl, idx):
+g = DATA[lvl][“grammar”][idx]
+total = len(DATA[lvl][“grammar”])
+header = f”📌 *Тема {idx+1}/{total}: {escape_md(g[‘title’])}*\n\n”
+return header + g[“explanation”]
+
+def text_tasks(lvl, idx):
+g = DATA[lvl][“grammar”][idx]
+lines = [f”📝 *Задания для тетради*\n_{escape_md(g[‘title’])}_\n\n”
+f”*Выполни в тетради, затем вернись для теста:*\n”]
+for i, task in enumerate(g[“tasks”]):
+lines.append(f”*{i+1}\.* {escape_md(task)}”)
+lines.append(”\n✅ *Выполнил все задания? Переходи к тесту\!*”)
+return “\n”.join(lines)
+
+def text_quiz_question(lvl, g_idx, q_idx, score):
+quiz = DATA[lvl][“grammar”][g_idx][“quiz”]
+q = quiz[q_idx]
+total = len(quiz)
+bar = “█” * q_idx + “░” * (total - q_idx)
+return (
+f”🧪 *Вопрос {q_idx+1} из {total}*\n”
+f”`{bar}`\n”
+f”✅ Правильных: {score}\n\n”
+f”*{escape_md(q[‘q’])}*”
+)
+
+def text_word(lvl, idx):
+words = DATA[lvl][“words”]
+total = len(words)
+w = words[idx]
+en, ru, tr = w
+pct = round((idx / total) * 100)
+bar = “█” * (pct // 10) + “░” * (10 - pct // 10)
+return (
+f”📚 *Словарный запас — {lvl}*\n”
+f”Слово *{idx+1}* из *{total}*\n”
+f”`{bar}` {pct}%\n\n”
+f”🔤 *{escape_md(en)}*\n”
+f”🔊 *{escape_md(tr)}*\n”
+f”🇷🇺 {escape_md(ru)}”
+)
+
+def text_phrase(lvl, idx):
+phrases = DATA[lvl][“phrases”]
+total = len(phrases)
+p = phrases[idx]
+en, ru = p
+return (
+f”💬 *Фразы — {lvl}*\n”
+f”Фраза *{idx+1}* из *{total}*\n\n”
+f”🇬🇧 *{escape_md(en)}*\n\n”
+f”🇷🇺 *{escape_md(ru)}*”
+)
+
+def text_result(score, total, lvl):
+pct = round((score / total) * 100)
+if pct >= 90:
+emoji, msg = “🏆”, “Превосходно\! Ты отлично усвоил тему\!”
+elif pct >= 70:
+emoji, msg = “🌟”, “Хорошо\! Небольшое повторение и будет идеально\.”
+elif pct >= 50:
+emoji, msg = “💪”, “Неплохо\! Рекомендую повторить объяснение\.”
+else:
+emoji, msg = “📖”, “Стоит повторить тему\. Не сдавайся\!”
+bar = “█” * (pct // 10) + “░” * (10 - pct // 10)
+return (
+f”{emoji} *Результат теста*\n\n”
+f”`{bar}` *{pct}%*\n\n”
+f”✅ Правильных: *{score}* из *{total}*\n”
+f”❌ Ошибок: *{total - score}*\n\n”
+f”{msg}”
+)
+
+def text_progress(u):
+lines = [“📊 *Мой прогресс*\n”]
+for lvl in LEVELS:
+pct = u[“progress”][lvl]
+bar = “█” * (pct // 10) + “░” * (10 - pct // 10)
+completed = len(u[“completed_topics”][lvl])
+total = len(DATA[lvl][“grammar”])
+lines.append(
+f”{LEVEL_EMOJI[lvl]} *{lvl}* `{bar}` {pct}%\n”
+f”   Тем пройдено: {completed}/{total}\n”
+)
+return “\n”.join(lines)
+
+def escape_md(text):
+“”“Экранируем спецсимволы MarkdownV2”””
+chars = r”_*[]()~`>#+-=|{}.!”
+for ch in chars:
+text = text.replace(ch, f”\{ch}”)
+return text
+
+# ══════════════════════════════════════════════════════════════════════════════
+
+# HANDLERS
+
+# ══════════════════════════════════════════════════════════════════════════════
+
+async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+uid = update.effective_user.id
+get_user(uid)
+await update.message.reply_text(
+text_welcome(),
+parse_mode=“MarkdownV2”,
+reply_markup=kb_start()
+)
+
+async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+await update.message.reply_text(
+“📋 *Команды бота:*\n\n”
+“/start — Главное меню\n”
+“/level — Сменить уровень\n”
+“/grammar — Грамматика текущего уровня\n”
+“/words — Словарный запас\n”
+“/phrases — Фразы\n”
+“/progress — Мой прогресс\n”
+“/help — Помощь”,
+parse_mode=“MarkdownV2”
+)
+
+async def cmd_progress(update: Update, context: ContextTypes.DEFAULT_TYPE):
+uid = update.effective_user.id
+u = get_user(uid)
+await update.message.reply_text(text_progress(u), parse_mode=“MarkdownV2”)
+
+async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+query = update.callback_query
+await query.answer()
+uid = query.from_user.id
+u = get_user(uid)
+data = query.data
+
+```
+# ── Главное меню ──────────────────────────────────────────────────────
+if data == "choose_level":
+    await query.edit_message_text(
+        "🎯 *Выбери свой уровень:*\n\n"
+        "🟢 A1 — Начинающий \\(с нуля\\)\n"
+        "🟡 A2 — Элементарный\n"
+        "🔵 B1 — Средний\n"
+        "🟣 B2 — Выше среднего\n"
+        "🔴 C1 — Продвинутый",
+        parse_mode="MarkdownV2",
+        reply_markup=kb_choose_level()
     )
 
-
-async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🆘 *Помощь*\n\n"
-        "Доступные команды:\n"
-        "/start — Запустить бота\n"
-        "/help — Показать помощь\n"
-        "/app — Открыть приложение\n\n"
-        "📱 Нажми кнопку *«Открыть приложение»* в меню чтобы начать учиться!",
-        parse_mode="Markdown"
+elif data == "about":
+    await query.edit_message_text(
+        text_about(),
+        parse_mode="MarkdownV2",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("🚀 Начать обучение", callback_data="choose_level")]
+        ])
     )
 
-
-async def app_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [[InlineKeyboardButton(
-        text="📱 Открыть English Learn",
-        web_app=WebAppInfo(url=WEBAPP_URL)
-    )]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(
-        "👇 Нажми чтобы открыть приложение:",
-        reply_markup=reply_markup
+# ── Выбор уровня ──────────────────────────────────────────────────────
+elif data.startswith("level_"):
+    lvl = data.split("_")[1]
+    u["level"] = lvl
+    u["word_idx"] = 0
+    u["phrase_idx"] = 0
+    await query.edit_message_text(
+        text_level_menu(lvl, u),
+        parse_mode="MarkdownV2",
+        reply_markup=kb_level_menu(lvl)
     )
 
+elif data == "level_menu":
+    lvl = u["level"]
+    if not lvl:
+        await query.edit_message_text("Выбери уровень:", reply_markup=kb_choose_level())
+        return
+    await query.edit_message_text(
+        text_level_menu(lvl, u),
+        parse_mode="MarkdownV2",
+        reply_markup=kb_level_menu(lvl)
+    )
 
-async def setup_menu(application):
-    await application.bot.set_chat_menu_button(
-        menu_button=MenuButtonWebApp(
-            text="📱 Учиться",
-            web_app=WebAppInfo(url=WEBAPP_URL)
+elif data == "my_progress":
+    await query.edit_message_text(
+        text_progress(u),
+        parse_mode="MarkdownV2",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("← Назад", callback_data="level_menu")]
+        ])
+    )
+
+# ── Грамматика ────────────────────────────────────────────────────────
+elif data == "grammar_list":
+    lvl = u["level"]
+    completed = u["completed_topics"][lvl]
+    await query.edit_message_text(
+        text_grammar_list(lvl, completed),
+        parse_mode="MarkdownV2",
+        reply_markup=kb_grammar_list_dynamic(lvl, completed)
+    )
+
+elif data.startswith("grammar_"):
+    idx = int(data.split("_")[1])
+    lvl = u["level"]
+    u["grammar_idx"] = idx
+    total = len(DATA[lvl]["grammar"])
+    await query.edit_message_text(
+        text_grammar_topic(lvl, idx),
+        parse_mode="MarkdownV2",
+        reply_markup=kb_grammar_topic(idx, total)
+    )
+
+elif data == "repeat_grammar":
+    idx = u["grammar_idx"]
+    lvl = u["level"]
+    total = len(DATA[lvl]["grammar"])
+    await query.edit_message_text(
+        text_grammar_topic(lvl, idx),
+        parse_mode="MarkdownV2",
+        reply_markup=kb_grammar_topic(idx, total)
+    )
+
+# ── Задания ───────────────────────────────────────────────────────────
+elif data == "show_tasks":
+    lvl = u["level"]
+    idx = u["grammar_idx"]
+    await query.edit_message_text(
+        text_tasks(lvl, idx),
+        parse_mode="MarkdownV2",
+        reply_markup=kb_after_tasks(idx)
+    )
+
+# ── Квиз ─────────────────────────────────────────────────────────────
+elif data == "start_quiz":
+    u["quiz_q"] = 0
+    u["quiz_score"] = 0
+    lvl = u["level"]
+    g_idx = u["grammar_idx"]
+    await query.edit_message_text(
+        text_quiz_question(lvl, g_idx, 0, 0),
+        parse_mode="MarkdownV2",
+        reply_markup=kb_quiz_options(DATA[lvl]["grammar"][g_idx]["quiz"][0]["opts"], 0)
+    )
+
+elif data.startswith("quiz_ans_"):
+    chosen = int(data.split("_")[2])
+    lvl = u["level"]
+    g_idx = u["grammar_idx"]
+    q_idx = u["quiz_q"]
+    quiz = DATA[lvl]["grammar"][g_idx]["quiz"]
+    correct_idx = quiz[q_idx]["ans"]
+    total_q = len(quiz)
+
+    letters = ["A", "B", "C", "D"]
+    if chosen == correct_idx:
+        u["quiz_score"] += 1
+        fb = f"✅ *Правильно\\!*\n_{escape_md(quiz[q_idx]['opts'][correct_idx])}_"
+    else:
+        fb = (
+            f"❌ *Неверно\\.* Правильный ответ:\n"
+            f"_{escape_md(quiz[q_idx]['opts'][correct_idx])}_"
         )
+
+    u["quiz_q"] += 1
+    next_q = u["quiz_q"]
+
+    if next_q < total_q:
+        # Показываем фидбек, потом следующий вопрос
+        await query.edit_message_text(
+            text_quiz_question(lvl, g_idx, q_idx, u["quiz_score"]) + f"\n\n{fb}",
+            parse_mode="MarkdownV2",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton(
+                    f"Следующий вопрос ({next_q+1}/{total_q}) →",
+                    callback_data="quiz_next"
+                )]
+            ])
+        )
+    else:
+        # Результаты
+        score = u["quiz_score"]
+        # Обновляем прогресс
+        pct_add = round((score / total_q) * 20)
+        u["progress"][lvl] = min(100, u["progress"][lvl] + pct_add)
+        if g_idx not in u["completed_topics"][lvl]:
+            u["completed_topics"][lvl].append(g_idx)
+
+        await query.edit_message_text(
+            text_result(score, total_q, lvl),
+            parse_mode="MarkdownV2",
+            reply_markup=kb_after_result()
+        )
+
+elif data == "quiz_next":
+    lvl = u["level"]
+    g_idx = u["grammar_idx"]
+    q_idx = u["quiz_q"]
+    score = u["quiz_score"]
+    await query.edit_message_text(
+        text_quiz_question(lvl, g_idx, q_idx, score),
+        parse_mode="MarkdownV2",
+        reply_markup=kb_quiz_options(DATA[lvl]["grammar"][g_idx]["quiz"][q_idx]["opts"], q_idx)
     )
 
+# ── Слова ─────────────────────────────────────────────────────────────
+elif data == "words_start":
+    u["word_idx"] = 0
+    lvl = u["level"]
+    total = len(DATA[lvl]["words"])
+    await query.edit_message_text(
+        text_word(lvl, 0),
+        parse_mode="MarkdownV2",
+        reply_markup=kb_words(0, total)
+    )
+
+elif data == "word_next":
+    lvl = u["level"]
+    total = len(DATA[lvl]["words"])
+    if u["word_idx"] + 1 < total:
+        u["word_idx"] += 1
+    await query.edit_message_text(
+        text_word(lvl, u["word_idx"]),
+        parse_mode="MarkdownV2",
+        reply_markup=kb_words(u["word_idx"], total)
+    )
+
+elif data == "word_prev":
+    lvl = u["level"]
+    total = len(DATA[lvl]["words"])
+    if u["word_idx"] > 0:
+        u["word_idx"] -= 1
+    await query.edit_message_text(
+        text_word(lvl, u["word_idx"]),
+        parse_mode="MarkdownV2",
+        reply_markup=kb_words(u["word_idx"], total)
+    )
+
+# ── Фразы ─────────────────────────────────────────────────────────────
+elif data == "phrases_start":
+    u["phrase_idx"] = 0
+    lvl = u["level"]
+    total = len(DATA[lvl]["phrases"])
+    await query.edit_message_text(
+        text_phrase(lvl, 0),
+        parse_mode="MarkdownV2",
+        reply_markup=kb_phrases(0, total)
+    )
+
+elif data == "phrase_next":
+    lvl = u["level"]
+    total = len(DATA[lvl]["phrases"])
+    if u["phrase_idx"] + 1 < total:
+        u["phrase_idx"] += 1
+    await query.edit_message_text(
+        text_phrase(lvl, u["phrase_idx"]),
+        parse_mode="MarkdownV2",
+        reply_markup=kb_phrases(u["phrase_idx"], total)
+    )
+
+elif data == "phrase_prev":
+    lvl = u["level"]
+    total = len(DATA[lvl]["phrases"])
+    if u["phrase_idx"] > 0:
+        u["phrase_idx"] -= 1
+    await query.edit_message_text(
+        text_phrase(lvl, u["phrase_idx"]),
+        parse_mode="MarkdownV2",
+        reply_markup=kb_phrases(u["phrase_idx"], total)
+    )
+```
+
+def kb_grammar_list_dynamic(lvl, completed):
+d = DATA[lvl]
+rows = []
+for i, g in enumerate(d[“grammar”]):
+status = “✅” if i in completed else “📌”
+rows.append([InlineKeyboardButton(
+f”{status} {i+1}. {g[‘title’]}”,
+callback_data=f”grammar_{i}”
+)])
+rows.append([InlineKeyboardButton(“← Назад в меню”, callback_data=“level_menu”)])
+return InlineKeyboardMarkup(rows)
+
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ЗАПУСК БОТА
+
+# ══════════════════════════════════════════════════════════════════════════════
 
 def main():
-    app = Application.builder().token(TOKEN).post_init(setup_menu).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("help", help_cmd))
-    app.add_handler(CommandHandler("app", app_cmd))
-    print("✅ Бот запущен!")
-    app.run_polling()
+app = Application.builder().token(BOT_TOKEN).build()
 
+```
+app.add_handler(CommandHandler("start", cmd_start))
+app.add_handler(CommandHandler("help", cmd_help))
+app.add_handler(CommandHandler("progress", cmd_progress))
+app.add_handler(CallbackQueryHandler(callback_handler))
 
-if __name__ == "__main__":
-    main()
+print("✅ EnglishMaster Bot запущен!")
+app.run_polling(allowed_updates=Update.ALL_TYPES)
+```
+
+if **name** == “**main**”:
+main()
