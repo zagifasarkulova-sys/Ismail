@@ -1,8 +1,26 @@
 import logging
 import sys
 import os
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+
+class _HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"OK")
+
+    def log_message(self, format, *args):
+        pass
+
+
+def _start_health_server():
+    port = int(os.environ.get("PORT", 8000))
+    server = HTTPServer(("0.0.0.0", port), _HealthHandler)
+    server.serve_forever()
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
@@ -474,6 +492,8 @@ async def cb_phrase_sit(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 
 def main():
+    threading.Thread(target=_start_health_server, daemon=True).start()
+
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
