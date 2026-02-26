@@ -1,912 +1,1623 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+
+<html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>IELTS Master</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EnglishMaster Bot — Прототип</title>
 <style>
-  :root {
-    --bg: #0A0F1E;
-    --card: #111827;
-    --card2: #1a2236;
-    --accent: #4F8EF7;
-    --accent2: #7C5CFC;
-    --gold: #F5C518;
-    --green: #22D3A5;
-    --red: #FF5A7E;
-    --text: #F0F4FF;
-    --muted: #7B8AB0;
-    --border: rgba(79,142,247,0.15);
-  }	∙	{ margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+
+:root {
+–bg: #0a0e1a;
+–card: #111827;
+–card2: #1a2235;
+–accent: #4f8ef7;
+–accent2: #7c3aed;
+–green: #10b981;
+–yellow: #f59e0b;
+–red: #ef4444;
+–text: #e2e8f0;
+–muted: #64748b;
+–border: #1e293b;
+}
+
+- { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-font-family: ‘DM Sans’, sans-serif;
 background: var(–bg);
 color: var(–text);
+font-family: ‘Space Grotesk’, sans-serif;
 min-height: 100vh;
-overflow-x: hidden;
-}
-/* BG decoration */
-body::before {
-content: ‘’;
-position: fixed;
-top: -200px; right: -200px;
-width: 500px; height: 500px;
-background: radial-gradient(circle, rgba(79,142,247,0.08) 0%, transparent 70%);
-pointer-events: none;
-z-index: 0;
-}
-/* SCREENS */
-.screen { display: none; min-height: 100vh; position: relative; z-index: 1; }
-.screen.active { display: block; }
-/* ===== HOME SCREEN ===== */
-.home-header {
-padding: 30px 20px 0;
-display: flex;
-justify-content: space-between;
-align-items: flex-start;
-}
-.user-greeting { }
-.user-greeting .hello { font-size: 13px; color: var(–muted); }
-.user-greeting .name { font-size: 20px; font-weight: 600; margin-top: 2px; }
-.score-badge {
-background: linear-gradient(135deg, var(–accent2), var(–accent));
-border-radius: 16px;
-padding: 10px 16px;
-text-align: center;
-}
-.score-badge .label { font-size: 10px; color: rgba(255,255,255,0.7); }
-.score-badge .score { font-size: 22px; font-weight: 700; font-family: ‘Playfair Display’, serif; }
-.hero-section {
-margin: 30px 20px 0;
-background: linear-gradient(135deg, #1a2a4a, #1e1a3a);
-border: 1px solid var(–border);
-border-radius: 24px;
-padding: 24px;
-position: relative;
-overflow: hidden;
-}
-.hero-section::after {
-content: ‘📖’;
-position: absolute;
-right: 20px; bottom: 10px;
-font-size: 60px;
-opacity: 0.12;
-}
-.hero-section h2 {
-font-family: ‘Playfair Display’, serif;
-font-size: 22px;
-line-height: 1.3;
-margin-bottom: 8px;
-}
-.hero-section p { font-size: 13px; color: var(–muted); margin-bottom: 18px; }
-.hero-btn {
-background: linear-gradient(135deg, var(–accent), var(–accent2));
-border: none;
-border-radius: 14px;
-color: white;
-font-size: 14px;
-font-weight: 600;
-padding: 12px 22px;
-cursor: pointer;
-transition: transform 0.15s, opacity 0.15s;
-}
-.hero-btn:active { transform: scale(0.97); opacity: 0.9; }
-/* Progress bars */
-.progress-section { padding: 24px 20px 0; }
-.progress-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 14px; }
-.progress-item {
-display: flex;
-align-items: center;
-gap: 12px;
-margin-bottom: 14px;
-}
-.progress-icon { font-size: 20px; width: 36px; text-align: center; }
-.progress-info { flex: 1; }
-.progress-label { font-size: 13px; font-weight: 500; margin-bottom: 5px; }
-.progress-bar-wrap { background: rgba(255,255,255,0.08); border-radius: 6px; height: 6px; }
-.progress-bar { height: 6px; border-radius: 6px; transition: width 0.8s ease; }
-.progress-val { font-size: 12px; color: var(–muted); min-width: 28px; text-align: right; }
-/* Sections grid */
-.sections-grid { padding: 24px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.section-card {
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 20px;
-padding: 18px 16px;
-cursor: pointer;
-transition: transform 0.15s, background 0.15s;
-position: relative;
-overflow: hidden;
-}
-.section-card:active { transform: scale(0.97); background: var(–card2); }
-.section-card .s-icon { font-size: 28px; margin-bottom: 10px; }
-.section-card .s-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-.section-card .s-count { font-size: 11px; color: var(–muted); }
-.section-card .s-band {
-position: absolute;
-top: 12px; right: 12px;
-background: rgba(79,142,247,0.15);
-border-radius: 8px;
-padding: 3px 8px;
-font-size: 12px;
-font-weight: 700;
-color: var(–accent);
-}
-/* Bottom nav */
-.bottom-nav {
-position: fixed;
-bottom: 0; left: 0; right: 0;
-background: rgba(10,15,30,0.95);
-backdrop-filter: blur(20px);
-border-top: 1px solid var(–border);
-display: flex;
-padding: 10px 0 20px;
-z-index: 100;
-}
-.nav-item {
-flex: 1;
 display: flex;
 flex-direction: column;
 align-items: center;
-gap: 4px;
-cursor: pointer;
-padding: 6px;
-transition: opacity 0.15s;
-}
-.nav-item .nav-icon { font-size: 22px; }
-.nav-item .nav-label { font-size: 10px; color: var(–muted); }
-.nav-item.active .nav-label { color: var(–accent); }
-.nav-item.active .nav-icon { filter: drop-shadow(0 0 6px var(–accent)); }
-.page-spacer { height: 100px; }
-/* ===== SECTION SCREEN ===== */
-.section-header {
-padding: 20px 20px 0;
-display: flex;
-align-items: center;
-gap: 12px;
-}
-.back-btn {
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 12px;
-width: 38px; height: 38px;
-display: flex; align-items: center; justify-content: center;
-cursor: pointer;
-font-size: 18px;
-}
-.section-title { font-size: 20px; font-weight: 700; }
-.lesson-list { padding: 20px; }
-.lesson-card {
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 18px;
-padding: 16px 18px;
-margin-bottom: 12px;
-cursor: pointer;
-display: flex;
-align-items: center;
-gap: 14px;
-transition: transform 0.15s;
-}
-.lesson-card:active { transform: scale(0.98); }
-.lesson-num {
-width: 40px; height: 40px;
-border-radius: 12px;
-display: flex; align-items: center; justify-content: center;
-font-size: 16px; font-weight: 700;
-background: linear-gradient(135deg, var(–accent), var(–accent2));
-flex-shrink: 0;
-}
-.lesson-num.done { background: linear-gradient(135deg, var(–green), #16a08a); }
-.lesson-num.locked { background: rgba(255,255,255,0.07); color: var(–muted); }
-.lesson-info { flex: 1; }
-.lesson-name { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
-.lesson-desc { font-size: 12px; color: var(–muted); }
-.lesson-arrow { color: var(–muted); font-size: 16px; }
-/* ===== QUIZ SCREEN ===== */
-.quiz-header {
 padding: 20px;
-display: flex;
-align-items: center;
-gap: 12px;
 }
-.quiz-progress-wrap { flex: 1; }
-.quiz-progress-bar-bg { background: rgba(255,255,255,0.1); border-radius: 6px; height: 6px; }
-.quiz-progress-fill { height: 6px; border-radius: 6px; background: linear-gradient(90deg, var(–accent), var(–accent2)); transition: width 0.4s; }
-.quiz-count { font-size: 13px; color: var(–muted); margin-bottom: 6px; }
-.question-card {
-margin: 10px 20px 0;
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 24px;
-padding: 24px;
-}
-.question-type { font-size: 11px; color: var(–accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-.question-text { font-size: 17px; font-weight: 600; line-height: 1.5; font-family: ‘Playfair Display’, serif; }
-.options-list { padding: 16px 20px; }
-.option-btn {
-width: 100%;
-background: var(–card);
-border: 1.5px solid var(–border);
-border-radius: 16px;
-padding: 14px 16px;
-color: var(–text);
-font-size: 14px;
-font-weight: 500;
-text-align: left;
-cursor: pointer;
-margin-bottom: 10px;
-transition: all 0.15s;
-display: flex;
-align-items: center;
-gap: 10px;
-}
-.option-btn:active { transform: scale(0.99); }
-.option-btn.selected { border-color: var(–accent); background: rgba(79,142,247,0.12); }
-.option-btn.correct { border-color: var(–green); background: rgba(34,211,165,0.12); }
-.option-btn.wrong { border-color: var(–red); background: rgba(255,90,126,0.1); }
-.opt-letter {
-width: 28px; height: 28px;
-border-radius: 8px;
-background: rgba(255,255,255,0.07);
-display: flex; align-items: center; justify-content: center;
-font-size: 12px; font-weight: 700;
-flex-shrink: 0;
-}
-.option-btn.correct .opt-letter { background: var(–green); color: #000; }
-.option-btn.wrong .opt-letter { background: var(–red); color: #fff; }
-.explain-box {
-margin: 0 20px 16px;
-background: rgba(34,211,165,0.08);
-border: 1px solid rgba(34,211,165,0.2);
-border-radius: 16px;
-padding: 14px 16px;
-font-size: 13px;
-color: var(–green);
-display: none;
-}
-.explain-box.show { display: block; }
-.next-btn {
-margin: 0 20px;
-width: calc(100% - 40px);
-background: linear-gradient(135deg, var(–accent), var(–accent2));
-border: none;
-border-radius: 16px;
-color: white;
-font-size: 15px;
-font-weight: 600;
-padding: 15px;
-cursor: pointer;
-display: none;
-transition: transform 0.15s;
-}
-.next-btn.show { display: block; }
-.next-btn:active { transform: scale(0.98); }
-/* ===== RESULT SCREEN ===== */
-.result-screen-inner {
-padding: 60px 24px 40px;
-text-align: center;
-min-height: 100vh;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-}
-.result-emoji { font-size: 70px; margin-bottom: 20px; animation: bounce 0.6s ease; }
-@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }
-.result-title { font-family: ‘Playfair Display’, serif; font-size: 28px; margin-bottom: 8px; }
-.result-sub { color: var(–muted); font-size: 15px; margin-bottom: 30px; }
-.result-score-big {
-font-size: 72px;
-font-weight: 700;
+
+h1 {
 font-family: ‘Playfair Display’, serif;
+font-size: 2rem;
 background: linear-gradient(135deg, var(–accent), var(–accent2));
 -webkit-background-clip: text;
 -webkit-text-fill-color: transparent;
-margin-bottom: 6px;
-}
-.result-band { font-size: 14px; color: var(–muted); margin-bottom: 36px; }
-.result-tip {
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 20px;
-padding: 18px 20px;
-text-align: left;
-margin-bottom: 24px;
-width: 100%;
-}
-.result-tip-label { font-size: 11px; color: var(–accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-.result-tip-text { font-size: 14px; line-height: 1.6; }
-.result-actions { display: flex; gap: 12px; width: 100%; }
-.result-btn {
-flex: 1;
-padding: 14px;
-border-radius: 16px;
-font-size: 14px;
-font-weight: 600;
-cursor: pointer;
-transition: transform 0.15s;
-border: none;
-}
-.result-btn:active { transform: scale(0.97); }
-.result-btn.primary { background: linear-gradient(135deg, var(–accent), var(–accent2)); color: white; }
-.result-btn.secondary { background: var(–card); border: 1px solid var(–border); color: var(–text); }
-/* ===== SPEAKING SCREEN ===== */
-.phrases-list { padding: 16px 20px; }
-.phrase-card {
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 18px;
-padding: 16px 18px;
-margin-bottom: 12px;
-}
-.phrase-cat { font-size: 10px; color: var(–accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-.phrase-en { font-size: 15px; font-weight: 600; margin-bottom: 6px; font-family: ‘Playfair Display’, serif; }
-.phrase-ru { font-size: 13px; color: var(–muted); margin-bottom: 10px; }
-.phrase-example { font-size: 12px; color: rgba(240,244,255,0.6); font-style: italic; line-height: 1.5; }
-/* ===== PROGRESS SCREEN ===== */
-.progress-screen-content { padding: 20px; }
-.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-.stat-box {
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 18px;
-padding: 18px;
+margin-bottom: 8px;
 text-align: center;
 }
-.stat-box .stat-val { font-size: 28px; font-weight: 700; font-family: ‘Playfair Display’, serif; background: linear-gradient(135deg, var(–accent), var(–accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.stat-box .stat-label { font-size: 12px; color: var(–muted); margin-top: 4px; }
-.tips-section { margin-top: 4px; }
-.tips-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 14px; }
-.tip-item {
+
+.subtitle {
+color: var(–muted);
+font-size: 0.85rem;
+text-align: center;
+margin-bottom: 24px;
+}
+
+/* PHONE MOCKUP */
+.phone {
+width: 380px;
+max-width: 100%;
 background: var(–card);
+border-radius: 24px;
 border: 1px solid var(–border);
-border-radius: 16px;
-padding: 14px 16px;
-margin-bottom: 10px;
-font-size: 13px;
+overflow: hidden;
+box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+}
+
+.phone-header {
+background: linear-gradient(135deg, #1a2235, #0f172a);
+padding: 14px 18px;
+display: flex;
+align-items: center;
+gap: 10px;
+border-bottom: 1px solid var(–border);
+}
+
+.bot-avatar {
+width: 38px; height: 38px;
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+border-radius: 50%;
+display: flex; align-items: center; justify-content: center;
+font-size: 18px;
+flex-shrink: 0;
+}
+
+.bot-name { font-weight: 600; font-size: 0.95rem; }
+.bot-status { font-size: 0.72rem; color: var(–green); }
+
+.chat-area {
+height: 520px;
+overflow-y: auto;
+padding: 16px;
+display: flex;
+flex-direction: column;
+gap: 10px;
+scroll-behavior: smooth;
+}
+
+.chat-area::-webkit-scrollbar { width: 4px; }
+.chat-area::-webkit-scrollbar-thumb { background: var(–border); border-radius: 4px; }
+
+/* MESSAGES */
+.msg-bot, .msg-user {
+max-width: 90%;
+padding: 10px 14px;
+border-radius: 14px;
+font-size: 0.87rem;
+line-height: 1.5;
+animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.msg-bot {
+background: var(–card2);
+border: 1px solid var(–border);
+border-bottom-left-radius: 4px;
+align-self: flex-start;
+}
+
+.msg-user {
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+border-bottom-right-radius: 4px;
+align-self: flex-end;
+}
+
+.msg-bot strong { color: var(–accent); }
+.msg-bot .highlight { color: var(–yellow); font-weight: 600; }
+.msg-bot .good { color: var(–green); font-weight: 600; }
+.msg-bot .bad { color: var(–red); }
+
+/* KEYBOARD */
+.keyboard {
+padding: 10px 12px 14px;
+display: flex;
+flex-wrap: wrap;
+gap: 7px;
+background: #0d1321;
+border-top: 1px solid var(–border);
+}
+
+.btn {
+background: var(–card2);
+border: 1px solid var(–border);
+color: var(–text);
+padding: 8px 12px;
+border-radius: 10px;
+font-size: 0.8rem;
+font-family: ‘Space Grotesk’, sans-serif;
+cursor: pointer;
+transition: all 0.2s;
+flex: 1 1 auto;
+text-align: center;
+min-width: 80px;
+}
+
+.btn:hover { background: var(–accent); border-color: var(–accent); color: white; transform: translateY(-1px); }
+.btn.primary { background: linear-gradient(135deg, var(–accent), var(–accent2)); border: none; color: white; font-weight: 600; }
+.btn.primary:hover { opacity: 0.85; transform: translateY(-1px); }
+.btn.green { background: var(–green); border: none; color: white; font-weight: 600; }
+.btn.red { background: var(–red); border: none; color: white; }
+.btn.full { flex: 1 1 100%; }
+
+/* PROGRESS BAR */
+.progress-wrap { padding: 0 16px 8px; }
+.progress-label { font-size: 0.72rem; color: var(–muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
+.progress-bar { height: 5px; background: var(–border); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(–accent), var(–accent2)); transition: width 0.5s ease; }
+
+/* GRAMMAR EXPLANATION CARD */
+.grammar-card {
+background: #0d1a2e;
+border: 1px solid #1e3a5f;
+border-radius: 12px;
+padding: 12px;
+margin-top: 6px;
+font-size: 0.82rem;
 line-height: 1.6;
 }
-.tip-item strong { color: var(–accent); }
+
+.grammar-card .title { color: var(–accent); font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; }
+.grammar-card .formula { background: #0a1628; padding: 6px 10px; border-radius: 7px; font-family: monospace; color: var(–yellow); margin: 6px 0; font-size: 0.8rem; }
+.grammar-card .example { color: #94a3b8; font-style: italic; margin-top: 4px; }
+.grammar-card .example span { color: var(–green); }
+
+/* WORD CARD */
+.word-card {
+background: #0f1c2e;
+border: 1px solid #1e3a5f;
+border-radius: 12px;
+padding: 10px 14px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-top: 4px;
+}
+
+.word-en { font-weight: 700; font-size: 1rem; color: var(–accent); }
+.word-ru { font-size: 0.85rem; color: var(–muted); }
+.word-transcr { font-size: 0.75rem; color: #475569; }
+
+/* STATS */
+.stats-row { display: flex; gap: 8px; margin-top: 6px; }
+.stat-box { flex: 1; background: var(–card2); border: 1px solid var(–border); border-radius: 10px; padding: 8px; text-align: center; }
+.stat-box .val { font-size: 1.2rem; font-weight: 700; color: var(–accent); }
+.stat-box .lbl { font-size: 0.68rem; color: var(–muted); }
+
+/* SCREENS */
+.screen { display: none; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* QUIZ */
+.quiz-option {
+background: var(–card2);
+border: 1px solid var(–border);
+color: var(–text);
+padding: 10px 14px;
+border-radius: 10px;
+font-size: 0.82rem;
+cursor: pointer;
+transition: all 0.2s;
+text-align: left;
+flex: 1 1 100%;
+font-family: ‘Space Grotesk’, sans-serif;
+}
+
+.quiz-option:hover { border-color: var(–accent); background: #0d1a2e; }
+.quiz-option.correct { background: #052e16; border-color: var(–green); color: var(–green); }
+.quiz-option.wrong { background: #2d0909; border-color: var(–red); color: var(–red); }
+
+.section-title {
+font-size: 0.7rem;
+font-weight: 700;
+letter-spacing: 0.1em;
+color: var(–muted);
+text-transform: uppercase;
+padding: 4px 0 2px;
+}
+
+/* LEVEL BADGE */
+.level-badge {
+display: inline-block;
+padding: 2px 8px;
+border-radius: 99px;
+font-size: 0.7rem;
+font-weight: 700;
+margin-left: 6px;
+}
+
+.badge-a1 { background: #052e16; color: var(–green); }
+.badge-a2 { background: #0c2a1a; color: #34d399; }
+.badge-b1 { background: #0f1f3d; color: var(–accent); }
+.badge-b2 { background: #1a0f3d; color: #a78bfa; }
+.badge-c1 { background: #2d0909; color: var(–red); }
+
+.emoji { font-size: 1.1rem; }
+
+/* TASK CARD */
+.task-card {
+background: #0a1628;
+border: 1px solid #1e3a5f;
+border-radius: 10px;
+padding: 10px 12px;
+margin-top: 4px;
+font-size: 0.8rem;
+line-height: 1.6;
+color: #94a3b8;
+}
+
+.task-card .task-num { color: var(–yellow); font-weight: 700; margin-right: 6px; }
 </style>
+
 </head>
-<body><!-- ===== HOME ===== --><div id="screen-home" class="screen active">
-  <div class="home-header">
-    <div class="user-greeting">
-      <div class="hello">👋 Hello,</div>
-      <div class="name" id="user-name">Student</div>
+<body>
+
+<h1>📚 EnglishMaster Bot</h1>
+<p class="subtitle">Прототип Telegram-бота для изучения английского языка</p>
+
+<div class="phone">
+  <div class="phone-header">
+    <div class="bot-avatar">🎓</div>
+    <div>
+      <div class="bot-name">EnglishMaster</div>
+      <div class="bot-status">● онлайн</div>
     </div>
-    <div class="score-badge">
-      <div class="label">Your Band</div>
-      <div class="score" id="home-band">–</div>
-    </div>
-  </div><div class="hero-section" style="margin-top:20px;">
-    <h2>Ready for<br>your IELTS?</h2>
-    <p>Start today's practice session and improve your score step by step.</p>
-    <button class="hero-btn" onclick="openSection('speaking')">🎯 Start Practice</button>
-  </div><div class="progress-section">
-    <h3>📊 Your Progress</h3>
-    <div class="progress-item">
-      <div class="progress-icon">🎤</div>
-      <div class="progress-info">
-        <div class="progress-label">Speaking</div>
-        <div class="progress-bar-wrap"><div class="progress-bar" id="pb-speaking" style="width:0%;background:linear-gradient(90deg,#4F8EF7,#7C5CFC)"></div></div>
+  </div>
+
+  <!-- ========== SCREEN 0: WELCOME ========== -->
+
+  <div id="s0" class="screen active">
+    <div class="chat-area" id="chat0">
+      <div class="msg-bot">
+        👋 <strong>Привет! Я EnglishMaster</strong> — твой личный репетитор английского языка!<br><br>
+        Я помогу тебе:<br>
+        📖 <strong>Изучить грамматику</strong> с объяснениями<br>
+        📝 <strong>Выполнить задания</strong> в тетради<br>
+        🧪 <strong>Пройти тесты</strong> для закрепления<br>
+        📚 <strong>Учить слова</strong> — сотни новых слов<br>
+        💬 <strong>Учить фразы</strong> на каждый день<br>
+        📊 <strong>Следить за прогрессом</strong><br><br>
+        Это приложение основано на системе <span class="highlight">CEFR</span> (A1→C1) и методике <span class="highlight">Spaced Repetition</span> для лучшего запоминания.<br><br>
+        Готов начать? 🚀
       </div>
-      <div class="progress-val" id="pv-speaking">0%</div>
     </div>
-    <div class="progress-item">
-      <div class="progress-icon">👂</div>
-      <div class="progress-info">
-        <div class="progress-label">Listening</div>
-        <div class="progress-bar-wrap"><div class="progress-bar" id="pb-listening" style="width:0%;background:linear-gradient(90deg,#22D3A5,#4F8EF7)"></div></div>
+    <div class="keyboard">
+      <button class="btn primary full" onclick="go(1)">🚀 Начать обучение</button>
+      <button class="btn full" onclick="go('about')">ℹ️ О боте</button>
+    </div>
+  </div>
+
+  <!-- ========== SCREEN: ABOUT ========== -->
+
+  <div id="sabout" class="screen">
+    <div class="chat-area">
+      <div class="msg-bot">
+        <strong>📖 О боте EnglishMaster</strong><br><br>
+        Бот создан на основе:<br>
+        🔹 <strong>CEFR</strong> — европейская система уровней (A1, A2, B1, B2, C1)<br>
+        🔹 <strong>Spaced Repetition</strong> — интервальное повторение слов<br>
+        🔹 <strong>Коммуникативный метод</strong> — живые фразы и диалоги<br>
+        🔹 <strong>Грамматика в контексте</strong> — не правила, а примеры<br><br>
+        <strong>В каждом уровне:</strong><br>
+        ✅ Грамматические темы с объяснениями<br>
+        ✅ 10 заданий для отработки в тетради<br>
+        ✅ 15-вопросный тест<br>
+        ✅ 100+ слов с переводом<br>
+        ✅ 50+ полезных фраз<br>
+        ✅ Система прогресса и достижений
       </div>
-      <div class="progress-val" id="pv-listening">0%</div>
     </div>
-    <div class="progress-item">
-      <div class="progress-icon">📖</div>
-      <div class="progress-info">
-        <div class="progress-label">Reading</div>
-        <div class="progress-bar-wrap"><div class="progress-bar" id="pb-reading" style="width:0%;background:linear-gradient(90deg,#F5C518,#FF5A7E)"></div></div>
+    <div class="keyboard">
+      <button class="btn primary full" onclick="go(1)">🚀 Начать обучение</button>
+      <button class="btn full" onclick="go(0)">← Назад</button>
+    </div>
+  </div>
+
+  <!-- ========== SCREEN 1: CHOOSE LEVEL ========== -->
+
+  <div id="s1" class="screen">
+    <div class="chat-area">
+      <div class="msg-bot">
+        <strong>🎯 Выбери свой уровень</strong><br><br>
+        Не знаешь свой уровень? Начни с теста или выбери интуитивно:
+        <div class="stats-row" style="margin-top:10px;">
+          <div class="stat-box"><div class="val">5</div><div class="lbl">Уровней</div></div>
+          <div class="stat-box"><div class="val">25+</div><div class="lbl">Тем грамм.</div></div>
+          <div class="stat-box"><div class="val">500+</div><div class="lbl">Слов</div></div>
+          <div class="stat-box"><div class="val">250+</div><div class="lbl">Фраз</div></div>
+        </div>
       </div>
-      <div class="progress-val" id="pv-reading">0%</div>
     </div>
-    <div class="progress-item">
-      <div class="progress-icon">✍️</div>
-      <div class="progress-info">
-        <div class="progress-label">Writing</div>
-        <div class="progress-bar-wrap"><div class="progress-bar" id="pb-writing" style="width:0%;background:linear-gradient(90deg,#FF5A7E,#7C5CFC)"></div></div>
-      </div>
-      <div class="progress-val" id="pv-writing">0%</div>
-    </div>
-  </div><div class="sections-grid">
-    <div class="section-card" onclick="openSection('speaking')">
-      <div class="s-icon">🎤</div>
-      <div class="s-name">Speaking</div>
-      <div class="s-count">12 topics</div>
-      <div class="s-band" id="band-speaking">–</div>
-    </div>
-    <div class="section-card" onclick="openSection('listening')">
-      <div class="s-icon">👂</div>
-      <div class="s-name">Listening</div>
-      <div class="s-count">10 tests</div>
-      <div class="s-band" id="band-listening">–</div>
-    </div>
-    <div class="section-card" onclick="openSection('reading')">
-      <div class="s-icon">📖</div>
-      <div class="s-name">Reading</div>
-      <div class="s-count">8 texts</div>
-      <div class="s-band" id="band-reading">–</div>
-    </div>
-    <div class="section-card" onclick="openSection('writing')">
-      <div class="s-icon">✍️</div>
-      <div class="s-name">Writing</div>
-      <div class="s-count">6 tasks</div>
-      <div class="s-band" id="band-writing">–</div>
+    <div class="keyboard">
+      <button class="btn full" onclick="setLevel('A1'); go(2)">🟢 A1 — Начинающий</button>
+      <button class="btn full" onclick="setLevel('A2'); go(2)">🟡 A2 — Элементарный</button>
+      <button class="btn full" onclick="setLevel('B1'); go(2)">🔵 B1 — Средний</button>
+      <button class="btn full" onclick="setLevel('B2'); go(2)">🟣 B2 — Выше среднего</button>
+      <button class="btn full" onclick="setLevel('C1'); go(2)">🔴 C1 — Продвинутый</button>
+      <button class="btn full" style="margin-top:4px;font-size:0.75rem;" onclick="go(0)">← Назад</button>
     </div>
   </div>
-  <div class="page-spacer"></div>
-</div><!-- ===== SECTION ===== --><div id="screen-section" class="screen">
-  <div class="section-header">
-    <div class="back-btn" onclick="showHome()">←</div>
-    <div class="section-title" id="section-title">Section</div>
-  </div>
-  <div class="lesson-list" id="lesson-list"></div>
-  <div class="page-spacer"></div>
-</div><!-- ===== SPEAKING PHRASES ===== --><div id="screen-phrases" class="screen">
-  <div class="section-header">
-    <div class="back-btn" onclick="showScreen('screen-section')">←</div>
-    <div class="section-title">Key Phrases</div>
-  </div>
-  <div class="phrases-list" id="phrases-list"></div>
-  <div class="page-spacer"></div>
-</div><!-- ===== QUIZ ===== --><div id="screen-quiz" class="screen">
-  <div class="quiz-header">
-    <div class="back-btn" onclick="showScreen('screen-section')">←</div>
-    <div class="quiz-progress-wrap">
-      <div class="quiz-count" id="quiz-count">Question 1 of 5</div>
-      <div class="quiz-progress-bar-bg"><div class="quiz-progress-fill" id="quiz-fill" style="width:20%"></div></div>
+
+  <!-- ========== SCREEN 2: LEVEL MENU ========== -->
+
+  <div id="s2" class="screen">
+    <div class="chat-area" id="chat2">
+    </div>
+    <div class="keyboard" id="kb2">
     </div>
   </div>
-  <div class="question-card">
-    <div class="question-type" id="q-type">Grammar</div>
-    <div class="question-text" id="q-text"></div>
-  </div>
-  <div class="options-list" id="options-list"></div>
-  <div class="explain-box" id="explain-box"></div>
-  <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next →</button>
-  <div class="page-spacer"></div>
-</div><!-- ===== RESULT ===== --><div id="screen-result" class="screen">
-  <div class="result-screen-inner">
-    <div class="result-emoji" id="result-emoji">🎉</div>
-    <div class="result-title" id="result-title">Well Done!</div>
-    <div class="result-sub" id="result-sub">You completed the quiz</div>
-    <div class="result-score-big" id="result-score">8</div>
-    <div class="result-band" id="result-band">IELTS Band Score</div>
-    <div class="result-tip">
-      <div class="result-tip-label">💡 Study Tip</div>
-      <div class="result-tip-text" id="result-tip-text"></div>
+
+  <!-- ========== SCREEN 3: GRAMMAR LIST ========== -->
+
+  <div id="s3" class="screen">
+    <div class="chat-area" id="chat3">
     </div>
-    <div class="result-actions">
-      <button class="result-btn secondary" onclick="showHome()">🏠 Home</button>
-      <button class="result-btn primary" id="retry-btn">🔄 Try Again</button>
+    <div class="keyboard" id="kb3">
     </div>
   </div>
-</div><!-- ===== PROGRESS ===== --><div id="screen-progress" class="screen">
-  <div class="section-header" style="margin-bottom:4px;">
-    <div class="section-title">My Progress</div>
-  </div>
-  <div class="progress-screen-content">
-    <div class="stat-grid">
-      <div class="stat-box"><div class="stat-val" id="stat-tests">0</div><div class="stat-label">Tests Done</div></div>
-      <div class="stat-box"><div class="stat-val" id="stat-streak">0🔥</div><div class="stat-label">Day Streak</div></div>
-      <div class="stat-box"><div class="stat-val" id="stat-correct">0%</div><div class="stat-label">Accuracy</div></div>
-      <div class="stat-box"><div class="stat-val" id="stat-band">–</div><div class="stat-label">Est. Band</div></div>
+
+  <!-- ========== SCREEN 4: GRAMMAR TOPIC ========== -->
+
+  <div id="s4" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-label"><span id="prog-label">Прогресс уровня</span><span id="prog-val">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
     </div>
-    <div class="tips-section">
-      <h3>🎯 IELTS Tips</h3>
-      <div class="tip-item"><strong>Speaking:</strong> Use linking words like "Furthermore", "In contrast", "As a result" to connect your ideas smoothly.</div>
-      <div class="tip-item"><strong>Writing Task 2:</strong> Always write 3 body paragraphs. State your opinion in the first sentence of each paragraph.</div>
-      <div class="tip-item"><strong>Reading:</strong> Skim the text first (30 sec), then read questions, then find answers. Never read word by word.</div>
-      <div class="tip-item"><strong>Listening:</strong> Read the questions BEFORE listening. Predict what type of answer you need (number, name, place).</div>
-      <div class="tip-item"><strong>Vocabulary:</strong> Learn 10 new words daily. Always learn them in context — with a sentence, not just definition.</div>
+    <div class="chat-area" id="chat4">
+    </div>
+    <div class="keyboard" id="kb4">
     </div>
   </div>
-  <div class="page-spacer"></div>
-</div><!-- Bottom Nav --><div class="bottom-nav">
-  <div class="nav-item active" id="nav-home" onclick="showHome()">
-    <div class="nav-icon">🏠</div>
-    <div class="nav-label">Home</div>
+
+  <!-- ========== SCREEN 5: TASKS ========== -->
+
+  <div id="s5" class="screen">
+    <div class="chat-area" id="chat5">
+    </div>
+    <div class="keyboard" id="kb5">
+    </div>
   </div>
-  <div class="nav-item" id="nav-practice" onclick="openSection('reading')">
-    <div class="nav-icon">📚</div>
-    <div class="nav-label">Practice</div>
+
+  <!-- ========== SCREEN 6: QUIZ ========== -->
+
+  <div id="s6" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-label"><span id="quiz-label">Вопрос 1 из 15</span><span id="quiz-score">✅ 0</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="quiz-fill" style="width:0%"></div></div>
+    </div>
+    <div class="chat-area" id="chat6">
+    </div>
+    <div class="keyboard" id="kb6">
+    </div>
   </div>
-  <div class="nav-item" id="nav-speaking" onclick="openSection('speaking')">
-    <div class="nav-icon">🎤</div>
-    <div class="nav-label">Speaking</div>
+
+  <!-- ========== SCREEN 7: WORDS ========== -->
+
+  <div id="s7" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Словарный запас</span><span id="word-count">0 слов изучено</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="word-fill" style="width:0%"></div></div>
+    </div>
+    <div class="chat-area" id="chat7">
+    </div>
+    <div class="keyboard" id="kb7">
+    </div>
   </div>
-  <div class="nav-item" id="nav-progress" onclick="showProgress()">
-    <div class="nav-icon">📊</div>
-    <div class="nav-label">Progress</div>
+
+  <!-- ========== SCREEN 8: PHRASES ========== -->
+
+  <div id="s8" class="screen">
+    <div class="chat-area" id="chat8">
+    </div>
+    <div class="keyboard" id="kb8">
+    </div>
   </div>
-</div><script>
-// ===== DATA =====
-const SECTIONS = {
-  speaking: {
-    title: '🎤 Speaking',
-    lessons: [
-      { name: 'Part 1 - About Yourself', desc: 'Talk about your life, hobbies, family', type: 'phrases', key: 'intro' },
-      { name: 'Part 2 - Cue Card', desc: 'Describe a person, place or experience', type: 'phrases', key: 'cuecard' },
-      { name: 'Part 3 - Discussion', desc: 'Abstract topics & opinion questions', type: 'phrases', key: 'discussion' },
-      { name: 'Fluency & Coherence', desc: 'Linking words & discourse markers', type: 'quiz', quiz: 'speaking_grammar' },
-      { name: 'Lexical Resource', desc: 'Advanced vocabulary for speaking', type: 'phrases', key: 'vocab' },
+
+  <!-- ========== SCREEN 9: RESULTS ========== -->
+
+  <div id="s9" class="screen">
+    <div class="chat-area" id="chat9">
+    </div>
+    <div class="keyboard" id="kb9">
+    </div>
+  </div>
+
+</div>
+
+<p style="color:var(--muted);font-size:0.75rem;text-align:center;margin-top:16px;">📱 Прототип бота · Кликай по кнопкам как в Telegram</p>
+
+<script>
+// ========== STATE ==========
+let currentLevel = 'A1';
+let currentGrammarIdx = 0;
+let quizQ = 0;
+let quizScore = 0;
+let wordIdx = 0;
+let phraseIdx = 0;
+let userProgress = { A1:0, A2:0, B1:0, B2:0, C1:0 };
+
+// ========== DATA ==========
+const DATA = {
+  A1: {
+    name: 'A1 — Начинающий',
+    badge: 'badge-a1',
+    desc: 'Первые шаги в английском. Базовые слова, простые предложения, знакомство.',
+    grammar: [
+      {
+        title: 'Глагол to be (am / is / are)',
+        short: 'Глагол "быть"',
+        explanation: `<div class="grammar-card">
+          <div class="title">📌 Глагол TO BE — am / is / are</div>
+          <b>Когда использовать:</b><br>
+          Когда говоришь КТО ты или КАКОЙ ты (имя, профессия, национальность, возраст, описание).
+          <div class="formula">I + am | He/She/It + is | You/We/They + are</div>
+          <b>Утверждение:</b>
+          <div class="formula">I am a student. (Я студент.)</div>
+          <div class="formula">She is happy. (Она счастлива.)</div>
+          <div class="formula">They are friends. (Они друзья.)</div>
+          <b>Отрицание:</b>
+          <div class="formula">I am not = I'm not</div>
+          <div class="formula">He is not = He isn't</div>
+          <div class="formula">They are not = They aren't</div>
+          <b>Вопрос:</b>
+          <div class="formula">Am I...? | Is he/she/it...? | Are you/we/they...?</div>
+          <div class="example"><span>Are you a teacher?</span> — Ты учитель?</div>
+          <div class="example"><span>Is she from Russia?</span> — Она из России?</div>
+          <div class="example"><span>Yes, I am. / No, I'm not.</span> — Да. / Нет.</div>
+        </div>`,
+        tasks: [
+          'Заполни пропуски: I ___ a student. She ___ my friend.',
+          'Составь предложение: (he / a doctor / is)',
+          'Сделай отрицание: "They are happy" → ...',
+          'Переведи: Я не устал.',
+          'Составь вопрос из слов: (you / are / tired)?',
+          'Заполни: We ___ from Moscow. It ___ cold today.',
+          'Составь 3 предложения о себе с am/is/are.',
+          'Исправь ошибку: "She am a nurse."',
+          'Переведи диалог: — Ты студент? — Да, я студент.',
+          'Составь краткие ответы: Are you tired? (Yes) / Is he happy? (No)',
+        ],
+        quiz: [
+          { q: 'Выбери правильный вариант: I ___ a student.', opts: ['am','is','are','be'], ans: 0 },
+          { q: 'She ___ from London.', opts: ['am','are','is','be'], ans: 2 },
+          { q: 'Как сказать "Они не друзья"?', opts: ["They aren't friends","They isn't friends","They am not friends","They be not friends"], ans: 0 },
+          { q: 'They ___ happy today.', opts: ['am','is','are','be'], ans: 2 },
+          { q: '"___ she a doctor?" — правильный вопрос?', opts: ['Am','Is','Are','Be'], ans: 1 },
+          { q: 'Краткий ответ на "Are you ready?" (отрицательный):', opts: ['No, I am not','No, I is not','No, he isn\'t','Yes, I am'], ans: 0 },
+          { q: 'We ___ students.', opts: ['am','is','are','been'], ans: 2 },
+          { q: 'Найди ошибку: "He are my brother."', opts: ['He is my brother','He am my brother','He be my brother','He was my brother'], ans: 0 },
+          { q: 'It ___ cold outside.', opts: ['am','are','is','be'], ans: 2 },
+          { q: 'Краткий ответ: Is she tired? (Yes)', opts: ['Yes, she is','Yes, she are','Yes, she am','Yes, is she'], ans: 0 },
+          { q: 'Отрицание от "I am busy":',opts: ["I'm not busy","I isn't busy","I aren't busy","I amn't busy"], ans: 0 },
+          { q: 'You and I ___ a team.',opts: ['am','is','are','be'], ans: 2 },
+          { q: 'Вопрос к "He is a pilot":',opts: ['Is he a pilot?','Are he a pilot?','Am he a pilot?','He is a pilot?'], ans: 0 },
+          { q: 'Переведи: "Мы не в школе."',opts: ["We aren't at school","We isn't at school","We am not at school","We not are at school"], ans: 0 },
+          { q: 'My name ___ Alex.',opts: ['am','are','is','be'], ans: 2 },
+        ]
+      },
+      {
+        title: 'Present Simple (настоящее время)',
+        short: 'Present Simple',
+        explanation: `<div class="grammar-card">
+          <div class="title">📌 Present Simple — настоящее простое время</div>
+          <b>Когда использовать:</b><br>
+          Регулярные действия, привычки, факты, расписание.
+          <div class="formula">I / You / We / They + V (base form)</div>
+          <div class="formula">He / She / It + V + s/es</div>
+          <b>Примеры:</b>
+          <div class="formula">I work every day. (Я работаю каждый день.)</div>
+          <div class="formula">She works in a café. (Она работает в кафе.)</div>
+          <b>Отрицание:</b>
+          <div class="formula">I don't + V | He doesn't + V</div>
+          <div class="example"><span>I don't like fish.</span> | <span>He doesn't play football.</span></div>
+          <b>Вопрос:</b>
+          <div class="formula">Do I/you/we/they...? | Does he/she/it...?</div>
+          <div class="example"><span>Do you like pizza?</span> — Yes, I do. / No, I don't.</div>
+          <div class="example"><span>Does she live here?</span> — Yes, she does.</div>
+          <b>Маркеры:</b> always, usually, often, sometimes, never, every day/week
+        </div>`,
+        tasks: [
+          'Поставь глагол в нужную форму: He (go) ___ to school every day.',
+          'Сделай отрицание: "She likes coffee" → ...',
+          'Составь вопрос: (you / live / in Moscow)?',
+          'Переведи: Они никогда не едят мясо.',
+          'Исправь: "He don\'t work here."',
+          'Составь 5 предложений о своей рутине.',
+          'Заполни: She ___ (watch) TV every evening.',
+          'Вопрос-ответ: Does he play guitar? → No, ...',
+          'Добавь -s или -es: teach, go, wash, play, study',
+          'Переведи: Мы обычно пьём чай утром.',
+        ],
+        quiz: [
+          { q: 'She ___ English every day.', opts: ['study','studies','studied','studying'], ans: 1 },
+          { q: 'They ___ play football on weekends.', opts: ["don't","doesn't","isn't","aren't"], ans: 0 },
+          { q: '___ he work here?', opts: ['Do','Does','Is','Are'], ans: 1 },
+          { q: 'I ___ like spinach.', opts: ["don't","doesn't","isn't","aren't"], ans: 0 },
+          { q: 'He always ___ to bed at 10.', opts: ['go','goes','going','went'], ans: 1 },
+          { q: 'Маркер Present Simple:', opts: ['yesterday','now','every day','tomorrow'], ans: 2 },
+          { q: '"Does she live here?" — краткий ответ (Yes):', opts: ['Yes, she does','Yes, she do','Yes, she is','Yes, she lives'], ans: 0 },
+          { q: 'We ___ meet every Friday.', opts: ['do','does','are','am'], ans: 0 },
+          { q: '"He teach English" — ошибка:', opts: ['He teaches English','He is teach English','He do teach English','He teaching English'], ans: 0 },
+          { q: 'She never ___ late.', opts: ['is','are','am','be'], ans: 0 },
+          { q: 'My cat ___ milk every morning.', opts: ['drink','drinks','drinking','drank'], ans: 1 },
+          { q: '___ they speak Russian?', opts: ['Do','Does','Are','Is'], ans: 0 },
+          { q: 'Отрицание: "She plays piano" →', opts: ["She doesn't play piano","She don't plays piano","She isn't play piano","She not plays piano"], ans: 0 },
+          { q: 'He usually ___ to work by bus.', opts: ['go','goes','going','gone'], ans: 1 },
+          { q: 'Переведи: "Она не говорит по-французски."', opts: ["She doesn't speak French","She don't speak French","She isn't speak French","She speaks not French"], ans: 0 },
+        ]
+      },
+      {
+        title: 'Артикли a / an / the',
+        short: 'Артикли a/an/the',
+        explanation: `<div class="grammar-card">
+          <div class="title">📌 Артикли: A / AN / THE</div>
+          <b>A / AN</b> — неопределённый артикль (первое упоминание, один из многих)
+          <div class="formula">A + согласная: a dog, a cat, a book</div>
+          <div class="formula">AN + гласная (a,e,i,o,u): an apple, an egg, an hour</div>
+          <div class="example"><span>I have a dog.</span> (у меня есть собака — любая)</div>
+          <b>THE</b> — определённый артикль (конкретный, уже известный)
+          <div class="formula">the + любой: the dog, the sun, the moon</div>
+          <div class="example"><span>The dog is in the garden.</span> (та самая собака)</div>
+          <b>Без артикля:</b> имена, страны*, языки, множественное число (в общем смысле)
+          <div class="example"><span>I love cats.</span> (вообще) | <span>Dogs are friendly.</span></div>
+        </div>`,
+        tasks: [
+          'Вставь a, an или the: I saw ___ cat. ___ cat was black.',
+          'Вставь: She is ___ engineer. He is ___ honest man.',
+          'Вставь: ___ sun rises in the east.',
+          'Убери лишний артикль: "I love the music."',
+          'Составь 3 пары предложений: первое с a/an, второе с the.',
+          'Вставь: Can I have ___ apple and ___ orange?',
+          'Вставь: We went to ___ park. ___ park was beautiful.',
+          'Переведи: Это книга. Книга интересная.',
+          'Исправь: "She is an university student."',
+          'Когда НЕ нужен артикль? Приведи 5 примеров.',
+        ],
+        quiz: [
+          { q: '"___ apple a day keeps the doctor away."', opts: ['A','An','The','—'], ans: 1 },
+          { q: '"She is ___ teacher."', opts: ['a','an','the','—'], ans: 0 },
+          { q: '"___ Eiffel Tower is in Paris."', opts: ['A','An','The','—'], ans: 2 },
+          { q: '"I love ___ dogs." (в общем смысле)', opts: ['a','an','the','—'], ans: 3 },
+          { q: '"He is ___ honest person."', opts: ['a','an','the','—'], ans: 1 },
+          { q: '"Pass me ___ salt, please." (конкретная солонка)', opts: ['a','an','the','—'], ans: 2 },
+          { q: '"I have ___ umbrella."', opts: ['a','an','the','—'], ans: 1 },
+          { q: '"___ Russia is a big country."', opts: ['A','An','The','—'], ans: 3 },
+          { q: '"She plays ___ piano." (инструмент)', opts: ['a','an','the','—'], ans: 2 },
+          { q: '"I saw ___ movie yesterday. ___ movie was great."', opts: ['a/the','the/a','an/the','the/the'], ans: 0 },
+          { q: '"He is ___ engineer."', opts: ['a','an','the','—'], ans: 0 },
+          { q: '"___ sun is bright today."', opts: ['A','An','The','—'], ans: 2 },
+          { q: '"She speaks ___ English."', opts: ['a','an','the','—'], ans: 3 },
+          { q: '"There is ___ cat under the table."', opts: ['a','an','the','—'], ans: 0 },
+          { q: '"Can I open ___ window?" (конкретное)', opts: ['a','an','the','—'], ans: 2 },
+        ]
+      }
+    ],
+    words: [
+      {en:'hello',ru:'привет',tr:'[həˈloʊ]'},{en:'goodbye',ru:'до свидания',tr:'[ˌɡʊdˈbaɪ]'},
+      {en:'please',ru:'пожалуйста',tr:'[pliːz]'},{en:'thank you',ru:'спасибо',tr:'[θæŋk juː]'},
+      {en:'sorry',ru:'извините',tr:'[ˈsɒri]'},{en:'yes',ru:'да',tr:'[jɛs]'},
+      {en:'no',ru:'нет',tr:'[noʊ]'},{en:'good',ru:'хороший',tr:'[ɡʊd]'},
+      {en:'bad',ru:'плохой',tr:'[bæd]'},{en:'big',ru:'большой',tr:'[bɪɡ]'},
+      {en:'small',ru:'маленький',tr:'[smɔːl]'},{en:'hot',ru:'горячий',tr:'[hɒt]'},
+      {en:'cold',ru:'холодный',tr:'[koʊld]'},{en:'fast',ru:'быстрый',tr:'[fɑːst]'},
+      {en:'slow',ru:'медленный',tr:'[sloʊ]'},{en:'new',ru:'новый',tr:'[njuː]'},
+      {en:'old',ru:'старый',tr:'[oʊld]'},{en:'happy',ru:'счастливый',tr:'[ˈhæpi]'},
+      {en:'sad',ru:'грустный',tr:'[sæd]'},{en:'tired',ru:'усталый',tr:'[ˈtaɪəd]'},
+      {en:'hungry',ru:'голодный',tr:'[ˈhʌŋɡri]'},{en:'thirsty',ru:'хочу пить',tr:'[ˈθɜːsti]'},
+      {en:'water',ru:'вода',tr:'[ˈwɔːtər]'},{en:'food',ru:'еда',tr:'[fuːd]'},
+      {en:'bread',ru:'хлеб',tr:'[brɛd]'},{en:'milk',ru:'молоко',tr:'[mɪlk]'},
+      {en:'apple',ru:'яблоко',tr:'[ˈæpəl]'},{en:'orange',ru:'апельсин',tr:'[ˈɒrɪndʒ]'},
+      {en:'cat',ru:'кошка',tr:'[kæt]'},{en:'dog',ru:'собака',tr:'[dɒɡ]'},
+      {en:'house',ru:'дом',tr:'[haʊs]'},{en:'school',ru:'школа',tr:'[skuːl]'},
+      {en:'book',ru:'книга',tr:'[bʊk]'},{en:'pen',ru:'ручка',tr:'[pɛn]'},
+      {en:'table',ru:'стол',tr:'[ˈteɪbəl]'},{en:'chair',ru:'стул',tr:'[tʃɛr]'},
+      {en:'door',ru:'дверь',tr:'[dɔːr]'},{en:'window',ru:'окно',tr:'[ˈwɪndoʊ]'},
+      {en:'car',ru:'машина',tr:'[kɑːr]'},{en:'bus',ru:'автобус',tr:'[bʌs]'},
+      {en:'day',ru:'день',tr:'[deɪ]'},{en:'night',ru:'ночь',tr:'[naɪt]'},
+      {en:'morning',ru:'утро',tr:'[ˈmɔːrnɪŋ]'},{en:'evening',ru:'вечер',tr:'[ˈiːvnɪŋ]'},
+      {en:'one',ru:'один',tr:'[wʌn]'},{en:'two',ru:'два',tr:'[tuː]'},
+      {en:'three',ru:'три',tr:'[θriː]'},{en:'four',ru:'четыре',tr:'[fɔːr]'},
+      {en:'five',ru:'пять',tr:'[faɪv]'},{en:'ten',ru:'десять',tr:'[tɛn]'},
+      {en:'red',ru:'красный',tr:'[rɛd]'},{en:'blue',ru:'синий',tr:'[bluː]'},
+      {en:'green',ru:'зелёный',tr:'[ɡriːn]'},{en:'white',ru:'белый',tr:'[waɪt]'},
+      {en:'black',ru:'чёрный',tr:'[blæk]'},{en:'yellow',ru:'жёлтый',tr:'[ˈjɛloʊ]'},
+      {en:'mother',ru:'мама',tr:'[ˈmʌðər]'},{en:'father',ru:'папа',tr:'[ˈfɑːðər]'},
+      {en:'friend',ru:'друг',tr:'[frɛnd]'},{en:'teacher',ru:'учитель',tr:'[ˈtiːtʃər]'},
+      {en:'student',ru:'студент',tr:'[ˈstjuːdənt]'},{en:'doctor',ru:'врач',tr:'[ˈdɒktər]'},
+      {en:'work',ru:'работать',tr:'[wɜːrk]'},{en:'go',ru:'идти',tr:'[ɡoʊ]'},
+      {en:'eat',ru:'есть',tr:'[iːt]'},{en:'drink',ru:'пить',tr:'[drɪŋk]'},
+      {en:'sleep',ru:'спать',tr:'[sliːp]'},{en:'read',ru:'читать',tr:'[riːd]'},
+      {en:'write',ru:'писать',tr:'[raɪt]'},{en:'listen',ru:'слушать',tr:'[ˈlɪsən]'},
+      {en:'speak',ru:'говорить',tr:'[spiːk]'},{en:'see',ru:'видеть',tr:'[siː]'},
+      {en:'know',ru:'знать',tr:'[noʊ]'},{en:'want',ru:'хотеть',tr:'[wɒnt]'},
+      {en:'like',ru:'нравиться',tr:'[laɪk]'},{en:'love',ru:'любить',tr:'[lʌv]'},
+      {en:'have',ru:'иметь',tr:'[hæv]'},{en:'need',ru:'нуждаться',tr:'[niːd]'},
+      {en:'come',ru:'приходить',tr:'[kʌm]'},{en:'give',ru:'давать',tr:'[ɡɪv]'},
+      {en:'take',ru:'брать',tr:'[teɪk]'},{en:'make',ru:'делать',tr:'[meɪk]'},
+      {en:'Monday',ru:'понедельник',tr:'[ˈmʌndeɪ]'},{en:'Tuesday',ru:'вторник',tr:'[ˈtjuːzdeɪ]'},
+      {en:'Wednesday',ru:'среда',tr:'[ˈwɛnzdeɪ]'},{en:'Thursday',ru:'четверг',tr:'[ˈθɜːrzdeɪ]'},
+      {en:'Friday',ru:'пятница',tr:'[ˈfraɪdeɪ]'},{en:'Saturday',ru:'суббота',tr:'[ˈsætərdeɪ]'},
+      {en:'Sunday',ru:'воскресенье',tr:'[ˈsʌndeɪ]'},{en:'January',ru:'январь',tr:'[ˈdʒænjueri]'},
+      {en:'summer',ru:'лето',tr:'[ˈsʌmər]'},{en:'winter',ru:'зима',tr:'[ˈwɪntər]'},
+      {en:'spring',ru:'весна',tr:'[sprɪŋ]'},{en:'autumn',ru:'осень',tr:'[ˈɔːtəm]'},
+      {en:'city',ru:'город',tr:'[ˈsɪti]'},{en:'country',ru:'страна',tr:'[ˈkʌntri]'},
+      {en:'street',ru:'улица',tr:'[striːt]'},{en:'park',ru:'парк',tr:'[pɑːrk]'},
+    ],
+    phrases: [
+      {en:'What is your name?',ru:'Как тебя зовут?'},{en:'My name is ...',ru:'Меня зовут ...'},
+      {en:'How are you?',ru:'Как дела?'},{en:'I\'m fine, thanks!',ru:'Хорошо, спасибо!'},
+      {en:'Where are you from?',ru:'Откуда ты?'},{en:'I\'m from Russia.',ru:'Я из России.'},
+      {en:'How old are you?',ru:'Сколько тебе лет?'},{en:'I\'m 20 years old.',ru:'Мне 20 лет.'},
+      {en:'Nice to meet you!',ru:'Приятно познакомиться!'},{en:'Me too!',ru:'Взаимно!'},
+      {en:'Good morning!',ru:'Доброе утро!'},{en:'Good night!',ru:'Спокойной ночи!'},
+      {en:'See you later!',ru:'До встречи!'},{en:'Excuse me.',ru:'Извините.'},
+      {en:'Can you help me?',ru:'Вы можете мне помочь?'},{en:'I don\'t understand.',ru:'Я не понимаю.'},
+      {en:'Please repeat.',ru:'Повторите, пожалуйста.'},{en:'Speak slowly, please.',ru:'Говорите медленно, пожалуйста.'},
+      {en:'What does ... mean?',ru:'Что значит ...?'},{en:'How do you say ... in English?',ru:'Как сказать ... по-английски?'},
+      {en:'I\'m a student.',ru:'Я студент.'},{en:'I\'m learning English.',ru:'Я учу английский.'},
+      {en:'I like music.',ru:'Мне нравится музыка.'},{en:'I don\'t like vegetables.',ru:'Мне не нравятся овощи.'},
+      {en:'What time is it?',ru:'Который час?'},{en:'It\'s two o\'clock.',ru:'Два часа.'},
+      {en:'How much is it?',ru:'Сколько это стоит?'},{en:'It\'s five dollars.',ru:'Пять долларов.'},
+      {en:'Where is the toilet?',ru:'Где туалет?'},{en:'Straight ahead.',ru:'Прямо.'},
+      {en:'Turn left / right.',ru:'Повернуть налево / направо.'},{en:'I need a taxi.',ru:'Мне нужно такси.'},
+      {en:'I\'m hungry.',ru:'Я голоден.'},{en:'Can I have the menu?',ru:'Можно меню?'},
+      {en:'I\'ll have a coffee.',ru:'Я возьму кофе.'},{en:'The bill, please.',ru:'Счёт, пожалуйста.'},
+      {en:'I love you.',ru:'Я люблю тебя.'},{en:'Happy birthday!',ru:'С днём рождения!'},
+      {en:'Congratulations!',ru:'Поздравляю!'},{en:'Good luck!',ru:'Удачи!'},
+      {en:'No problem!',ru:'Не проблема!'},{en:'Of course!',ru:'Конечно!'},
+      {en:'I think so.',ru:'Я так думаю.'},{en:'I don\'t know.',ru:'Я не знаю.'},
+      {en:'I\'m sorry.',ru:'Мне жаль.'},{en:'It\'s OK.',ru:'Всё хорошо.'},
     ]
   },
-  listening: {
-    title: '👂 Listening',
-    lessons: [
-      { name: 'Section 1 - Conversations', desc: 'Everyday social conversations', type: 'quiz', quiz: 'listening1' },
-      { name: 'Section 2 - Monologue', desc: 'Public information talks', type: 'quiz', quiz: 'listening2' },
-      { name: 'Section 3 - Discussion', desc: 'Academic discussion between students', type: 'quiz', quiz: 'listening1' },
-      { name: 'Section 4 - Lecture', desc: 'Academic monologue or lecture', type: 'quiz', quiz: 'listening2' },
-      { name: 'Keywords & Synonyms', desc: 'Recognise paraphrasing in audio', type: 'quiz', quiz: 'speaking_grammar' },
+  A2: {
+    name: 'A2 — Элементарный',
+    badge: 'badge-a2',
+    desc: 'Прошлое время, сравнения, модальные глаголы. Уже можешь общаться на базовые темы.',
+    grammar: [
+      {
+        title: 'Past Simple (прошедшее время)',
+        short: 'Past Simple',
+        explanation: `<div class="grammar-card">
+          <div class="title">📌 Past Simple — прошедшее простое время</div>
+          <b>Когда:</b> действие завершилось в прошлом (yesterday, last week, ago, in 2020)
+          <div class="formula">Правильные глаголы: V + ed</div>
+          <div class="formula">work → worked | play → played | study → studied</div>
+          <div class="formula">Неправильные: go → went | eat → ate | see → saw</div>
+          <b>Отрицание:</b>
+          <div class="formula">did not (didn't) + V (base)</div>
+          <div class="example"><span>I didn't go to school yesterday.</span></div>
+          <b>Вопрос:</b>
+          <div class="formula">Did + subject + V (base)?</div>
+          <div class="example"><span>Did you see that film?</span> — Yes, I did. / No, I didn't.</div>
+          <b>Маркеры:</b> yesterday, last night/week/year, ago, in [год], when I was...
+        </div>`,
+        tasks: [
+          'Поставь в Past Simple: She (visit) ___ her grandmother last Sunday.',
+          'Составь отрицание: "He played tennis yesterday" → ...',
+          'Составь вопрос: (you / eat / breakfast / this morning)?',
+          'Переведи: Мы не смотрели телевизор вчера вечером.',
+          'Заполни: I (go) ___ to the cinema last week.',
+          'Составь 5 предложений о том, что ты делал вчера.',
+          'Неправильные глаголы: запиши Past Simple: buy, come, drink, fly, give',
+          'Исправь: "She didn\'t went to work."',
+          'Краткий ответ: Did they win the game? (No)',
+          'Переведи диалог: — Ты был в Лондоне? — Да, я был там в 2022 году.',
+        ],
+        quiz: [
+          {q:'She ___ a letter yesterday.',opts:['write','writes','wrote','written'],ans:2},
+          {q:'They ___ play football last week.',opts:["didn't","doesn't","weren't","hadn't"],ans:0},
+          {q:'___ you see that film?',opts:['Do','Does','Did','Were'],ans:2},
+          {q:'He ___ to bed early last night.',opts:['go','goes','went','gone'],ans:2},
+          {q:'"Did she come?" — краткий ответ (No):',opts:["No, she didn't","No, she doesn't","No, she wasn't","No, she hadn't"],ans:0},
+          {q:'Past Simple от "eat":',opts:['eated','ate','eaten','eat'],ans:1},
+          {q:'I ___ not sleep well last night.',opts:['do','did','was','have'],ans:1},
+          {q:'We ___ to Paris last summer.',opts:['go','goes','went','going'],ans:2},
+          {q:'Past Simple от "buy":',opts:['buyed','bought','buying','buys'],ans:1},
+          {q:'"He didn\'t finished his homework." — ошибка:',opts:["He didn't finish his homework","He didn't finished his homework","He not finished his homework","He isn't finish his homework"],ans:0},
+          {q:'Маркер Past Simple:',opts:['now','tomorrow','yesterday','usually'],ans:2},
+          {q:'Past Simple от "fly":',opts:['flyed','flew','flied','flown'],ans:1},
+          {q:'She ___ the piano when she was young.',opts:['play','plays','played','playing'],ans:2},
+          {q:'"___ it rain yesterday?" — правильный вопрос?',opts:['Do','Does','Did','Was'],ans:2},
+          {q:'Past Simple от "have":',opts:['haved','has','had','having'],ans:2},
+        ]
+      },
+      {
+        title: 'Степени сравнения прилагательных',
+        short: 'Сравнения',
+        explanation: `<div class="grammar-card">
+          <div class="title">📌 Степени сравнения прилагательных</div>
+          <b>Сравнительная степень (Comparative):</b>
+          <div class="formula">Short adj + er + than: tall → taller than</div>
+          <div class="formula">Long adj: more + adj + than: interesting → more interesting than</div>
+          <div class="example"><span>He is taller than his brother.</span></div>
+          <div class="example"><span>This book is more interesting than that one.</span></div>
+          <b>Превосходная степень (Superlative):</b>
+          <div class="formula">the + short adj + est: tall → the tallest</div>
+          <div class="formula">the most + long adj: the most interesting</div>
+          <div class="example"><span>She is the smartest in the class.</span></div>
+          <b>Исключения:</b>
+          <div class="formula">good → better → the best</div>
+          <div class="formula">bad → worse → the worst</div>
+          <div class="formula">far → farther → the farthest</div>
+        </div>`,
+        tasks: ['Образуй сравнительную: big, funny, expensive, happy, good',
+          'Образуй превосходную: small, interesting, bad, hot, beautiful',
+          'Составь предложение: (Moscow / big / city / Russia)',
+          'Переведи: Этот фильм лучше, чем тот.',
+          'Исправь: "She is more tall than me."',
+          'Сравни 3 предмета, используя все три степени.',
+          'Вставь: This test is ___ (difficult) than yesterday\'s.',
+          'Переведи: Самая красивая страна в мире.',
+          'Составь вопрос: Which is ___ (fast) — a car or a bus?',
+          'Сравни лето и зиму, используя 5 прилагательных.',
+        ],
+        quiz: [
+          {q:'"big" → сравнительная:',opts:['more big','bigger','bigest','most big'],ans:1},
+          {q:'"interesting" → превосходная:',opts:['most interesting','more interesting','interestingest','the most interesting'],ans:3},
+          {q:'"good" → сравнительная:',opts:['gooder','more good','better','best'],ans:2},
+          {q:'She is ___ student in the class.',opts:['the smartest','smarter','most smart','smartest'],ans:0},
+          {q:'This bag is ___ than that one.',opts:['more heavy','heavier','heaviest','most heavy'],ans:1},
+          {q:'"bad" → превосходная:',opts:['the baddest','the worst','the more bad','the badder'],ans:1},
+          {q:'He runs ___ than me.',opts:['more fast','fastest','faster','most fast'],ans:2},
+          {q:'This is ___ film I\'ve ever seen.',opts:['the bored','the most boring','most boring','more boring'],ans:1},
+          {q:'"far" → сравнительная:',opts:['more far','farther','farer','furthest'],ans:1},
+          {q:'Today is ___ (hot) day of the year.',opts:['hotter','more hot','the hottest','hottest'],ans:2},
+          {q:'His car is ___ than mine.',opts:['more expensive','expensiver','most expensive','the most expensive'],ans:0},
+          {q:'"happy" → сравнительная:',opts:['happyer','more happy','happier','the happiest'],ans:2},
+          {q:'Mount Everest is ___ mountain in the world.',opts:['the highest','higher','more high','the most high'],ans:0},
+          {q:'This pizza is ___ than that one.',opts:['gooder','more good','better','best'],ans:2},
+          {q:'"small" → превосходная:',opts:['smaller','the smallest','most small','more small'],ans:1},
+        ]
+      },
+      {
+        title: 'Modal verbs: can, must, should',
+        short: 'Модальные глаголы',
+        explanation: `<div class="grammar-card">
+          <div class="title">📌 Модальные глаголы: CAN / MUST / SHOULD</div>
+          <b>CAN</b> — умею, могу (способность, разрешение)
+          <div class="formula">can + V (base) | cannot (can't) + V</div>
+          <div class="example"><span>I can swim.</span> | <span>She can't drive.</span></div>
+          <div class="example"><span>Can I open the window?</span> (разрешение)</div>
+          <b>MUST</b> — должен (обязанность, сильная необходимость)
+          <div class="formula">must + V | must not (mustn't) + V</div>
+          <div class="example"><span>You must wear a seatbelt.</span></div>
+          <div class="example"><span>You mustn't smoke here.</span> (запрет)</div>
+          <b>SHOULD</b> — следует, нужно (совет, рекомендация)
+          <div class="formula">should + V | shouldn't + V</div>
+          <div class="example"><span>You should sleep more.</span></div>
+          <div class="example"><span>You shouldn't eat so much sugar.</span></div>
+        </div>`,
+        tasks: ['Вставь can/can\'t: She ___ play the piano. He ___ fly (humans can\'t).',
+          'Переведи: Ты должен сделать домашнее задание.',
+          'Дай совет с should: "I have a headache."',
+          'Составь 3 вопроса с can для партнёра.',
+          'Исправь: "She must to go to the doctor."',
+          'Вставь must/mustn\'t: You ___ run in the corridors.',
+          'Переведи: Тебе следует больше читать.',
+          'Чем отличаются must и should? Приведи 2 примера каждого.',
+          'Составь предложения: what you can/can\'t do.',
+          'Дай 5 советов другу, используя should.',
+        ],
+        quiz: [
+          {q:'She ___ speak three languages.',opts:['can','must','should','would'],ans:0},
+          {q:'You ___ not smoke here — it\'s forbidden.',opts:['should','can','must','would'],ans:2},
+          {q:'You look tired. You ___ go to bed early.',opts:['can','must','should','would'],ans:2},
+          {q:'"Can he swim?" — краткий ответ (Yes):',opts:['Yes, he can','Yes, he must','Yes, he does','Yes, he should'],ans:0},
+          {q:'You ___ wear a helmet when cycling.',opts:['should','would','can','might'],ans:0},
+          {q:'"Must" в отрицании означает:',opts:['не нужно','запрещено','не умею','не советую'],ans:1},
+          {q:'I ___ drive — I don\'t have a licence.',opts:["can't","mustn't","shouldn't","wouldn't"],ans:0},
+          {q:'Children ___ eat more vegetables.',opts:['should','must not','can\'t','would'],ans:0},
+          {q:'"She can to dance." — ошибка:',opts:['She can dance','She must dance','She should dance','She could dance'],ans:0},
+          {q:'Patients ___ use their phones here. (запрет)',opts:["mustn't","shouldn't","can","must"],ans:0},
+          {q:'___ I use your phone?',opts:['Must','Should','Can','Would'],ans:2},
+          {q:'You ___ be late for the exam — it\'s very important.',opts:["mustn't","shouldn't","can't","wouldn't"],ans:0},
+          {q:'"He should goes." — ошибка:',opts:['He should go','He must goes','He can goes','He would goes'],ans:0},
+          {q:'I ___ lift 100kg — I\'m very strong.',opts:['can','must','should','would'],ans:0},
+          {q:'Значение "should":',opts:['совет','жёсткое требование','способность','прошедшее'],ans:0},
+        ]
+      }
+    ],
+    words: [
+      {en:'buy',ru:'покупать',tr:'[baɪ]'},{en:'sell',ru:'продавать',tr:'[sɛl]'},
+      {en:'travel',ru:'путешествовать',tr:'[ˈtrævəl]'},{en:'visit',ru:'посещать',tr:'[ˈvɪzɪt]'},
+      {en:'arrive',ru:'прибывать',tr:'[əˈraɪv]'},{en:'leave',ru:'уходить/уезжать',tr:'[liːv]'},
+      {en:'start',ru:'начинать',tr:'[stɑːrt]'},{en:'finish',ru:'заканчивать',tr:'[ˈfɪnɪʃ]'},
+      {en:'open',ru:'открывать',tr:'[ˈoʊpən]'},{en:'close',ru:'закрывать',tr:'[kloʊz]'},
+      {en:'pay',ru:'платить',tr:'[peɪ]'},{en:'receive',ru:'получать',tr:'[rɪˈsiːv]'},
+      {en:'choose',ru:'выбирать',tr:'[tʃuːz]'},{en:'decide',ru:'решать',tr:'[dɪˈsaɪd]'},
+      {en:'remember',ru:'помнить',tr:'[rɪˈmɛmbər]'},{en:'forget',ru:'забывать',tr:'[fərˈɡɛt]'},
+      {en:'find',ru:'находить',tr:'[faɪnd]'},{en:'lose',ru:'терять',tr:'[luːz]'},
+      {en:'win',ru:'побеждать',tr:'[wɪn]'},{en:'try',ru:'пробовать',tr:'[traɪ]'},
+      {en:'wait',ru:'ждать',tr:'[weɪt]'},{en:'meet',ru:'встречать',tr:'[miːt]'},
+      {en:'send',ru:'отправлять',tr:'[sɛnd]'},{en:'call',ru:'звонить',tr:'[kɔːl]'},
+      {en:'ask',ru:'спрашивать',tr:'[æsk]'},{en:'answer',ru:'отвечать',tr:'[ˈɑːnsər]'},
+      {en:'explain',ru:'объяснять',tr:'[ɪkˈspleɪn]'},{en:'understand',ru:'понимать',tr:'[ˌʌndərˈstænd]'},
+      {en:'think',ru:'думать',tr:'[θɪŋk]'},{en:'believe',ru:'верить',tr:'[bɪˈliːv]'},
+      {en:'hope',ru:'надеяться',tr:'[hoʊp]'},{en:'wish',ru:'желать',tr:'[wɪʃ]'},
+      {en:'agree',ru:'соглашаться',tr:'[əˈɡriː]'},{en:'disagree',ru:'не соглашаться',tr:''},
+      {en:'help',ru:'помогать',tr:'[hɛlp]'},{en:'learn',ru:'учить',tr:'[lɜːrn]'},
+      {en:'teach',ru:'преподавать',tr:'[tiːtʃ]'},{en:'study',ru:'изучать',tr:'[ˈstʌdi]'},
+      {en:'exercise',ru:'упражнение',tr:'[ˈɛksərsaɪz]'},{en:'practice',ru:'практика',tr:'[ˈpræktɪs]'},
+      {en:'kitchen',ru:'кухня',tr:'[ˈkɪtʃɪn]'},{en:'bedroom',ru:'спальня',tr:'[ˈbɛdruːm]'},
+      {en:'bathroom',ru:'ванная',tr:'[ˈbæθruːm]'},{en:'living room',ru:'гостиная',tr:''},
+      {en:'garden',ru:'сад',tr:'[ˈɡɑːrdən]'},{en:'hospital',ru:'больница',tr:'[ˈhɒspɪtəl]'},
+      {en:'airport',ru:'аэропорт',tr:'[ˈɛrpɔːrt]'},{en:'station',ru:'вокзал',tr:'[ˈsteɪʃən]'},
+      {en:'market',ru:'рынок',tr:'[ˈmɑːrkɪt]'},{en:'restaurant',ru:'ресторан',tr:'[ˈrɛstrɒnt]'},
+      {en:'interesting',ru:'интересный',tr:'[ˈɪntrəstɪŋ]'},{en:'boring',ru:'скучный',tr:'[ˈbɔːrɪŋ]'},
+      {en:'difficult',ru:'трудный',tr:'[ˈdɪfɪkəlt]'},{en:'easy',ru:'лёгкий',tr:'[ˈiːzi]'},
+      {en:'expensive',ru:'дорогой',tr:'[ɪkˈspɛnsɪv]'},{en:'cheap',ru:'дешёвый',tr:'[tʃiːp]'},
+      {en:'beautiful',ru:'красивый',tr:'[ˈbjuːtɪfəl]'},{en:'ugly',ru:'некрасивый',tr:'[ˈʌɡli]'},
+      {en:'clean',ru:'чистый',tr:'[kliːn]'},{en:'dirty',ru:'грязный',tr:'[ˈdɜːrti]'},
+      {en:'safe',ru:'безопасный',tr:'[seɪf]'},{en:'dangerous',ru:'опасный',tr:'[ˈdeɪndʒərəs]'},
+      {en:'police',ru:'полиция',tr:'[pəˈliːs]'},{en:'bank',ru:'банк',tr:'[bæŋk]'},
+      {en:'ticket',ru:'билет',tr:'[ˈtɪkɪt]'},{en:'passport',ru:'паспорт',tr:'[ˈpɑːspɔːrt]'},
+      {en:'money',ru:'деньги',tr:'[ˈmʌni]'},{en:'price',ru:'цена',tr:'[praɪs]'},
+      {en:'weather',ru:'погода',tr:'[ˈwɛðər]'},{en:'rain',ru:'дождь',tr:'[reɪn]'},
+      {en:'snow',ru:'снег',tr:'[snoʊ]'},{en:'sunny',ru:'солнечный',tr:'[ˈsʌni]'},
+      {en:'cloudy',ru:'облачный',tr:'[ˈklaʊdi]'},{en:'windy',ru:'ветреный',tr:'[ˈwɪndi]'},
+      {en:'temperature',ru:'температура',tr:'[ˈtɛmprɪtʃər]'},{en:'degree',ru:'градус',tr:'[dɪˈɡriː]'},
+      {en:'hobby',ru:'хобби',tr:'[ˈhɒbi]'},{en:'sport',ru:'спорт',tr:'[spɔːrt]'},
+      {en:'music',ru:'музыка',tr:'[ˈmjuːzɪk]'},{en:'dance',ru:'танцевать',tr:'[dæns]'},
+      {en:'cook',ru:'готовить',tr:'[kʊk]'},{en:'draw',ru:'рисовать',tr:'[drɔː]'},
+      {en:'swim',ru:'плавать',tr:'[swɪm]'},{en:'run',ru:'бегать',tr:'[rʌn]'},
+      {en:'jump',ru:'прыгать',tr:'[dʒʌmp]'},{en:'climb',ru:'карабкаться',tr:'[klaɪm]'},
+      {en:'healthy',ru:'здоровый',tr:'[ˈhɛlθi]'},{en:'sick',ru:'больной',tr:'[sɪk]'},
+      {en:'medicine',ru:'лекарство',tr:'[ˈmɛdsɪn]'},{en:'headache',ru:'головная боль',tr:'[ˈhɛdeɪk]'},
+      {en:'toothache',ru:'зубная боль',tr:'[ˈtuːθeɪk]'},{en:'fever',ru:'жар',tr:'[ˈfiːvər]'},
+      {en:'strong',ru:'сильный',tr:'[strɒŋ]'},{en:'weak',ru:'слабый',tr:'[wiːk]'},
+      {en:'tall',ru:'высокий',tr:'[tɔːl]'},{en:'short',ru:'низкий/короткий',tr:'[ʃɔːrt]'},
+      {en:'thin',ru:'худой',tr:'[θɪn]'},{en:'fat',ru:'толстый',tr:'[fæt]'},
+    ],
+    phrases: [
+      {en:'What did you do yesterday?',ru:'Что ты делал вчера?'},
+      {en:'I went to the cinema.',ru:'Я ходил в кино.'},
+      {en:'How was your weekend?',ru:'Как прошли выходные?'},
+      {en:'It was great / terrible!',ru:'Было отлично / ужасно!'},
+      {en:'Can I have a table for two?',ru:'Можно столик на двоих?'},
+      {en:'I\'d like to order...',ru:'Я бы хотел заказать...'},
+      {en:'Is service included?',ru:'Обслуживание включено?'},
+      {en:'I\'m allergic to...',ru:'У меня аллергия на...'},
+      {en:'Can you recommend something?',ru:'Можете что-нибудь посоветовать?'},
+      {en:'What\'s the weather like today?',ru:'Какая сегодня погода?'},
+      {en:'It\'s raining / snowing.',ru:'Идёт дождь / снег.'},
+      {en:'It\'s warm / cold / hot.',ru:'Тепло / холодно / жарко.'},
+      {en:'Where can I buy a ticket?',ru:'Где я могу купить билет?'},
+      {en:'How much does it cost?',ru:'Сколько это стоит?'},
+      {en:'That\'s too expensive!',ru:'Это слишком дорого!'},
+      {en:'Can I try it on?',ru:'Могу ли я это примерить?'},
+      {en:'I\'ll take it!',ru:'Я возьму это!'},
+      {en:'Do you have it in another size?',ru:'Есть ли это в другом размере?'},
+      {en:'I have a headache.',ru:'У меня болит голова.'},
+      {en:'I need to see a doctor.',ru:'Мне нужно к врачу.'},
+      {en:'How long have you been sick?',ru:'Как долго ты болен?'},
+      {en:'Take this medicine twice a day.',ru:'Принимайте это лекарство дважды в день.'},
+      {en:'I\'m better now.',ru:'Мне уже лучше.'},
+      {en:'What are your hobbies?',ru:'Какие у тебя хобби?'},
+      {en:'I enjoy reading / painting.',ru:'Мне нравится читать / рисовать.'},
+      {en:'In my free time, I...',ru:'В свободное время я...'},
+      {en:'Could you turn it down?',ru:'Не могли бы вы убавить звук?'},
+      {en:'Mind if I join you?',ru:'Вы не против, если я присоединюсь?'},
+      {en:'Let\'s meet at 7 pm.',ru:'Давай встретимся в 7 вечера.'},
+      {en:'Sorry, I\'m busy then.',ru:'Извини, я тогда занят.'},
+      {en:'Can we reschedule?',ru:'Можем ли мы перенести?'},
+      {en:'I agree with you.',ru:'Я с тобой согласен.'},
+      {en:'I disagree.',ru:'Я не согласен.'},
+      {en:'That\'s a good idea!',ru:'Это хорошая идея!'},
+      {en:'I\'m not sure about that.',ru:'Я не уверен в этом.'},
+      {en:'What do you think?',ru:'Что ты думаешь?'},
+      {en:'In my opinion...',ru:'По-моему...'},
+      {en:'I\'d prefer...',ru:'Я бы предпочёл...'},
+      {en:'It depends.',ru:'Это зависит.'},
+      {en:'Let me think...',ru:'Дайте подумаю...'},
+      {en:'Could you repeat that?',ru:'Не могли бы вы повторить?'},
+      {en:'What do you mean?',ru:'Что вы имеете в виду?'},
+      {en:'Are you sure?',ru:'Ты уверен?'},
+      {en:'Absolutely!',ru:'Абсолютно!'},
+      {en:'Not exactly.',ru:'Не совсем.'},
+      {en:'To be honest...',ru:'Честно говоря...'},
+      {en:'As far as I know...',ru:'Насколько я знаю...'},
+      {en:'I\'ve heard that...',ru:'Я слышал, что...'},
+      {en:'Have a nice day!',ru:'Хорошего дня!'},
+      {en:'Take care!',ru:'Береги себя!'},
     ]
   },
-  reading: {
-    title: '📖 Reading',
-    lessons: [
-      { name: 'True / False / Not Given', desc: 'The trickiest question type', type: 'quiz', quiz: 'reading_tfng' },
-      { name: 'Matching Headings', desc: 'Match paragraphs to headings', type: 'quiz', quiz: 'reading_match' },
-      { name: 'Gap Fill', desc: 'Complete sentences from the text', type: 'quiz', quiz: 'reading_tfng' },
-      { name: 'Multiple Choice', desc: 'Choose the correct answer', type: 'quiz', quiz: 'reading_match' },
-      { name: 'Summary Completion', desc: 'Fill in summary with text words', type: 'quiz', quiz: 'reading_tfng' },
-    ]
-  },
-  writing: {
-    title: '✍️ Writing',
-    lessons: [
-      { name: 'Task 1 - Line Graphs', desc: 'Describe trends over time', type: 'quiz', quiz: 'writing' },
-      { name: 'Task 1 - Bar Charts', desc: 'Compare categories and data', type: 'quiz', quiz: 'writing' },
-      { name: 'Task 2 - Opinion Essay', desc: 'Agree or disagree structure', type: 'quiz', quiz: 'writing' },
-      { name: 'Task 2 - Discussion', desc: 'Both sides + your opinion', type: 'quiz', quiz: 'writing' },
-      { name: 'Grammar for Writing', desc: 'Complex sentences, conditionals', type: 'quiz', quiz: 'speaking_grammar' },
-      { name: 'Cohesion & Coherence', desc: 'Linking words for academic writing', type: 'phrases', key: 'writing_phrases' },
+  B1: {
+    name: 'B1 — Средний',
+    badge: 'badge-b1',
+    desc: 'Present Perfect, условные предложения, страдательный залог. Уверенное общение.',
+    grammar: [
+      {
+        title: 'Present Perfect (have/has + V3)',
+        short: 'Present Perfect',
+        explanation: `<div class="grammar-card">
+          <div class="title">📌 Present Perfect — Have/Has + Причастие (V3)</div>
+          <b>Когда:</b> действие в прошлом СВЯЗАНО с настоящим (результат, опыт, just/already/yet)
+          <div class="formula">have/has + V3 (Past Participle)</div>
+          <div class="formula">I/You/We/They have + V3 | He/She/It has + V3</div>
+          <b>Примеры:</b>
+          <div class="formula">I have finished my homework. (только что закончил)</div>
+          <div class="formula">She has visited Japan. (опыт в жизни)</div>
+          <div class="formula">They haven't eaten yet. (ещё не ели)</div>
+          <b>Маркеры:</b> just, already, yet, ever, never, recently, lately, since [момент], for [период]
+          <div class="example"><span>Have you ever been to London?</span></div>
+          <div class="example"><span>I've just seen him.</span> | <span>He hasn't called yet.</span></div>
+          <b>Vs Past Simple:</b> Past Simple = когда именно (yesterday), PP = опыт/результат
+        </div>`,
+        tasks: [
+          'Составь предложения с just: She (finish) her essay.',
+          'Вставь ever/never: Have you ___ eaten sushi? I\'ve ___ tried it.',
+          'Составь вопросы с yet: (they / arrive)?',
+          'Чем отличается "I saw him" от "I\'ve seen him"? Объясни.',
+          'Поставь V3: write, go, eat, see, take, make, speak, break',
+          'Переведи: Я никогда не был в Австралии.',
+          'Составь 5 предложений о своём жизненном опыте.',
+          'Вставь since или for: I\'ve lived here ___ 2019 / ___ 5 years.',
+          'Исправь: "Have you went to the shop?"',
+          'Составь вопросы с Have you ever...? на 5 тем.',
+        ],
+        quiz: [
+          {q:'She ___ already ___ her homework.',opts:['have / done','has / done','have / did','has / did'],ans:1},
+          {q:'___ you ever ___ sushi?',opts:['Have / eaten','Has / eaten','Did / eat','Have / ate'],ans:0},
+          {q:'They ___ arrived ___.',opts:["haven't / yet","haven't / already","hasn't / yet","didn't / yet"],ans:0},
+          {q:'Маркер Present Perfect:',opts:['yesterday','just','last week','ago'],ans:1},
+          {q:'I ___ in this city since 2018.',opts:['live','lived','have lived','am living'],ans:2},
+          {q:'"She has went." — ошибка:',opts:['She has gone','She went','She has go','She goes'],ans:0},
+          {q:'He ___ just ___ the letter.',opts:['has / written','have / written','has / wrote','did / write'],ans:0},
+          {q:'"Have you seen that film?" — краткий Yes:',opts:['Yes, I have','Yes, I did','Yes, I had','Yes, I do'],ans:0},
+          {q:'I\'ve never ___ to Antarctica.',opts:['been','be','went','go'],ans:0},
+          {q:'"For" используется с:',opts:['периодом времени','точной датой','маркером just','вопросами'],ans:0},
+          {q:'She ___ for this company for 10 years.',opts:['has worked','worked','works','have worked'],ans:0},
+          {q:'___ they finished the project yet?',opts:['Have','Has','Did','Do'],ans:0},
+          {q:'I\'ve already ___ lunch.',opts:['had','have','has','having'],ans:0},
+          {q:'We ___ met before, have we?',opts:["haven't","didn't","weren't","don't"],ans:0},
+          {q:'"Since" используется с:',opts:['точным моментом','периодом','никогда','вопросами'],ans:0},
+        ]
+      },
+      {
+        title: 'Условные предложения (Conditionals 0, 1, 2)',
+        short: 'Conditionals',
+        explanation: `<div class="grammar-card">
+          <div class="title">📌 Условные предложения (Conditionals)</div>
+          <b>Zero Conditional — общие факты/законы природы:</b>
+          <div class="formula">If + Present Simple, + Present Simple</div>
+          <div class="example"><span>If you heat water to 100°C, it boils.</span></div>
+          <b>First Conditional — реальное будущее условие:</b>
+          <div class="formula">If + Present Simple, + will + V</div>
+          <div class="example"><span>If it rains, I will stay home.</span></div>
+          <div class="example"><span>If she studies hard, she'll pass the exam.</span></div>
+          <b>Second Conditional — нереальное/маловероятное:</b>
+          <div class="formula">If + Past Simple, + would + V</div>
+          <div class="example"><span>If I had a million dollars, I would travel the world.</span></div>
+          <div class="example"><span>If she were me, she would quit.</span> (were — для всех лиц!)</div>
+        </div>`,
+        tasks: [
+          'Определи тип условия: "If I win the lottery, I\'ll buy a house."',
+          'Составь First Conditional: если ты позвонишь, я отвечу.',
+          'Составь Second Conditional: что бы ты сделал, если бы был президентом?',
+          'Переведи: Если он не придёт, мы начнём без него.',
+          'Вставь: If water freezes, it ___ (become) ice.',
+          'Исправь: "If I will see him, I\'ll tell him."',
+          'Составь 5 предложений Second Conditional о мечтах.',
+          'Чем 1st Conditional отличается от 2nd? Объясни своими словами.',
+          'Переведи: Если бы у меня было время, я бы выучил испанский.',
+          'Вставь правильную форму: If it (rain) ___ tomorrow, we (cancel) ___ the trip.',
+        ],
+        quiz: [
+          {q:'"If I had wings, I ___ fly." — тип?',opts:['Zero','First','Second','Third'],ans:2},
+          {q:'If you heat ice, it ___ (melt).',opts:['melts','will melt','would melt','melted'],ans:0},
+          {q:'If she ___ hard, she will pass.',opts:['studies','study','studied','will study'],ans:0},
+          {q:'If I were you, I ___ see a doctor.',opts:['will','would','should','shall'],ans:1},
+          {q:'"If it rains" — какое время используется?',opts:['Past Simple','Present Simple','Future Simple','Present Perfect'],ans:1},
+          {q:'Second Conditional выражает:',opts:['реальное будущее','нереальное/маловероятное','факты','прошлое'],ans:1},
+          {q:'If they ___ the bus, they\'ll be late.',opts:['miss','will miss','missed','would miss'],ans:0},
+          {q:'If I ___ a car, I would drive to work.',opts:['had','have','would have','will have'],ans:0},
+          {q:'"If I will come" — ошибка:',opts:['If I come','If I came','If I would come','If I shall come'],ans:0},
+          {q:'Zero Conditional используется для:',opts:['фактов и законов природы','мечт','реальных будущих условий','прошлых событий'],ans:0},
+          {q:'If she ___ here, she\'d help us.',opts:['were','is','will be','has been'],ans:0},
+          {q:'"If you don\'t eat, you ___ hungry."',opts:['will get','would get','get','got'],ans:0},
+          {q:'First Conditional выражает:',opts:['реальное будущее условие','нереальное','факты','маловероятное'],ans:0},
+          {q:'If I spoke French, I ___ move to Paris.',opts:['would','will','should','shall'],ans:0},
+          {q:'"Were" в Second Conditional используется:',opts:['для всех лиц','только для he/she/it','только для I','только для they'],ans:0},
+        ]
+      },
+      {
+        title: 'Passive Voice (страдательный залог)',
+        short: 'Passive Voice',
+        explanation: `<div class="grammar-card">
+          <div class="title">📌 Passive Voice — Страдательный залог</div>
+          <b>Когда:</b> важен объект действия, а не тот, кто его совершает.
+          <div class="formula">to be (в нужном времени) + V3 (Past Participle)</div>
+          <b>Present Simple Passive:</b>
+          <div class="formula">am/is/are + V3</div>
+          <div class="example"><span>English is spoken worldwide.</span></div>
+          <b>Past Simple Passive:</b>
+          <div class="formula">was/were + V3</div>
+          <div class="example"><span>The letter was written by Anna.</span></div>
+          <b>Future Simple Passive:</b>
+          <div class="formula">will be + V3</div>
+          <div class="example"><span>The report will be published tomorrow.</span></div>
+          <b>By + agent</b> — кем было выполнено действие (если важно)
+          <div class="example"><span>The Mona Lisa was painted by Leonardo da Vinci.</span></div>
+        </div>`,
+        tasks: [
+          'Переведи в пассив: "They build houses." → "Houses ___ built."',
+          'Переведи в пассив: "Shakespeare wrote Hamlet."',
+          'Составь предложение: The windows / clean / every week.',
+          'Переведи: Этот фильм был снят в 2020 году.',
+          'Вставь by: "The cake was made ___ my mother."',
+          'Переведи из пассива в актив: "The book was read by students."',
+          'Составь 5 предложений о том, что сделано в твоём городе (пассив).',
+          'Present Passive: Rice ___ grown in Asia.',
+          'Future Passive: The new stadium ___ open next year.',
+          'Исправь: "The letter was writed by John."',
+        ],
+        quiz: [
+          {q:'The book ___ by millions of people.',opts:['read','is read','is reading','reads'],ans:1},
+          {q:'Past Passive от "build":',opts:['was build','was built','is built','were build'],ans:1},
+          {q:'The film ___ by Spielberg.',opts:['directed','was directed','is directed','direct'],ans:1},
+          {q:'"By" в пассиве указывает на:',opts:['объект','исполнителя','время','место'],ans:1},
+          {q:'Future Passive: The letter ___.',opts:['will sent','will be sent','is sent','was sent'],ans:1},
+          {q:'English ___ in many countries.',opts:['speak','speaks','is spoken','spoken'],ans:2},
+          {q:'Passive Voice Past: "They built the bridge" →',opts:['The bridge was built','The bridge built','The bridge is built','The bridge were built'],ans:0},
+          {q:'"Is written" — это:',opts:['Present Passive','Past Passive','Future Passive','Active'],ans:0},
+          {q:'"Was stolen" — это:',opts:['Present Passive','Past Passive','Future Passive','Active'],ans:1},
+          {q:'"Will be opened" — это:',opts:['Present Passive','Past Passive','Future Passive','Active'],ans:2},
+          {q:'The concert ___ next Friday.',opts:['is cancelled','was cancelled','will be cancelled','cancel'],ans:2},
+          {q:'"The dinner is being cooked." — время:',opts:['Present Simple','Present Continuous','Past Simple','Future Simple'],ans:1},
+          {q:'Пассив нужен, когда:',opts:['важен исполнитель','важен объект/результат','говорим о будущем','говорим о привычках'],ans:1},
+          {q:'"The windows were cleaned." — кто чистил?',opts:['неизвестно / неважно','исполнитель указан','сами окна','будущее'],ans:0},
+          {q:'Shakespeare ___ Hamlet in the late 1590s.',opts:['wrote','was written','write','written'],ans:0},
+        ]
+      }
+    ],
+    words: [
+      {en:'achieve',ru:'достигать',tr:'[əˈtʃiːv]'},{en:'develop',ru:'развивать',tr:'[dɪˈvɛləp]'},
+      {en:'improve',ru:'улучшать',tr:'[ɪmˈpruːv]'},{en:'increase',ru:'увеличивать',tr:'[ɪnˈkriːs]'},
+      {en:'decrease',ru:'уменьшать',tr:'[dɪˈkriːs]'},{en:'create',ru:'создавать',tr:'[kriˈeɪt]'},
+      {en:'design',ru:'проектировать',tr:'[dɪˈzaɪn]'},{en:'manage',ru:'управлять',tr:'[ˈmænɪdʒ]'},
+      {en:'organize',ru:'организовывать',tr:'[ˈɔːrɡənaɪz]'},{en:'provide',ru:'обеспечивать',tr:'[prəˈvaɪd]'},
+      {en:'require',ru:'требовать',tr:'[rɪˈkwaɪər]'},{en:'suggest',ru:'предлагать',tr:'[səˈdʒɛst]'},
+      {en:'discuss',ru:'обсуждать',tr:'[dɪˈskʌs]'},{en:'consider',ru:'рассматривать',tr:'[kənˈsɪdər]'},
+      {en:'compare',ru:'сравнивать',tr:'[kəmˈpɛr]'},{en:'describe',ru:'описывать',tr:'[dɪˈskraɪb]'},
+      {en:'experience',ru:'опыт/переживать',tr:'[ɪkˈspɪriəns]'},{en:'opportunity',ru:'возможность',tr:'[ˌɒpəˈtjuːnɪti]'},
+      {en:'challenge',ru:'вызов/задача',tr:'[ˈtʃælɪndʒ]'},{en:'solution',ru:'решение',tr:'[səˈluːʃən]'},
+      {en:'problem',ru:'проблема',tr:'[ˈprɒbləm]'},{en:'result',ru:'результат',tr:'[rɪˈzʌlt]'},
+      {en:'benefit',ru:'польза',tr:'[ˈbɛnɪfɪt]'},{en:'advantage',ru:'преимущество',tr:'[ədˈvɑːntɪdʒ]'},
+      {en:'disadvantage',ru:'недостаток',tr:''},{en:'situation',ru:'ситуация',tr:'[ˌsɪtʃuˈeɪʃən]'},
+      {en:'environment',ru:'окружающая среда',tr:'[ɪnˈvaɪrənmənt]'},{en:'society',ru:'общество',tr:'[səˈsaɪɪti]'},
+      {en:'culture',ru:'культура',tr:'[ˈkʌltʃər]'},{en:'tradition',ru:'традиция',tr:'[trəˈdɪʃən]'},
+      {en:'government',ru:'правительство',tr:'[ˈɡʌvənmənt]'},{en:'economy',ru:'экономика',tr:'[ɪˈkɒnəmi]'},
+      {en:'technology',ru:'технология',tr:'[tɛkˈnɒlədʒi]'},{en:'information',ru:'информация',tr:'[ˌɪnfəˈmeɪʃən]'},
+      {en:'communication',ru:'общение',tr:'[kəˌmjuːnɪˈkeɪʃən]'},{en:'education',ru:'образование',tr:'[ˌɛdʒʊˈkeɪʃən]'},
+      {en:'research',ru:'исследование',tr:'[rɪˈsɜːrtʃ]'},{en:'interview',ru:'интервью',tr:'[ˈɪntəvjuː]'},
+      {en:'application',ru:'заявление/приложение',tr:''},{en:'qualification',ru:'квалификация',tr:''},
+      {en:'responsible',ru:'ответственный',tr:'[rɪˈspɒnsɪbəl]'},{en:'successful',ru:'успешный',tr:'[səkˈsɛsfəl]'},
+      {en:'professional',ru:'профессиональный',tr:''},{en:'confident',ru:'уверенный',tr:'[ˈkɒnfɪdənt]'},
+      {en:'creative',ru:'творческий',tr:'[kriˈeɪtɪv]'},{en:'flexible',ru:'гибкий',tr:'[ˈflɛksɪbəl]'},
+      {en:'efficient',ru:'эффективный',tr:'[ɪˈfɪʃənt]'},{en:'independent',ru:'независимый',tr:''},
+      {en:'generous',ru:'щедрый',tr:'[ˈdʒɛnərəs]'},{en:'ambitious',ru:'амбициозный',tr:'[æmˈbɪʃəs]'},
+      {en:'patient',ru:'терпеливый',tr:'[ˈpeɪʃənt]'},{en:'polite',ru:'вежливый',tr:'[pəˈlaɪt]'},
+      {en:'honest',ru:'честный',tr:'[ˈɒnɪst]'},{en:'loyal',ru:'верный',tr:'[ˈlɔɪəl]'},
+      {en:'brave',ru:'смелый',tr:'[breɪv]'},{en:'curious',ru:'любознательный',tr:'[ˈkjʊəriəs]'},
+      {en:'pollution',ru:'загрязнение',tr:'[pəˈluːʃən]'},{en:'climate',ru:'климат',tr:'[ˈklaɪmɪt]'},
+      {en:'energy',ru:'энергия',tr:'[ˈɛnədʒi]'},{en:'resource',ru:'ресурс',tr:'[rɪˈzɔːrs]'},
+      {en:'recycle',ru:'перерабатывать',tr:'[ˌriːˈsaɪkəl]'},{en:'transport',ru:'транспорт',tr:'[ˈtrænspɔːrt]'},
+      {en:'population',ru:'население',tr:'[ˌpɒpjʊˈleɪʃən]'},{en:'global',ru:'глобальный',tr:'[ˈɡloʊbəl]'},
+      {en:'local',ru:'местный',tr:'[ˈloʊkəl]'},{en:'national',ru:'национальный',tr:''},
+      {en:'international',ru:'международный',tr:''},{en:'military',ru:'военный',tr:'[ˈmɪlɪtəri]'},
+      {en:'politics',ru:'политика',tr:'[ˈpɒlɪtɪks]'},{en:'election',ru:'выборы',tr:'[ɪˈlɛkʃən]'},
+      {en:'law',ru:'закон',tr:'[lɔː]'},{en:'rights',ru:'права',tr:'[raɪts]'},
+      {en:'freedom',ru:'свобода',tr:'[ˈfriːdəm]'},{en:'peace',ru:'мир',tr:'[piːs]'},
+      {en:'conflict',ru:'конфликт',tr:'[ˈkɒnflɪkt]'},{en:'relationship',ru:'отношения',tr:'[rɪˈleɪʃənʃɪp]'},
+      {en:'community',ru:'сообщество',tr:'[kəˈmjuːnɪti]'},{en:'volunteer',ru:'волонтёр',tr:'[ˌvɒlənˈtɪər]'},
+      {en:'support',ru:'поддержка',tr:'[səˈpɔːrt]'},{en:'donate',ru:'жертвовать',tr:'[doʊˈneɪt]'},
+      {en:'affect',ru:'влиять',tr:'[əˈfɛkt]'},{en:'influence',ru:'влияние',tr:'[ˈɪnfluəns]'},
+      {en:'prevent',ru:'предотвращать',tr:'[prɪˈvɛnt]'},{en:'protect',ru:'защищать',tr:'[prəˈtɛkt]'},
+      {en:'threat',ru:'угроза',tr:'[θrɛt]'},{en:'issue',ru:'проблема/вопрос',tr:'[ˈɪʃuː]'},
+      {en:'argue',ru:'спорить',tr:'[ˈɑːrɡjuː]'},{en:'convince',ru:'убеждать',tr:'[kənˈvɪns]'},
+      {en:'prove',ru:'доказывать',tr:'[pruːv]'},{en:'claim',ru:'утверждать',tr:'[kleɪm]'},
+      {en:'admit',ru:'признавать',tr:'[ədˈmɪt]'},{en:'deny',ru:'отрицать',tr:'[dɪˈnaɪ]'},
+      {en:'promise',ru:'обещать',tr:'[ˈprɒmɪs]'},{en:'refuse',ru:'отказывать',tr:'[rɪˈfjuːz]'},
+      {en:'accept',ru:'принимать',tr:'[əkˈsɛpt]'},{en:'reject',ru:'отвергать',tr:'[rɪˈdʒɛkt]'},
+      {en:'apologize',ru:'извиняться',tr:'[əˈpɒlədʒaɪz]'},{en:'forgive',ru:'прощать',tr:'[fəˈɡɪv]'},
+      {en:'complain',ru:'жаловаться',tr:'[kəmˈpleɪn]'},{en:'compliment',ru:'комплимент',tr:''},
+      {en:'criticize',ru:'критиковать',tr:'[ˈkrɪtɪsaɪz]'},{en:'praise',ru:'хвалить',tr:'[preɪz]'},
+    ],
+    phrases: [
+      {en:'I\'d like to talk about...',ru:'Я хотел бы поговорить о...'},
+      {en:'Could you clarify that?',ru:'Не могли бы вы уточнить это?'},
+      {en:'As far as I\'m concerned...',ru:'Что касается меня...'},
+      {en:'From my point of view...',ru:'С моей точки зрения...'},
+      {en:'It seems to me that...',ru:'Мне кажется, что...'},
+      {en:'I\'m afraid I disagree.',ru:'Боюсь, что я не согласен.'},
+      {en:'On the one hand... on the other hand...',ru:'С одной стороны... с другой стороны...'},
+      {en:'In addition to that...',ru:'В дополнение к этому...'},
+      {en:'As a result of...',ru:'В результате...'},
+      {en:'It is worth noting that...',ru:'Стоит отметить, что...'},
+      {en:'I\'ve been thinking about...',ru:'Я думал о...'},
+      {en:'What I\'m trying to say is...',ru:'Что я пытаюсь сказать, так это...'},
+      {en:'Let me put it another way.',ru:'Позвольте сказать иначе.'},
+      {en:'That\'s a fair point.',ru:'Это справедливое замечание.'},
+      {en:'I take your point, but...',ru:'Я понимаю вашу точку зрения, но...'},
+      {en:'Have you ever considered...?',ru:'Вы когда-нибудь задумывались о...?'},
+      {en:'It\'s been a while since...',ru:'Прошло некоторое время с тех пор, как...'},
+      {en:'I\'ve been meaning to tell you...',ru:'Я давно хотел тебе сказать...'},
+      {en:'The thing is...',ru:'Дело в том, что...'},
+      {en:'Speaking of which...',ru:'Кстати об этом...'},
+      {en:'That reminds me...',ru:'Это напоминает мне...'},
+      {en:'By the way...',ru:'Кстати...'},
+      {en:'Come to think of it...',ru:'Если подумать...'},
+      {en:'It\'s no big deal.',ru:'Это не страшно.'},
+      {en:'I\'ll keep that in mind.',ru:'Я буду иметь это в виду.'},
+      {en:'That\'s easier said than done.',ru:'Легче сказать, чем сделать.'},
+      {en:'Better late than never.',ru:'Лучше поздно, чем никогда.'},
+      {en:'It depends on the situation.',ru:'Это зависит от ситуации.'},
+      {en:'I couldn\'t agree more.',ru:'Я полностью согласен.'},
+      {en:'I see where you\'re coming from.',ru:'Я понимаю, откуда ты исходишь.'},
+      {en:'What are the pros and cons?',ru:'Каковы плюсы и минусы?'},
+      {en:'It\'s a double-edged sword.',ru:'Это палка о двух концах.'},
+      {en:'I\'m in two minds about it.',ru:'Я сомневаюсь насчёт этого.'},
+      {en:'The bottom line is...',ru:'В конечном счёте...'},
+      {en:'At the end of the day...',ru:'В конце концов...'},
+      {en:'Long story short...',ru:'Если коротко...'},
+      {en:'To make a long story short...',ru:'Если говорить кратко...'},
+      {en:'I\'m not in a position to...',ru:'Я не в состоянии...'},
+      {en:'It\'s out of my hands.',ru:'Это не в моих силах.'},
+      {en:'I\'ll do my best.',ru:'Я сделаю всё возможное.'},
+      {en:'I\'m working on it.',ru:'Я работаю над этим.'},
+      {en:'Let\'s get back to the point.',ru:'Давайте вернёмся к теме.'},
+      {en:'That\'s beside the point.',ru:'Это не по теме.'},
+      {en:'Could we move on to...?',ru:'Можем ли мы перейти к...?'},
+      {en:'I\'d like to add that...',ru:'Я хотел бы добавить, что...'},
+      {en:'To sum up...',ru:'Подводя итог...'},
+      {en:'In conclusion...',ru:'В заключение...'},
+      {en:'All things considered...',ru:'Принимая всё во внимание...'},
+      {en:'Not to mention...',ru:'Не говоря уже о...'},
+      {en:'What\'s more...',ru:'Более того...'},
     ]
   }
 };
 
-const QUIZZES = {
-  speaking_grammar: [
-    { type: 'Grammar', q: 'Choose the correct sentence for IELTS Speaking:', opts: ['I am agree with this opinion.', 'I tend to agree with this opinion.', 'I am agreeing with this.', 'This opinion I agree.'], ans: 1, explain: '"I tend to agree" is natural and sophisticated. Never say "I am agree" — that is a common error.' },
-    { type: 'Vocabulary', q: 'Which word BEST completes: "This issue has become increasingly ___."', opts: ['big', 'much', 'prevalent', 'very'], ans: 2, explain: '"Prevalent" means widespread. Using academic vocabulary boosts your Lexical Resource score.' },
-    { type: 'Linking Words', q: 'Choose the best linking word: "The city is modern. ___, it lacks green spaces."', opts: ['Also', 'However', 'Because', 'Therefore'], ans: 1, explain: '"However" shows contrast. Use contrast linkers when introducing an opposing idea.' },
-    { type: 'Tenses', q: 'Which is CORRECT for IELTS?', opts: ['I have went to London last year.', 'I went to London last year.', 'I have go to London last year.', 'I was go to London last year.'], ans: 1, explain: 'Use Simple Past (went) with time expressions like "last year". Present Perfect is for unspecified past.' },
-    { type: 'Fluency', q: 'What should you say if you need time to think in Speaking?', opts: ['Erm... I don\'t know...', 'That\'s a thought-provoking question. Let me consider...', 'Hmm what?', 'I am not understanding.'], ans: 1, explain: 'Buying time professionally shows fluency. "That\'s a thought-provoking question" impresses examiners.' },
-  ],
-  listening1: [
-    { type: 'Listening Strategy', q: 'Before the audio plays, you should:', opts: ['Listen immediately', 'Read the questions and predict answers', 'Write your name', 'Close your eyes'], ans: 1, explain: 'Always read questions first. This prepares your brain to listen for specific information.' },
-    { type: 'Gap Fill', q: 'The customer\'s booking reference is B___45. What letter is most likely missing?', opts: ['A', 'O', 'I', 'Any letter is possible'], ans: 3, explain: 'In gap fills, any answer is possible. Never assume — always listen carefully to the audio.' },
-    { type: 'Numbers', q: 'How do you write "fifteen hundred" as a number?', opts: ['150', '1500', '15000', '15,00'], ans: 1, explain: '1500 = fifteen hundred. Number spelling is common in Listening Section 1. Practice number dictation.' },
-    { type: 'Spelling', q: 'The speaker spells: M-A-C-K-E-N-Z-I-E. What is the name?', opts: ['Makensie', 'Mackenzie', 'Mackensie', 'Makenzie'], ans: 1, explain: 'In IELTS Listening, names are often spelled out. Write exactly what you hear.' },
-    { type: 'Distraction', q: 'The speaker says: "The meeting is at 3pm — oh wait, no, it\'s at 4pm." What time is correct?', opts: ['3pm', '4pm', 'Both are correct', 'Neither'], ans: 1, explain: 'IELTS often uses self-correction as distraction. Always take the FINAL answer given.' },
-  ],
-  listening2: [
-    { type: 'Strategy', q: 'In IELTS Listening, you hear the audio:', opts: ['Three times', 'Twice', 'Once only', 'As many times as you want'], ans: 2, explain: 'The audio plays ONCE only in the real exam. Practice with this constraint from the start.' },
-    { type: 'Note Completion', q: 'Which answer style is WRONG for note completion?', opts: ['2015', 'approximately 2015', 'north', 'library'], ans: 1, explain: 'Keep answers concise. "Approximately 2015" is too wordy — just write "2015".' },
-    { type: 'Maps', q: 'In map questions, directions come from your ___:', opts: ['left', 'right', 'perspective (the map)', 'perspective (real life)'], ans: 2, explain: 'Always use the MAP\'S orientation, not real life. North on the map is always up.' },
-    { type: 'Academic', q: 'Section 4 is the most difficult because:', opts: ['It is very long', 'It is a monologue with no pause', 'It has many speakers', 'It plays three times'], ans: 1, explain: 'Section 4 is an academic lecture with NO PAUSE. It tests sustained concentration.' },
-    { type: 'Vocabulary', q: '"The population has soared" means:', opts: ['decreased', 'stayed the same', 'increased rapidly', 'fluctuated'], ans: 2, explain: '"Soar" means to rise quickly and dramatically. Key vocabulary for graphs and statistics.' },
-  ],
-  reading_tfng: [
-    { type: 'True/False/NG', q: 'Text: "Coffee was first discovered in Ethiopia." Question: "Coffee originated in Africa." Answer:', opts: ['True', 'False', 'Not Given'], ans: 0, explain: 'Ethiopia is in Africa, so the statement is TRUE. Always check geography and facts carefully.' },
-    { type: 'True/False/NG', q: 'Text: "The study was conducted in 2019." Question: "The research took place recently." Answer:', opts: ['True', 'False', 'Not Given'], ans: 2, explain: '"Recently" is not defined in the text. If the text doesn\'t confirm or deny — it\'s NOT GIVEN.' },
-    { type: 'True/False/NG', q: 'Text: "All participants were female." Question: "Some participants were male." Answer:', opts: ['True', 'False', 'Not Given'], ans: 1, explain: 'If ALL were female, then NONE were male. This directly contradicts the question — FALSE.' },
-    { type: 'Strategy', q: 'In T/F/NG, "Not Given" means:', opts: ['The answer is wrong', 'The information is not in the text', 'You didn\'t find it yet', 'It\'s probably true'], ans: 1, explain: 'NG means the passage neither confirms nor contradicts the statement. Don\'t use outside knowledge.' },
-    { type: 'Skimming', q: 'The best strategy for Reading is to read:', opts: ['Every word slowly', 'Questions first, then find answers', 'The last paragraph only', 'Randomly'], ans: 1, explain: 'Read questions → skim text → find keywords → read that section carefully. This saves time.' },
-  ],
-  reading_match: [
-    { type: 'Matching', q: 'Matching Headings tests your ability to find:', opts: ['Specific facts', 'Main idea of each paragraph', 'Author\'s name', 'Date of publication'], ans: 1, explain: 'Each heading summarizes the MAIN IDEA of a paragraph, not specific details.' },
-    { type: 'Paraphrasing', q: '"Surge in demand" in the text = ___ in the question:', opts: ['lack of interest', 'rapid increase in popularity', 'steady supply', 'decreased need'], ans: 1, explain: 'IELTS always paraphrases. "Surge" = rapid increase. Learn synonym pairs to spot paraphrasing.' },
-    { type: 'Time Management', q: 'You have 60 minutes for Reading. How much time per passage?', opts: ['10 minutes', '20 minutes', '30 minutes', '5 minutes'], ans: 1, explain: '3 passages × 20 minutes each = 60 minutes. Stick to this strictly in practice.' },
-    { type: 'Keywords', q: 'When scanning for answers, focus on:', opts: ['Prepositions', 'Articles (a, the)', 'Nouns and verbs', 'Conjunctions'], ans: 2, explain: 'Nouns and verbs carry meaning. They\'re the easiest to spot when scanning quickly.' },
-    { type: 'Vocabulary', q: '"The data corroborates the hypothesis" means the data:', opts: ['contradicts the theory', 'supports the theory', 'ignores the theory', 'creates the theory'], ans: 1, explain: '"Corroborate" = confirm or support. Academic vocabulary in Reading is often formal and precise.' },
-  ],
-  writing: [
-    { type: 'Task 2 Structure', q: 'A strong Task 2 essay has:', opts: ['1 paragraph', '2 paragraphs', '4-5 paragraphs', 'As many as possible'], ans: 2, explain: 'Introduction + 2-3 body paragraphs + Conclusion = ideal structure. Always include all 4 parts.' },
-    { type: 'Task Achievement', q: 'Task 2 minimum word count is:', opts: ['150 words', '200 words', '250 words', '300 words'], ans: 2, explain: 'Write AT LEAST 250 words for Task 2. Under 250 words = automatic score penalty.' },
-    { type: 'Task 1', q: 'Task 1 (Academic) requires you to describe:', opts: ['Your opinion on a topic', 'A graph, chart, map or diagram', 'A story', 'A letter'], ans: 1, explain: 'Task 1 Academic = describe visual data. Task 1 General = write a formal/informal letter.' },
-    { type: 'Grammar Range', q: 'Which sentence shows better Grammar Range?', opts: ['The city is big.', 'The city, which has grown significantly, is now one of the largest in the region.', 'Big city is here.', 'There is big city.'], ans: 1, explain: 'Relative clauses, complex sentences, and varied structures score higher in Grammar Range.' },
-    { type: 'Coherence', q: 'Which linking phrase is BEST to introduce a contrasting idea?', opts: ['In addition', 'Furthermore', 'On the other hand', 'For instance'], ans: 2, explain: '"On the other hand" signals contrast. Using correct linking phrases shows Coherence & Cohesion skill.' },
-  ]
+// Добавим B2 и C1 как копии B1 с другими именами для прототипа
+DATA.B2 = { ...DATA.B1, name:'B2 — Выше среднего', badge:'badge-b2',
+  desc:'Сложные времена, инверсия, смешанные условные. Почти свободное общение.',
+  grammar: DATA.B1.grammar.map((g,i) => ({...g, title: ['Future Perfect / Continuous','Mixed Conditionals','Reported Speech'][i] || g.title, short: ['Future Perfect','Mixed Cond','Reported Speech'][i] || g.short}))
+};
+DATA.C1 = { ...DATA.B1, name:'C1 — Продвинутый', badge:'badge-c1',
+  desc:'Инверсия, сослагательное наклонение, идиомы и академический стиль.',
+  grammar: DATA.B1.grammar.map((g,i) => ({...g, title: ['Subjunctive Mood','Inversion','Cleft Sentences'][i] || g.title, short: ['Subjunctive','Inversion','Cleft'][i] || g.short}))
 };
 
-const PHRASES = {
-  intro: [
-    { cat: 'Introducing yourself', en: 'I come from a pretty small town, but I\'ve been living in the city for...', ru: 'Я из небольшого города, но живу в мегаполисе...', ex: '"I come from a pretty small town in the south, but I\'ve been living in the capital for about three years."' },
-    { cat: 'Hobbies', en: 'I\'m really into... / I\'m quite keen on...', ru: 'Я очень увлекаюсь... / Мне очень нравится...', ex: '"I\'m really into photography — I find it a great way to explore creativity."' },
-    { cat: 'Opinion', en: 'Personally, I believe that... / From my perspective...', ru: 'Лично я считаю... / С моей точки зрения...', ex: '"Personally, I believe that learning a language opens many doors."' },
-    { cat: 'Frequency', en: 'I tend to... / I generally... / I occasionally...', ru: 'Я обычно... / Как правило... / Иногда...', ex: '"I tend to spend my weekends outdoors whenever the weather allows."' },
-  ],
-  cuecard: [
-    { cat: 'Starting your talk', en: 'I\'d like to talk about... / The person/place I\'ve chosen is...', ru: 'Я хотел бы рассказать о... / Я выбрал...', ex: '"I\'d like to talk about my grandmother, who has had a profound influence on my life."' },
-    { cat: 'Describing feelings', en: 'What struck me most was... / I was particularly impressed by...', ru: 'Больше всего меня поразило... / Я был особенно впечатлён...', ex: '"What struck me most was the incredible architecture of the old town."' },
-    { cat: 'Adding detail', en: 'What made it special was... / The reason I remember it is...', ru: 'Особенным его делало... / Я запомнил это потому что...', ex: '"What made it special was the warmth of the local people."' },
-    { cat: 'Concluding', en: 'All in all, I would say... / Looking back, I think...', ru: 'В целом я бы сказал... / Оглядываясь назад...', ex: '"All in all, I would say it was one of the most memorable experiences of my life."' },
-  ],
-  discussion: [
-    { cat: 'Giving opinions', en: 'It seems to me that... / I\'m inclined to think that...', ru: 'Мне кажется что... / Я склонен считать что...', ex: '"It seems to me that technology has transformed the way we communicate fundamentally."' },
-    { cat: 'Agreeing partially', en: 'There\'s certainly some truth in that, however...', ru: 'В этом определённо есть доля правды, однако...', ex: '"There\'s certainly some truth in that, however, we must also consider the drawbacks."' },
-    { cat: 'Speculating', en: 'It\'s hard to say for certain, but I would imagine...', ru: 'Сложно сказать наверняка, но я полагаю...', ex: '"It\'s hard to say for certain, but I would imagine the situation will improve over time."' },
-    { cat: 'Complex structures', en: 'Were I to... / Had I known... / It\'s not so much... as...', ru: 'Если бы я... / Знай я... / Дело не столько в... сколько...', ex: '"Were I to choose between the two, I would undoubtedly opt for the former."' },
-  ],
-  vocab: [
-    { cat: 'Instead of "good"', en: 'beneficial / advantageous / commendable / exceptional', ru: 'полезный / выгодный / похвальный / исключительный', ex: '"Regular exercise has proven to be highly beneficial for mental health."' },
-    { cat: 'Instead of "bad"', en: 'detrimental / devastating / counterproductive / alarming', ru: 'вредный / разрушительный / контрпродуктивный / тревожный', ex: '"Excessive screen time can be detrimental to children\'s development."' },
-    { cat: 'Instead of "increase"', en: 'surge / soar / escalate / skyrocket / rise sharply', ru: 'резко вырасти / взлететь / нарастать / взлететь до небес', ex: '"Housing prices have skyrocketed in most major cities over the past decade."' },
-    { cat: 'Instead of "decrease"', en: 'plummet / decline / dwindle / diminish / drop significantly', ru: 'резко упасть / снижаться / таять / уменьшаться', ex: '"The number of traditional bookshops has dwindled dramatically in recent years."' },
-    { cat: 'Opinions & views', en: 'From my vantage point / I\'m a firm believer that / I\'d argue that', ru: 'С моей точки зрения / Я твёрдо убеждён / Я бы утверждал что', ex: '"I\'d argue that environmental education should begin at primary school level."' },
-  ],
-  writing_phrases: [
-    { cat: 'Introduction', en: 'In recent years, there has been a growing debate about...', ru: 'В последние годы всё больше дискутируется вопрос о...', ex: '"In recent years, there has been a growing debate about the role of technology in education."' },
-    { cat: 'Adding points', en: 'Furthermore / Moreover / In addition to this / What is more,', ru: 'Более того / Кроме того / В дополнение / Что немаловажно', ex: '"Furthermore, studies suggest that exercise improves academic performance significantly."' },
-    { cat: 'Contrast', en: 'Nevertheless / Nonetheless / On the contrary / Despite this,', ru: 'Тем не менее / Вопреки этому / Напротив / Несмотря на это', ex: '"Nevertheless, there are compelling arguments on the other side of this debate."' },
-    { cat: 'Conclusion', en: 'To conclude, it is evident that... / Taking everything into account,', ru: 'В заключение очевидно что... / Принимая всё во внимание,', ex: '"To conclude, it is evident that both individual and collective action is required."' },
-    { cat: 'Cause & Effect', en: 'This has led to... / As a consequence... / This can be attributed to...', ru: 'Это привело к... / Как следствие... / Это объясняется...', ex: '"Rapid urbanisation has led to a severe shortage of affordable housing."' },
-  ]
-};
+// ========== NAVIGATION ==========
+let currentGrammar = null;
 
-// ===== STATE =====
-let state = JSON.parse(localStorage.getItem('ielts_state') || '{}');
-if (!state.progress) state.progress = { speaking: 0, listening: 0, reading: 0, writing: 0 };
-if (!state.bands) state.bands = { speaking: null, listening: null, reading: null, writing: null };
-if (!state.tests) state.tests = 0;
-if (!state.correct) state.correct = 0;
-if (!state.total) state.total = 0;
-if (!state.streak) state.streak = 0;
+function go(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('s' + screen) || document.getElementById('s' + screen);
+  if (el) el.classList.add('active');
+  scrollBottom(screen);
 
-let currentSection = null;
-let currentQuiz = null;
-let currentQ = 0;
-let quizScore = 0;
-let answered = false;
+  if (screen === 2) buildLevelMenu();
+  if (screen === 3) buildGrammarList();
+  if (screen === 7) buildWords();
+  if (screen === 8) buildPhrases();
+  if (screen === 'about') document.getElementById('sabout').classList.add('active');
+}
 
-function saveState() { localStorage.setItem('ielts_state', JSON.stringify(state)); }
+function setLevel(lvl) {
+  currentLevel = lvl;
+}
 
-// ===== TELEGRAM INIT =====
+function scrollBottom(id) {
+  setTimeout(() => {
+    const el = document.getElementById('chat' + id);
+    if (el) el.scrollTop = el.scrollHeight;
+  }, 100);
+}
+
+// ========== LEVEL MENU ==========
+function buildLevelMenu() {
+  const d = DATA[currentLevel];
+  const chat = document.getElementById('chat2');
+  const kb = document.getElementById('kb2');
+  const pct = userProgress[currentLevel];
+
+  chat.innerHTML = `
+    <div class="msg-user">Уровень ${currentLevel}</div>
+    <div class="msg-bot">
+      <strong>🎯 ${d.name}</strong><span class="level-badge ${d.badge}">${currentLevel}</span><br>
+      <em style="color:var(--muted);font-size:0.8rem;">${d.desc}</em>
+      <div class="stats-row" style="margin-top:10px;">
+        <div class="stat-box"><div class="val">${d.grammar.length}</div><div class="lbl">Тем грамм.</div></div>
+        <div class="stat-box"><div class="val">${d.words.length}</div><div class="lbl">Слов</div></div>
+        <div class="stat-box"><div class="val">${d.phrases.length}</div><div class="lbl">Фраз</div></div>
+        <div class="stat-box"><div class="val">${pct}%</div><div class="lbl">Прогресс</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:0.8rem;color:var(--muted);">
+        <strong>Прогресс уровня:</strong>
+      </div>
+    </div>`;
+
+  const pfill = document.createElement('div');
+  pfill.className = 'progress-wrap';
+  pfill.innerHTML = `<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+  chat.appendChild(pfill);
+
+  kb.innerHTML = `
+    <button class="btn full primary" onclick="go(3)">📖 Грамматика</button>
+    <button class="btn full" onclick="go(7)">📚 Словарный запас (${d.words.length} слов)</button>
+    <button class="btn full" onclick="go(8)">💬 Фразы (${d.phrases.length} фраз)</button>
+    <button class="btn full" style="font-size:0.75rem;color:var(--muted);" onclick="go(1)">← Сменить уровень</button>`;
+}
+
+// ========== GRAMMAR LIST ==========
+function buildGrammarList() {
+  const d = DATA[currentLevel];
+  const chat = document.getElementById('chat3');
+  const kb = document.getElementById('kb3');
+
+  chat.innerHTML = `
+    <div class="msg-bot">
+      <strong>📖 Грамматика — ${currentLevel}</strong><br><br>
+      Выбери тему для изучения. Каждая тема включает:<br>
+      ✏️ Объяснение с примерами<br>
+      📝 10 заданий для тетради<br>
+      🧪 15-вопросный тест<br>
+      🔄 Функция повторения
+    </div>`;
+
+  kb.innerHTML = d.grammar.map((g, i) => `
+    <button class="btn full" onclick="openGrammar(${i})">
+      ${i+1}. ${g.title}
+    </button>`).join('') + `
+    <button class="btn full" style="font-size:0.75rem;color:var(--muted);margin-top:4px;" onclick="go(2)">← Назад</button>`;
+}
+
+// ========== GRAMMAR TOPIC ==========
+function openGrammar(idx) {
+  currentGrammarIdx = idx;
+  currentGrammar = DATA[currentLevel].grammar[idx];
+  quizQ = 0; quizScore = 0;
+
+  const d = currentGrammar;
+  const chat = document.getElementById('chat4');
+  const kb = document.getElementById('kb4');
+  const pct = Math.round(((idx) / DATA[currentLevel].grammar.length) * 100);
+
+  document.getElementById('prog-label').textContent = `Тема ${idx+1} из ${DATA[currentLevel].grammar.length}`;
+  document.getElementById('prog-val').textContent = pct + '%';
+  document.getElementById('prog-fill').style.width = pct + '%';
+
+  chat.innerHTML = `
+    <div class="msg-bot"><strong>📌 Тема: ${d.title}</strong></div>
+    <div class="msg-bot">${d.explanation}</div>
+    <div class="msg-bot">
+      Отлично! Ты ознакомился с темой.<br><br>
+      Теперь выбери, что делать дальше:
+    </div>`;
+
+  kb.innerHTML = `
+    <button class="btn primary full" onclick="showTasks()">📝 10 заданий для тетради</button>
+    <button class="btn full green" onclick="startQuiz()">🧪 Пройти тест (15 вопросов)</button>
+    <button class="btn full" onclick="openGrammar(${idx})">🔄 Повторить объяснение</button>
+    <button class="btn full" style="font-size:0.75rem;color:var(--muted);margin-top:4px;" onclick="go(3)">← К списку тем</button>`;
+
+  go(4);
+}
+
+// ========== TASKS ==========
+function showTasks() {
+  const d = currentGrammar;
+  const chat = document.getElementById('chat5');
+  const kb = document.getElementById('kb5');
+
+  chat.innerHTML = `
+    <div class="msg-bot">
+      <strong>📝 Задания для тетради — "${d.title}"</strong><br><br>
+      <em style="color:var(--muted);font-size:0.8rem;">Выполни задания в тетради, затем вернись для теста.</em>
+    </div>` +
+    d.tasks.map((t, i) => `
+      <div class="msg-bot">
+        <div class="task-card">
+          <span class="task-num">${i+1}.</span>${t}
+        </div>
+      </div>`).join('') +
+    `<div class="msg-bot">
+      ✅ <strong>Все задания выполнены?</strong><br>
+      Можешь перейти к тесту или вернуться к объяснению.
+    </div>`;
+
+  kb.innerHTML = `
+    <button class="btn primary full green" onclick="startQuiz()">🧪 Перейти к тесту (15 вопросов)</button>
+    <button class="btn full" onclick="openGrammar(${currentGrammarIdx})">← Вернуться к объяснению</button>
+    <button class="btn full" style="font-size:0.75rem;color:var(--muted);" onclick="go(3)">← К списку тем</button>`;
+
+  go(5);
+}
+
+// ========== QUIZ ==========
+function startQuiz() {
+  quizQ = 0; quizScore = 0;
+  showQuestion();
+  go(6);
+}
+
+function showQuestion() {
+  const q = currentGrammar.quiz[quizQ];
+  const total = currentGrammar.quiz.length;
+  const pct = Math.round((quizQ / total) * 100);
+
+  document.getElementById('quiz-label').textContent = `Вопрос ${quizQ+1} из ${total}`;
+  document.getElementById('quiz-score').textContent = `✅ ${quizScore}`;
+  document.getElementById('quiz-fill').style.width = pct + '%';
+
+  const chat = document.getElementById('chat6');
+  const kb = document.getElementById('kb6');
+
+  chat.innerHTML = `
+    <div class="msg-bot">
+      <strong>Вопрос ${quizQ+1} / ${total}</strong><br><br>
+      ${q.q}
+    </div>`;
+
+  kb.innerHTML = q.opts.map((opt, i) => `
+    <button class="quiz-option" onclick="checkAnswer(${i})">${String.fromCharCode(65+i)}) ${opt}</button>`).join('');
+}
+
+function checkAnswer(i) {
+  const q = currentGrammar.quiz[quizQ];
+  const kb = document.getElementById('kb6');
+  const btns = kb.querySelectorAll('.quiz-option');
+
+  btns.forEach(b => b.style.pointerEvents = 'none');
+  btns[q.ans].classList.add('correct');
+
+  if (i === q.ans) {
+    quizScore++;
+    document.getElementById('quiz-score').textContent = `✅ ${quizScore}`;
+    btns[i].classList.add('correct');
+    addMessage('chat6', `✅ <span class="good">Правильно!</span>`);
+  } else {
+    btns[i].classList.add('wrong');
+    addMessage('chat6', `❌ <span class="bad">Неверно.</span> Правильный ответ: <strong>${q.opts[q.ans]}</strong>`);
+  }
+
+  setTimeout(() => {
+    quizQ++;
+    if (quizQ < currentGrammar.quiz.length) {
+      showQuestion();
+    } else {
+      showResults();
+    }
+  }, 1500);
+}
+
+function addMessage(chatId, html) {
+  const chat = document.getElementById(chatId);
+  const div = document.createElement('div');
+  div.className = 'msg-bot';
+  div.innerHTML = html;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// ========== RESULTS ==========
+function showResults() {
+  const total = currentGrammar.quiz.length;
+  const pct = Math.round((quizScore / total) * 100);
+  userProgress[currentLevel] = Math.min(100, userProgress[currentLevel] + 15);
+
+  let emoji, msg, color;
+  if (pct >= 90) { emoji='🏆'; msg='Отлично! Ты превосходно усвоил тему!'; color='var(--green)'; }
+  else if (pct >= 70) { emoji='🌟'; msg='Хорошо! Небольшое повторение и будет идеально.'; color='var(--accent)'; }
+  else if (pct >= 50) { emoji='💪'; msg='Неплохо! Рекомендую повторить объяснение.'; color='var(--yellow)'; }
+  else { emoji='📖'; msg='Стоит повторить тему. Не сдавайся!'; color='var(--red)'; }
+
+  const chat = document.getElementById('chat9');
+  const kb = document.getElementById('kb9');
+
+  chat.innerHTML = `
+    <div class="msg-bot">
+      <div style="text-align:center;font-size:2.5rem;">${emoji}</div>
+      <div style="text-align:center;font-size:1.1rem;font-weight:700;color:${color};margin:8px 0;">${pct}%</div>
+      <div style="text-align:center;color:var(--muted);font-size:0.85rem;">Правильно: ${quizScore} из ${total}</div>
+      <br>
+      ${msg}
+      <div class="stats-row" style="margin-top:10px;">
+        <div class="stat-box"><div class="val" style="color:var(--green);">${quizScore}</div><div class="lbl">Верно</div></div>
+        <div class="stat-box"><div class="val" style="color:var(--red);">${total-quizScore}</div><div class="lbl">Ошибки</div></div>
+        <div class="stat-box"><div class="val">${pct}%</div><div class="lbl">Результат</div></div>
+        <div class="stat-box"><div class="val">${userProgress[currentLevel]}%</div><div class="lbl">Прогресс</div></div>
+      </div>
+    </div>`;
+
+  kb.innerHTML = `
+    <button class="btn primary full" onclick="go(3)">📖 К другим темам</button>
+    <button class="btn full" onclick="openGrammar(${currentGrammarIdx})">🔄 Повторить эту тему</button>
+    <button class="btn full" onclick="startQuiz()">🧪 Пройти тест снова</button>
+    <button class="btn full" style="font-size:0.75rem;color:var(--muted);" onclick="go(2)">← Меню уровня</button>`;
+
+  go(9);
+}
+
+// ========== WORDS ==========
+function buildWords() {
+  wordIdx = 0;
+  showWord();
+}
+
+function showWord() {
+  const words = DATA[currentLevel].words;
+  const w = words[wordIdx];
+  const pct = Math.round((wordIdx / words.length) * 100);
+
+  document.getElementById('word-count').textContent = `${wordIdx} / ${words.length} слов`;
+  document.getElementById('word-fill').style.width = pct + '%';
+
+  const chat = document.getElementById('chat7');
+  const kb = document.getElementById('kb7');
+
+  chat.innerHTML = `
+    <div class="msg-bot">
+      <strong>📚 Слова — ${currentLevel}</strong><br>
+      <em style="font-size:0.8rem;color:var(--muted);">Слово ${wordIdx+1} из ${words.length}</em>
+      <div class="word-card" style="margin-top:10px;">
+        <div>
+          <div class="word-en">${w.en}</div>
+          <div class="word-transcr">${w.tr}</div>
+        </div>
+        <div class="word-ru">${w.ru}</div>
+      </div>
+      ${wordIdx > 0 ? `<div style="margin-top:8px;font-size:0.78rem;color:var(--muted);">
+        Предыдущее: <strong>${words[wordIdx-1].en}</strong> — ${words[wordIdx-1].ru}
+      </div>` : ''}
+    </div>`;
+
+  kb.innerHTML = `
+    <button class="btn primary" onclick="nextWord()">Следующее слово →</button>
+    <button class="btn" onclick="prevWord()">← Назад</button>
+    <button class="btn full" onclick="go(2)">← Меню уровня</button>`;
+}
+
+function nextWord() {
+  const words = DATA[currentLevel].words;
+  if (wordIdx < words.length - 1) { wordIdx++; showWord(); }
+  else {
+    document.getElementById('chat7').innerHTML += `<div class="msg-bot">🎉 <span class="good">Все слова уровня пройдены!</span> Отличная работа!</div>`;
+    document.getElementById('kb7').innerHTML = `
+      <button class="btn primary full" onclick="buildWords()">🔄 Начать сначала</button>
+      <button class="btn full" onclick="go(2)">← Меню уровня</button>`;
+  }
+}
+
+function prevWord() { if (wordIdx > 0) { wordIdx--; showWord(); } }
+
+// ========== PHRASES ==========
+function buildPhrases() {
+  phraseIdx = 0;
+  showPhrase();
+}
+
+function showPhrase() {
+  const phrases = DATA[currentLevel].phrases;
+  const p = phrases[phraseIdx];
+
+  const chat = document.getElementById('chat8');
+  const kb = document.getElementById('kb8');
+
+  chat.innerHTML = `
+    <div class="msg-bot">
+      <strong>💬 Фразы — ${currentLevel}</strong><br>
+      <em style="font-size:0.8rem;color:var(--muted);">Фраза ${phraseIdx+1} из ${phrases.length}</em>
+      <div class="word-card" style="margin-top:10px;flex-direction:column;gap:6px;align-items:flex-start;">
+        <div class="word-en" style="font-size:0.95rem;">${p.en}</div>
+        <div class="word-ru">${p.ru}</div>
+      </div>
+      ${phraseIdx > 0 ? `<div style="margin-top:8px;font-size:0.78rem;color:var(--muted);">
+        Предыдущая: <em>${phrases[phraseIdx-1].en}</em>
+      </div>` : ''}
+    </div>`;
+
+  kb.innerHTML = `
+    <button class="btn primary" onclick="nextPhrase()">Следующая фраза →</button>
+    <button class="btn" onclick="prevPhrase()">← Назад</button>
+    <button class="btn full" onclick="go(2)">← Меню уровня</button>`;
+}
+
+function nextPhrase() {
+  const phrases = DATA[currentLevel].phrases;
+  if (phraseIdx < phrases.length - 1) { phraseIdx++; showPhrase(); }
+  else {
+    document.getElementById('chat8').innerHTML += `<div class="msg-bot">🎉 <span class="good">Все фразы уровня изучены!</span></div>`;
+    document.getElementById('kb8').innerHTML = `
+      <button class="btn primary full" onclick="buildPhrases()">🔄 Начать сначала</button>
+      <button class="btn full" onclick="go(2)">← Меню уровня</button>`;
+  }
+}
+
+function prevPhrase() { if (phraseIdx > 0) { phraseIdx--; showPhrase(); } }
+</script>
+
+<script>
+// ── Telegram WebApp интеграция ──────────────────────────────
 const tg = window.Telegram?.WebApp;
 if (tg) {
-  tg.ready();
-  tg.expand();
-  const user = tg.initDataUnsafe?.user;
-  if (user) {
-    document.getElementById('user-name').textContent = user.first_name || 'Student';
-  }
+    tg.ready();
+    tg.expand(); // Раскрыть на весь экран
+
+    // Применяем цвет темы Telegram
+    if (tg.colorScheme === 'dark') {
+        document.documentElement.style.setProperty('--bg', '#0a0e1a');
+    }
+
+    // Главная кнопка (показываем при выборе уровня)
+    tg.MainButton.setText('Сохранить прогресс');
+    tg.MainButton.color = '#4f8ef7';
 }
 
-// ===== NAVIGATION =====
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0, 0);
-}
-
-function showHome() {
-  showScreen('screen-home');
-  updateHomeUI();
-  setActiveNav('nav-home');
-}
-
-function showProgress() {
-  updateProgressScreen();
-  showScreen('screen-progress');
-  setActiveNav('nav-progress');
-}
-
-function setActiveNav(id) {
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const el = document.getElementById(id);
-  if (el) el.classList.add('active');
-}
-
-function updateHomeUI() {
-  ['speaking','listening','reading','writing'].forEach(s => {
-    const pct = state.progress[s];
-    document.getElementById('pb-' + s).style.width = pct + '%';
-    document.getElementById('pv-' + s).textContent = pct + '%';
-    const band = state.bands[s];
-    document.getElementById('band-' + s).textContent = band ? band.toFixed(1) : '–';
-  });
-  const allBands = Object.values(state.bands).filter(b => b !== null);
-  const avgBand = allBands.length ? (allBands.reduce((a,b)=>a+b,0)/allBands.length).toFixed(1) : '–';
-  document.getElementById('home-band').textContent = avgBand;
-}
-
-// ===== SECTION =====
-function openSection(key) {
-  currentSection = key;
-  const sec = SECTIONS[key];
-  document.getElementById('section-title').textContent = sec.title;
-  const list = document.getElementById('lesson-list');
-  list.innerHTML = '';
-  sec.lessons.forEach((lesson, i) => {
-    const done = state.progress[key] >= Math.round(((i+1)/sec.lessons.length)*100);
-    const div = document.createElement('div');
-    div.className = 'lesson-card';
-    div.innerHTML = `
-      <div class="lesson-num ${done ? 'done' : ''}">${done ? '✓' : i+1}</div>
-      <div class="lesson-info">
-        <div class="lesson-name">${lesson.name}</div>
-        <div class="lesson-desc">${lesson.desc}</div>
-      </div>
-      <div class="lesson-arrow">›</div>
-    `;
-    div.onclick = () => openLesson(lesson);
-    list.appendChild(div);
-  });
-  showScreen('screen-section');
-  setActiveNav('');
-}
-
-function openLesson(lesson) {
-  if (lesson.type === 'phrases') {
-    openPhrases(lesson.key);
-  } else {
-    startQuiz(lesson.quiz);
-  }
-}
-
-// ===== PHRASES =====
-function openPhrases(key) {
-  const phrases = PHRASES[key] || [];
-  const list = document.getElementById('phrases-list');
-  list.innerHTML = '';
-  phrases.forEach(p => {
-    const div = document.createElement('div');
-    div.className = 'phrase-card';
-    div.innerHTML = `
-      <div class="phrase-cat">${p.cat}</div>
-      <div class="phrase-en">${p.en}</div>
-      <div class="phrase-ru">${p.ru}</div>
-      <div class="phrase-example">Example: ${p.ex}</div>
-    `;
-    list.appendChild(div);
-  });
-  showScreen('screen-phrases');
-  updateProgress(currentSection, 20);
-}
-
-function updateProgress(section, add) {
-  state.progress[section] = Math.min(100, (state.progress[section] || 0) + add);
-  saveState();
-}
-
-// ===== QUIZ =====
-function startQuiz(quizKey) {
-  currentQuiz = QUIZZES[quizKey];
-  currentQ = 0;
-  quizScore = 0;
-  answered = false;
-  renderQuestion();
-  showScreen('screen-quiz');
-}
-
-function renderQuestion() {
-  const q = currentQuiz[currentQ];
-  const total = currentQuiz.length;
-  document.getElementById('quiz-count').textContent = `Question ${currentQ+1} of ${total}`;
-  document.getElementById('quiz-fill').style.width = ((currentQ+1)/total*100) + '%';
-  document.getElementById('q-type').textContent = q.type;
-  document.getElementById('q-text').textContent = q.q;
-  
-  const optList = document.getElementById('options-list');
-  optList.innerHTML = '';
-  q.opts.forEach((opt, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn';
-    btn.innerHTML = `<div class="opt-letter">${String.fromCharCode(65+i)}</div>${opt}`;
-    btn.onclick = () => selectAnswer(i);
-    optList.appendChild(btn);
-  });
-
-  document.getElementById('explain-box').classList.remove('show');
-  document.getElementById('next-btn').classList.remove('show');
-  answered = false;
-}
-
-function selectAnswer(idx) {
-  if (answered) return;
-  answered = true;
-  const q = currentQuiz[currentQ];
-  const btns = document.querySelectorAll('.option-btn');
-  
-  btns.forEach((btn, i) => {
-    if (i === q.ans) btn.classList.add('correct');
-    else if (i === idx && i !== q.ans) btn.classList.add('wrong');
-    btn.onclick = null;
-  });
-
-  if (idx === q.ans) {
-    quizScore++;
-    state.correct++;
-  }
-  state.total++;
-  
-  const explain = document.getElementById('explain-box');
-  explain.textContent = '💡 ' + q.explain;
-  explain.classList.add('show');
-  document.getElementById('next-btn').classList.add('show');
-  document.getElementById('next-btn').textContent = currentQ < currentQuiz.length-1 ? 'Next →' : 'See Results';
-}
-
-function nextQuestion() {
-  currentQ++;
-  if (currentQ >= currentQuiz.length) {
-    showResult();
-  } else {
-    renderQuestion();
-  }
-}
-
-// ===== RESULT =====
-const TIPS = {
-  speaking_grammar: 'Practice speaking for 10 minutes daily. Record yourself and listen back — notice your mistakes.',
-  listening1: 'Listen to English podcasts every day. BBC Radio 4 and TED Talks are excellent for IELTS preparation.',
-  listening2: 'Practice with authentic IELTS listening tests. Focus especially on Section 3 and 4 which are harder.',
-  reading_tfng: 'The key to T/F/NG is NEVER using outside knowledge. Only use what the passage says.',
-  reading_match: 'For Matching Headings, always read the paragraph first, then match — don\'t do it in reverse.',
-  writing: 'Write one Task 2 essay every week. Ask a teacher or use online tools to get feedback on your work.',
+// Отправляем данные боту при выборе уровня
+const origSetLevel = setLevel;
+window.setLevel = function(lvl) {
+    origSetLevel(lvl);
+    if (tg) {
+        tg.sendData(JSON.stringify({
+            action: 'level_selected',
+            level: lvl
+        }));
+    }
 };
 
-function showResult() {
-  const total = currentQuiz.length;
-  const pct = quizScore / total;
-  const band = (pct * 4 + 5).toFixed(1); // rough band estimation 5.0-9.0
-  
-  state.tests++;
-  state.bands[currentSection] = parseFloat(band);
-  updateProgress(currentSection, 25);
-  saveState();
+// Отправляем результаты теста боту
+const origShowResults = showResults;
+window.showResults = function() {
+    origShowResults();
+    if (tg) {
+        tg.sendData(JSON.stringify({
+            action: 'quiz_completed',
+            level: currentLevel,
+            score: quizScore,
+            total: currentGrammar?.quiz?.length || 15
+        }));
+    }
+};
 
-  let emoji = '😊';
-  let title = 'Good Effort!';
-  if (pct >= 0.9) { emoji = '🏆'; title = 'Outstanding!'; }
-  else if (pct >= 0.7) { emoji = '🎉'; title = 'Well Done!'; }
-  else if (pct >= 0.5) { emoji = '💪'; title = 'Keep Going!'; }
-  else { emoji = '📚'; title = 'Keep Studying!'; }
-
-  document.getElementById('result-emoji').textContent = emoji;
-  document.getElementById('result-title').textContent = title;
-  document.getElementById('result-sub').textContent = `You got ${quizScore} out of ${total} correct`;
-  document.getElementById('result-score').textContent = band;
-  document.getElementById('result-band').textContent = 'Estimated IELTS Band';
-  document.getElementById('result-tip-text').textContent = TIPS[Object.keys(QUIZZES).find(k => QUIZZES[k] === currentQuiz)] || 'Keep practicing daily for best results!';
-  
-  document.getElementById('retry-btn').onclick = () => startQuiz(Object.keys(QUIZZES).find(k => QUIZZES[k] === currentQuiz));
-  
-  showScreen('screen-result');
+// Кнопка назад в Telegram
+if (tg) {
+    tg.BackButton.onClick(() => {
+        // Возвращаемся на предыдущий экран
+        const screens = ['s0','s1','s2','s3','s4','s5','s6','s7','s8','s9','sabout'];
+        const active = screens.find(id => {
+            const el = document.getElementById(id);
+            return el && el.classList.contains('active');
+        });
+        if (active && active !== 's0') {
+            tg.BackButton.show();
+        } else {
+            tg.BackButton.hide();
+        }
+    });
 }
+</script>
 
-// ===== PROGRESS SCREEN =====
-function updateProgressScreen() {
-  document.getElementById('stat-tests').textContent = state.tests;
-  document.getElementById('stat-streak').textContent = state.streak + '🔥';
-  const acc = state.total > 0 ? Math.round(state.correct/state.total*100) : 0;
-  document.getElementById('stat-correct').textContent = acc + '%';
-  const bands = Object.values(state.bands).filter(b => b !== null);
-  const avg = bands.length ? (bands.reduce((a,b)=>a+b,0)/bands.length).toFixed(1) : '–';
-  document.getElementById('stat-band').textContent = avg;
-}
-
-// ===== INIT =====
-updateHomeUI();
-
-// Increment streak daily
-const today = new Date().toDateString();
-if (state.lastDay !== today) {
-  state.lastDay = today;
-  state.streak = (state.streak || 0) + 1;
-  saveState();
-}
-</script></body>
+</body>
 </html>
