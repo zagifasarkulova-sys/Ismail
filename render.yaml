@@ -1,8 +1,7 @@
 services:
-
-- type: worker
-  name: english-learn-bot
-  runtime: python
-  pythonVersion: “3.11.0”
-  buildCommand: pip install -r requirements.txt
-  startCommand: python bot.py
+  - type: worker
+    name: english-learn-bot
+    runtime: python
+    pythonVersion: "3.11.0"
+    buildCommand: pip install --upgrade --force-reinstall python-telegram-bot==20.7
+    startCommand: python bot.py
