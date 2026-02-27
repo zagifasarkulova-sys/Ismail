@@ -1,7 +1,24 @@
 services:
+  # Telegram bot worker
   - type: worker
-    name: english-learn-bot
+    name: english-master-bot
     runtime: python
     pythonVersion: "3.11.0"
-    buildCommand: python -m venv venv && ./venv/bin/pip install python-telegram-bot==20.7
-    startCommand: ./venv/bin/python bot.py
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: WEBAPP_URL
+        sync: false
+
+  # WebApp static server
+  - type: web
+    name: english-master-webapp
+    runtime: python
+    pythonVersion: "3.11.0"
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn server:app
+    envVars:
+      - key: PORT
+        value: 10000
