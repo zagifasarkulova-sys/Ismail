@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+import asyncio
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -471,4 +472,6 @@ def main():
     app.run_polling()
 
 if __name__ == "__main__":
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     main()
