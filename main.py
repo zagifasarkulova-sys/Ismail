@@ -18,9 +18,19 @@ def health():
 def run_bot():
     import time
     time.sleep(10)  # wait for old instance to shut down during rolling deploy
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    bot_main()
+    while True:
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            bot_main()
+            break  # clean exit
+        except Exception as e:
+            if "Conflict" in str(e):
+                print(f"[bot] Conflict detected, retrying in 15s...")
+                time.sleep(15)
+            else:
+                print(f"[bot] Unexpected error: {e}")
+                time.sleep(5)
 
 if __name__ == '__main__':
     bot_thread = threading.Thread(target=run_bot, daemon=True)
