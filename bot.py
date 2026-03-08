@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
-WEB_APP_URL = "https://english-learn-bot.onrender.com"
+WEB_APP_URL = os.environ.get("WEBAPP_URL", "https://zagifasarkulova-sys.github.io/Ismail/")
 
 from content.a1 import A1
 from content.a2 import A2
