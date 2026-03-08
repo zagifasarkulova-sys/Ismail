@@ -4,11 +4,12 @@ import asyncio
 from flask import Flask, send_file
 from bot import main as bot_main
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return send_file('index.html')
+    return send_file(os.path.join(BASE_DIR, 'index.html'))
 
 @app.route('/health')
 def health():
