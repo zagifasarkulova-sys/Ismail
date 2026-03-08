@@ -15,6 +15,8 @@ def health():
     return 'OK'
 
 def run_bot():
+    import time
+    time.sleep(10)  # wait for old instance to shut down during rolling deploy
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     bot_main()
