@@ -4,8 +4,10 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+
+WEB_APP_URL = "https://english-learn-bot.onrender.com"
 
 from content.a1 import A1
 from content.a2 import A2
@@ -47,7 +49,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if row:
         keyboard.append(row)
 
-    text = "🎓 *English Learn Bot*\n\nВыбери свой уровень английского:"
+    keyboard.append([InlineKeyboardButton(
+        "🎓 IELTS Master — открыть приложение",
+        web_app=WebAppInfo(url=WEB_APP_URL)
+    )])
+    text = "🎓 *English Learn Bot*\n\nВыбери свой уровень английского или открой IELTS приложение:"
     markup = build_markup(keyboard)
 
     if update.message:

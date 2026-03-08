@@ -1,8 +1,13 @@
 services:
 
-- type: worker
+- type: web
   name: english-learn-bot
   runtime: python
-  pythonVersion: “3.11.0”
+  pythonVersion: "3.11.0"
   buildCommand: pip install -r requirements.txt
-  startCommand: python bot.py
+  startCommand: python main.py
+  envVars:
+  - key: BOT_TOKEN
+    sync: false
+  - key: PORT
+    value: 5000
