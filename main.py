@@ -14,13 +14,13 @@ def index():
 def health():
     return 'OK'
 
-def run_flask():
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
-
-if __name__ == '__main__':
-    flask_thread = threading.Thread(target=run_flask, daemon=True)
-    flask_thread.start()
+def run_bot():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     bot_main()
+
+if __name__ == '__main__':
+    bot_thread = threading.Thread(target=run_bot, daemon=True)
+    bot_thread.start()
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
