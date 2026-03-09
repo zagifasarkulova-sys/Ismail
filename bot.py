@@ -469,7 +469,7 @@ def main():
     app.add_handler(CallbackQueryHandler(cb_phrase_sit, pattern=r"^ph_sit_"))
 
     print("✅ Бот запущен!")
-    app.run_polling(drop_pending_updates=True)
+    app.run_polling(drop_pending_updates=True, stop_signals=[])
 
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()
