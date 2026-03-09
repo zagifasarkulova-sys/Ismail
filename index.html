@@ -236,33 +236,6 @@ color: #94a3b8;
     </div>
     <div class="keyboard">
       <button class="btn primary full" onclick="go(1)">🚀 Начать обучение</button>
-      <button class="btn full green" onclick="openWebApp()">📱 Открыть приложение</button>
-      <button class="btn full" onclick="go('about')">ℹ️ О боте</button>
-    </div>
-  </div>
-
-  <!-- ========== SCREEN: ABOUT ========== -->
-  <div id="sabout" class="screen">
-    <div class="chat-area">
-      <div class="msg-bot">
-        <strong>📖 О боте EnglishMaster</strong><br><br>
-        Бот создан на основе:<br>
-        🔹 <strong>CEFR</strong> — европейская система уровней (A1, A2, B1, B2, C1)<br>
-        🔹 <strong>Spaced Repetition</strong> — интервальное повторение слов<br>
-        🔹 <strong>Коммуникативный метод</strong> — живые фразы и диалоги<br>
-        🔹 <strong>Грамматика в контексте</strong> — не правила, а примеры<br><br>
-        <strong>В каждом уровне:</strong><br>
-        ✅ Грамматические темы с объяснениями<br>
-        ✅ 10 заданий для отработки в тетради<br>
-        ✅ 15-вопросный тест<br>
-        ✅ 100+ слов с переводом<br>
-        ✅ 50+ полезных фраз<br>
-        ✅ Система прогресса и достижений
-      </div>
-    </div>
-    <div class="keyboard">
-      <button class="btn primary full" onclick="go(1)">🚀 Начать обучение</button>
-      <button class="btn full" onclick="go(0)">← Назад</button>
     </div>
   </div>
 
@@ -286,7 +259,7 @@ color: #94a3b8;
       <button class="btn full" onclick="setLevel('B1'); go(2)">🔵 B1 — Средний</button>
       <button class="btn full" onclick="setLevel('B2'); go(2)">🟣 B2 — Выше среднего</button>
       <button class="btn full" onclick="setLevel('C1'); go(2)">🔴 C1 — Продвинутый</button>
-      <button class="btn full" style="margin-top:4px;font-size:0.75rem;" onclick="go(0)">← Назад</button>
+      <button class="btn full" style="margin-top:4px;font-size:0.75rem;" onclick="go(0)">🏠 Главная</button>
     </div>
   </div>
 
@@ -609,7 +582,6 @@ function go(screen) {
   if (screen === 3) buildGrammarList();
   if (screen === 7) buildWords();
   if (screen === 8) buildPhrases();
-  if (screen === 'about') document.getElementById('sabout').classList.add('active');
 }
 
 function setLevel(lvl) { currentLevel = lvl; }
@@ -619,15 +591,6 @@ function scrollBottom(id) {
     const el = document.getElementById('chat' + id);
     if (el) el.scrollTop = el.scrollHeight;
   }, 100);
-}
-
-function openWebApp() {
-  const tg = window.Telegram?.WebApp;
-  if (tg) {
-    tg.expand();
-  } else {
-    go(1);
-  }
 }
 
 // ========== LEVEL MENU ==========
