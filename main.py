@@ -11,6 +11,10 @@ app = Flask(__name__)
 def index():
     return send_file(os.path.join(BASE_DIR, 'index.html'))
 
+@app.route('/content_data.js')
+def content_data():
+    return send_file(os.path.join(BASE_DIR, 'content_data.js'), mimetype='application/javascript')
+
 @app.route('/health')
 def health():
     return 'OK'

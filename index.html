@@ -3,1305 +3,1188 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LinguaStep — Прототип бота</title>
+<title>LinguaStep — Учи английский</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 :root {
-  --bg: #17212b;
-  --chat-bg: #0e1621;
-  --msg-bot: #182533;
-  --msg-user: #2b5278;
+  --bg: #0d1117;
+  --card: #161b22;
+  --card2: #1c2230;
   --accent: #5288c1;
+  --accent2: #7c3aed;
   --green: #4caf7d;
   --red: #e05c5c;
   --yellow: #f0b132;
   --text: #d8e0e8;
   --muted: #627d8f;
-  --border: #232e3c;
-  --btn: #202d3b;
-  --btn-hover: #2b3d50;
-  --header: #232e3c;
+  --border: #21262d;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  background: #0d1117;
+  background: var(--bg);
   color: var(--text);
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px 16px;
-}
-.page-title {
-  font-size: 1.05rem;
-  color: var(--muted);
-  margin-bottom: 16px;
-  text-align: center;
-  letter-spacing: 0.03em;
-}
-.page-title span { color: var(--accent); font-weight: 600; }
-
-/* ─── PHONE SHELL ─── */
-.phone {
-  width: 360px;
-  max-width: 100%;
-  background: var(--bg);
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
-  display: flex;
-  flex-direction: column;
-  height: 680px;
 }
 
-/* ─── HEADER ─── */
-.phone-header {
-  background: var(--header);
-  padding: 10px 14px;
+/* ─── LAYOUT ─── */
+#app { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ─── TOPBAR ─── */
+#topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(13,17,23,0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  height: 52px;
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-shrink: 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
 }
-.avatar {
-  width: 36px; height: 36px;
-  background: linear-gradient(135deg, #5288c1, #7c3aed);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 17px; flex-shrink: 0;
+#topbar-logo { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+#topbar-title { font-size: 0.85rem; color: var(--muted); flex: 1; }
+#back-btn {
+  background: none; border: none; color: var(--accent);
+  font-size: 0.85rem; cursor: pointer; padding: 6px 10px;
+  border-radius: 8px; display: none; align-items: center; gap: 4px;
+  font-family: inherit;
 }
-.bot-name { font-weight: 600; font-size: 0.92rem; }
-.bot-status { font-size: 0.7rem; color: var(--green); }
-.back-btn {
-  margin-left: auto;
-  background: none; border: none;
-  color: var(--accent); font-size: 0.78rem;
-  cursor: pointer; padding: 4px 8px;
-  border-radius: 6px;
-  font-family: 'Inter', sans-serif;
-}
-.back-btn:hover { background: rgba(82,136,193,0.15); }
+#back-btn:hover { background: rgba(82,136,193,0.15); }
+#back-btn.visible { display: flex; }
 
-/* ─── PROGRESS BAR ─── */
-.prog-bar-wrap {
-  background: var(--chat-bg);
-  padding: 6px 14px 5px;
-  flex-shrink: 0;
-  display: none;
-}
-.prog-bar-wrap.show { display: block; }
-.prog-meta { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--muted); margin-bottom: 4px; }
-.prog-bar { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
-.prog-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #7c3aed); border-radius: 99px; transition: width 0.4s ease; }
-
-/* ─── CHAT AREA ─── */
-.chat-area {
-  flex: 1;
-  overflow-y: auto;
-  background: var(--chat-bg);
-  padding: 12px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  scroll-behavior: smooth;
-}
-.chat-area::-webkit-scrollbar { width: 3px; }
-.chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-/* ─── MESSAGES ─── */
-.msg-wrap { display: flex; gap: 6px; align-items: flex-end; }
-.msg-wrap.user { flex-direction: row-reverse; }
-.msg-icon { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg,#5288c1,#7c3aed); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
-.bubble {
-  max-width: 82%;
-  padding: 8px 11px;
-  border-radius: 12px;
-  font-size: 0.82rem;
-  line-height: 1.55;
-  animation: pop 0.25s ease;
-}
-@keyframes pop { from { opacity:0; transform:scale(0.95) translateY(4px); } to { opacity:1; transform:scale(1) translateY(0); } }
-.bubble.bot {
-  background: var(--msg-bot);
-  border-bottom-left-radius: 3px;
-  color: var(--text);
-}
-.bubble.user {
-  background: var(--msg-user);
-  border-bottom-right-radius: 3px;
-  color: #fff;
-}
-.bubble b, .bubble strong { color: #8bb8e8; }
-.bubble .green { color: var(--green); font-weight: 600; }
-.bubble .red { color: var(--red); }
-.bubble .yellow { color: var(--yellow); }
-.bubble .muted { color: var(--muted); font-size: 0.78rem; }
-.bubble hr { border: none; border-top: 1px solid var(--border); margin: 7px 0; }
-.bubble .section { margin-top: 6px; }
-.bubble .section-title { color: var(--accent); font-weight: 600; font-size: 0.8rem; margin-bottom: 3px; }
-
-/* ─── GRAMMAR BOX ─── */
-.gram-box {
-  background: #0f1d2d;
-  border: 1px solid #1e3a5a;
-  border-radius: 9px;
-  padding: 9px 11px;
-  margin-top: 6px;
-  font-size: 0.79rem;
-  line-height: 1.6;
-}
-.gram-box .formula {
-  background: #0a1525;
-  border-left: 3px solid var(--accent);
-  padding: 5px 9px;
-  border-radius: 0 6px 6px 0;
-  font-family: monospace;
-  color: var(--yellow);
-  margin: 5px 0;
-  font-size: 0.78rem;
-}
-.gram-box .ex { color: #748ea8; font-style: italic; margin-top: 3px; }
-.gram-box .ex .en { color: var(--green); }
-
-/* ─── WORD CARD ─── */
-.word-card {
-  background: #0f1d2d;
-  border: 1px solid #1e3a5a;
-  border-radius: 9px;
-  padding: 10px 13px;
-  margin-top: 7px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.word-en { font-size: 1.05rem; font-weight: 700; color: #8bb8e8; }
-.word-tr { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
-.word-ru { font-size: 0.85rem; color: var(--text); text-align: right; }
-
-/* ─── STAT BOXES ─── */
-.stats { display: flex; gap: 6px; margin-top: 8px; }
-.stat { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 7px 5px; text-align: center; }
-.stat-val { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
-.stat-lbl { font-size: 0.63rem; color: var(--muted); margin-top: 1px; }
-
-/* ─── PROGRESS RINGS ─── */
-.prog-list { margin-top: 8px; }
-.prog-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; font-size: 0.78rem; }
-.prog-row .lbl { width: 90px; color: var(--muted); flex-shrink: 0; }
-.prog-track { flex: 1; height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; }
-.prog-track-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), #7c3aed); }
-.prog-row .pct { width: 32px; text-align: right; font-size: 0.72rem; color: var(--muted); }
-
-/* ─── TASK CARD ─── */
-.task-item {
-  background: #0f1d2d;
-  border: 1px solid #1a2d42;
-  border-radius: 8px;
-  padding: 7px 10px;
-  margin-top: 5px;
-  font-size: 0.78rem;
-  color: #8baec8;
-  line-height: 1.5;
-}
-.task-num { color: var(--yellow); font-weight: 700; margin-right: 5px; }
-
-/* ─── RESULT BOX ─── */
-.result-box {
-  text-align: center;
-  padding: 10px 0 6px;
-}
-.result-emoji { font-size: 2.8rem; }
-.result-score { font-size: 1.6rem; font-weight: 700; margin: 6px 0 2px; }
-.result-sub { font-size: 0.78rem; color: var(--muted); }
-.result-msg { margin-top: 8px; font-size: 0.82rem; line-height: 1.5; }
-
-/* ─── KEYBOARD ─── */
-.keyboard {
-  background: var(--bg);
-  padding: 8px 10px 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  flex-shrink: 0;
-  border-top: 1px solid var(--border);
-}
-.btn {
-  background: var(--btn);
-  border: 1px solid rgba(255,255,255,0.07);
-  color: var(--text);
-  padding: 9px 12px;
-  border-radius: 9px;
-  font-size: 0.79rem;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: all 0.15s;
-  flex: 1 1 auto;
-  text-align: center;
-  min-width: 90px;
-  line-height: 1.3;
-}
-.btn:hover { background: var(--btn-hover); transform: translateY(-1px); }
-.btn:active { transform: translateY(0); opacity: 0.85; }
-.btn.primary {
-  background: linear-gradient(135deg, #5288c1, #7c3aed);
-  border: none; color: #fff; font-weight: 600;
-}
-.btn.primary:hover { opacity: 0.88; }
-.btn.green-btn { background: #1a4a2e; border-color: #2d6b43; color: var(--green); font-weight: 600; }
-.btn.green-btn:hover { background: #1f5a36; }
-.btn.muted-btn { color: var(--muted); font-size: 0.73rem; border-color: transparent; }
-.btn.full { flex: 1 1 100%; }
-.btn.half { flex: 1 1 45%; }
-.quiz-opt {
-  background: var(--btn);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 9px 12px;
-  border-radius: 9px;
-  font-size: 0.79rem;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: all 0.15s;
-  flex: 1 1 100%;
-  text-align: left;
-}
-.quiz-opt:hover { border-color: var(--accent); background: #162234; }
-.quiz-opt.correct { background: #0d3320; border-color: var(--green); color: var(--green); pointer-events: none; }
-.quiz-opt.wrong { background: #2d0f0f; border-color: var(--red); color: var(--red); pointer-events: none; }
-.quiz-opt.disabled { pointer-events: none; opacity: 0.6; }
+/* ─── MAIN CONTENT ─── */
+#main { flex: 1; padding: 20px 16px; max-width: 760px; margin: 0 auto; width: 100%; }
 
 /* ─── SCREENS ─── */
-.screen { display: none; flex: 1; flex-direction: column; overflow: hidden; }
-.screen.active { display: flex; }
+.screen { display: none; animation: fadeIn 0.2s ease; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
 
-/* ─── LEVELS GRID ─── */
-.level-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
-.level-btn {
-  flex: 1 1 45%;
-  background: var(--btn);
+/* ─── HERO ─── */
+.hero {
+  text-align: center;
+  padding: 48px 0 32px;
+}
+.hero-icon { font-size: 3.5rem; margin-bottom: 16px; }
+.hero h1 { font-size: 2rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.hero p { color: var(--muted); font-size: 0.95rem; max-width: 480px; margin: 0 auto 28px; line-height: 1.6; }
+.hero-features {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; max-width: 400px; margin: 0 auto 28px;
+}
+.feat-item {
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 10px 8px;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.15s;
-  font-family: 'Inter', sans-serif;
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-align: left;
 }
-.level-btn:hover { border-color: var(--accent); background: #1a2a3a; transform: translateY(-2px); }
-.level-btn .le { font-size: 1.3rem; }
-.level-btn .ln { font-size: 0.78rem; font-weight: 600; color: var(--text); margin-top: 3px; }
-.level-btn .ld { font-size: 0.66rem; color: var(--muted); margin-top: 1px; }
+.feat-item span { display: block; font-size: 1.1rem; margin-bottom: 4px; }
 
-/* ─── TOPIC ITEM ─── */
-.topic-item {
-  background: var(--btn);
+/* ─── LEVEL GRID ─── */
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.level-card {
+  background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 9px;
-  padding: 9px 12px;
+  border-radius: 14px;
+  padding: 18px 16px;
   cursor: pointer;
-  font-size: 0.8rem;
+  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.level-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(82,136,193,0.15);
+}
+.level-card-emoji { font-size: 2rem; margin-bottom: 8px; }
+.level-card-name { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+.level-card-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+.level-card-prog { margin-top: 10px; }
+.mini-bar { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; margin-top: 4px; }
+.mini-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; }
+
+/* ─── SECTION HEADER ─── */
+.sec-header {
+  margin-bottom: 20px;
+}
+.sec-header h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 6px; }
+.sec-header p { color: var(--muted); font-size: 0.88rem; }
+
+/* ─── STATS ROW ─── */
+.stats-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+.stat-box {
+  flex: 1; min-width: 80px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 10px;
+  text-align: center;
+}
+.stat-val { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+.stat-lbl { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+
+/* ─── SECTION MENU ─── */
+.section-menu { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.sec-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.15s;
-  font-family: 'Inter', sans-serif;
-  width: 100%;
+  gap: 14px;
+  transition: border-color 0.2s, background 0.2s;
   text-align: left;
   color: var(--text);
+  font-family: inherit;
 }
-.topic-item:hover { border-color: var(--accent); background: #1a2a3a; }
-.topic-item .status { font-size: 0.85rem; flex-shrink: 0; }
-.topic-item .icon { font-size: 0.85rem; flex-shrink: 0; }
-.topic-item .title { flex: 1; }
+.sec-btn:hover { border-color: var(--accent); background: var(--card2); }
+.sec-btn .icon { font-size: 1.5rem; flex-shrink: 0; }
+.sec-btn .label { font-weight: 600; font-size: 0.95rem; }
+.sec-btn .sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+.sec-btn .arrow { margin-left: auto; color: var(--muted); font-size: 0.9rem; }
+.sec-btn .prog-pill {
+  margin-left: auto; margin-right: 8px;
+  font-size: 0.72rem; color: var(--accent);
+  background: rgba(82,136,193,0.12);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+/* ─── PROGRESS BARS ─── */
+.prog-item { margin-bottom: 10px; }
+.prog-item-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+.prog-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.prog-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width 0.4s; }
+
+/* ─── TOPIC LIST ─── */
+.topic-list { display: flex; flex-direction: column; gap: 8px; }
+.topic-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: border-color 0.2s, background 0.2s;
+  text-align: left;
+  color: var(--text);
+  font-family: inherit;
+  width: 100%;
+}
+.topic-item:hover { border-color: var(--accent); background: var(--card2); }
+.topic-item .t-icon { font-size: 1.2rem; flex-shrink: 0; }
+.topic-item .t-title { font-size: 0.9rem; font-weight: 500; flex: 1; }
+.topic-item .t-status { font-size: 0.85rem; flex-shrink: 0; }
+
+/* ─── EXPLANATION ─── */
+.explanation {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 16px;
+  line-height: 1.7;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+}
+.explanation b, .explanation strong { color: #8bb8e8; }
+
+/* ─── QUIZ / EXERCISE ─── */
+.quiz-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.quiz-num { font-size: 0.8rem; color: var(--muted); }
+.quiz-q { font-size: 1rem; font-weight: 600; margin-bottom: 16px; line-height: 1.5; }
+.quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+.opt-btn {
+  background: var(--card2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--text);
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+.opt-btn:hover { border-color: var(--accent); }
+.opt-btn.correct { border-color: var(--green); background: rgba(76,175,125,0.12); color: var(--green); }
+.opt-btn.wrong { border-color: var(--red); background: rgba(224,92,92,0.12); color: var(--red); }
+.opt-btn:disabled { cursor: default; }
+.quiz-result {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.quiz-result.ok { background: rgba(76,175,125,0.1); border: 1px solid var(--green); color: var(--green); }
+.quiz-result.fail { background: rgba(224,92,92,0.1); border: 1px solid var(--red); color: var(--red); }
+
+/* ─── RESULT CARD ─── */
+.result-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 24px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.result-emoji { font-size: 3rem; margin-bottom: 12px; }
+.result-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+.result-score { font-size: 2rem; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+.result-msg { font-size: 0.88rem; color: var(--muted); line-height: 1.5; }
+
+/* ─── VOCAB ─── */
+.word-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.word-en { font-size: 1.8rem; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+.word-ru { font-size: 1.1rem; color: var(--text); margin-bottom: 8px; }
+.word-ex { font-size: 0.85rem; color: var(--muted); font-style: italic; }
+.word-counter { font-size: 0.8rem; color: var(--muted); margin-bottom: 16px; }
+
+/* ─── PHRASE CARD ─── */
+.phrase-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.phrase-en { font-size: 0.95rem; font-weight: 600; color: #8bb8e8; margin-bottom: 4px; }
+.phrase-ru { font-size: 0.85rem; color: var(--muted); }
+.phrase-note { font-size: 0.78rem; color: var(--yellow); margin-top: 3px; }
+
+/* ─── TOPIC ACTIONS ─── */
+.topic-actions {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;
+}
+.tab-btn {
+  flex: 1; min-width: 120px;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text);
+  font-family: inherit;
+  transition: border-color 0.2s, background 0.2s;
+}
+.tab-btn:hover { border-color: var(--accent); }
+.tab-btn.active { border-color: var(--accent); background: rgba(82,136,193,0.12); color: var(--accent); font-weight: 600; }
+
+/* ─── BUTTONS ─── */
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.btn {
+  flex: 1; min-width: 100px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-family: inherit;
+  font-weight: 500;
+  transition: opacity 0.2s, transform 0.1s;
+}
+.btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-secondary { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+.btn-success { background: var(--green); color: #fff; }
+.btn-full { width: 100%; min-width: unset; }
+
+/* ─── CATEGORY CARDS ─── */
+.cat-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.cat-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 12px;
+  transition: border-color 0.2s, background 0.2s;
+  width: 100%;
+  color: var(--text);
+  font-family: inherit;
+  text-align: left;
+}
+.cat-item:hover { border-color: var(--accent); background: var(--card2); }
+.cat-item .c-icon { font-size: 1.3rem; }
+.cat-item .c-name { font-weight: 500; font-size: 0.9rem; flex: 1; }
+.cat-item .c-count { font-size: 0.78rem; color: var(--muted); }
+.cat-item .c-status { font-size: 0.85rem; margin-left: 8px; }
+
+/* ─── PROGRESS SCREEN ─── */
+.prog-topic-list { display: flex; flex-direction: column; gap: 6px; }
+.prog-topic-item {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 10px 14px;
+  font-size: 0.83rem;
+}
+.prog-topic-item .pt-title { color: var(--text); }
+.prog-topic-item .pt-status { font-size: 0.8rem; }
+
+.badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-weight: 500;
+}
+.badge-green { background: rgba(76,175,125,0.15); color: var(--green); }
+.badge-blue { background: rgba(82,136,193,0.15); color: var(--accent); }
+.badge-muted { background: rgba(98,125,143,0.15); color: var(--muted); }
+
+/* ─── NEXT QUIZ BTN ─── */
+#quiz-next-btn { display: none; }
+
+@media (max-width: 480px) {
+  .hero h1 { font-size: 1.5rem; }
+  .hero-features { grid-template-columns: 1fr 1fr; }
+  #main { padding: 14px 12px; }
+  .level-grid { grid-template-columns: 1fr 1fr; }
+}
 </style>
 </head>
 <body>
-
-<p class="page-title">📱 <span>LinguaStep</span> — интерактивный прототип бота</p>
-
-<div class="phone">
-
-  <!-- HEADER -->
-  <div class="phone-header">
-    <div class="avatar">🎯</div>
-    <div>
-      <div class="bot-name">LinguaStep</div>
-      <div class="bot-status">● онлайн</div>
-    </div>
-    <button class="back-btn" id="back-btn" onclick="goBack()" style="display:none">◀ Назад</button>
+<div id="app">
+  <div id="topbar">
+    <button id="back-btn" onclick="goBack()">← Назад</button>
+    <div id="topbar-logo">🎯 LinguaStep</div>
+    <div id="topbar-title"></div>
   </div>
+  <div id="main">
 
-  <!-- PROGRESS BAR -->
-  <div class="prog-bar-wrap" id="prog-bar-wrap">
-    <div class="prog-meta"><span id="prog-label">Прогресс</span><span id="prog-val">0%</span></div>
-    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
-  </div>
-
-  <!-- ══ SCREEN 0: WELCOME ══ -->
-  <div id="s0" class="screen active">
-    <div class="chat-area">
-      <div class="msg-wrap">
-        <div class="msg-icon">🎯</div>
-        <div class="bubble bot">
-          Привет! 👋 Я <strong>LinguaStep</strong> — твой персональный тренер по английскому языку.<br><br>
-          <div class="section">
-            <div class="section-title">📚 Что умею:</div>
-            • Объяснять грамматику понятным языком<br>
-            • Давать <strong>10 упражнений</strong> по каждой теме<br>
-            • Проверять знания через <strong>15-вопросный тест</strong><br>
-            • Учить слова по категориям<br>
-            • Показывать разговорные фразы<br>
-            • Следить за твоим <strong>прогрессом</strong>
-          </div>
-          <hr>
-          <span class="muted">🎯 Уровни: A1 → A2 → B1 → B2 → C1 → C2</span>
+    <!-- SCREEN: HOME -->
+    <div id="s-home" class="screen active">
+      <div class="hero">
+        <div class="hero-icon">🎯</div>
+        <h1>LinguaStep</h1>
+        <p>Твой умный помощник в изучении английского языка — от нуля до уровня носителя.</p>
+        <div class="hero-features">
+          <div class="feat-item"><span>📚</span> 6 уровней<br>A1 → C2</div>
+          <div class="feat-item"><span>✏️</span> Упражнения<br>по темам</div>
+          <div class="feat-item"><span>🧪</span> Тесты<br>с оценкой</div>
+          <div class="feat-item"><span>📊</span> Прогресс<br>сохраняется</div>
         </div>
+        <button class="btn btn-primary" onclick="go('levels')" style="font-size:1rem;padding:14px 32px;">🚀 Начать обучение</button>
       </div>
     </div>
-    <div class="keyboard">
-      <button class="btn primary full" onclick="go(1)">🚀 Начать обучение</button>
-    </div>
-  </div>
 
-  <!-- ══ SCREEN 1: CHOOSE LEVEL ══ -->
-  <div id="s1" class="screen">
-    <div class="chat-area">
-      <div class="msg-wrap user">
-        <div class="bubble user">🚀 Начать обучение</div>
+    <!-- SCREEN: LEVELS -->
+    <div id="s-levels" class="screen">
+      <div class="sec-header">
+        <h2>Выбери уровень</h2>
+        <p>Начни с подходящего уровня или продолжи с того, где остановился</p>
       </div>
-      <div class="msg-wrap">
-        <div class="msg-icon">🎯</div>
-        <div class="bubble bot">
-          <strong>📊 Выбери свой уровень английского:</strong><br><br>
-          <div class="level-grid">
-            <div class="level-btn" onclick="pickLevel('A1','🌱','A1 — Начинающий','нулевые знания')">
-              <div class="le">🌱</div><div class="ln">A1</div><div class="ld">Начинающий</div>
-            </div>
-            <div class="level-btn" onclick="pickLevel('A2','🌿','A2 — Элементарный','знаешь основы')">
-              <div class="le">🌿</div><div class="ln">A2</div><div class="ld">Элементарный</div>
-            </div>
-            <div class="level-btn" onclick="pickLevel('B1','🌳','B1 — Средний','можешь общаться')">
-              <div class="le">🌳</div><div class="ln">B1</div><div class="ld">Средний</div>
-            </div>
-            <div class="level-btn" onclick="pickLevel('B2','🌲','B2 — Выше среднего','свободное общение')">
-              <div class="le">🌲</div><div class="ln">B2</div><div class="ld">Выше среднего</div>
-            </div>
-            <div class="level-btn" onclick="pickLevel('C1','⭐','C1 — Продвинутый','почти как носитель')">
-              <div class="le">⭐</div><div class="ln">C1</div><div class="ld">Продвинутый</div>
-            </div>
-            <div class="level-btn" onclick="pickLevel('C2','🏆','C2 — Совершенный','уровень носителя')">
-              <div class="le">🏆</div><div class="ln">C2</div><div class="ld">Совершенный</div>
-            </div>
-          </div>
+      <div class="level-grid" id="level-grid"></div>
+    </div>
+
+    <!-- SCREEN: LEVEL MENU -->
+    <div id="s-level-menu" class="screen">
+      <div id="level-menu-header" class="sec-header"></div>
+      <div class="stats-row" id="level-stats"></div>
+      <div class="section-menu" id="level-sections"></div>
+    </div>
+
+    <!-- SCREEN: GRAMMAR LIST -->
+    <div id="s-grammar" class="screen">
+      <div class="sec-header">
+        <h2 id="grammar-title">📚 Грамматика</h2>
+        <div id="grammar-prog-bar" class="prog-item" style="margin-top:10px;"></div>
+      </div>
+      <div class="topic-list" id="grammar-list"></div>
+    </div>
+
+    <!-- SCREEN: GRAMMAR TOPIC -->
+    <div id="s-topic" class="screen">
+      <div class="sec-header">
+        <h2 id="topic-title"></h2>
+      </div>
+      <div class="topic-actions" id="topic-tabs"></div>
+      <div id="topic-content"></div>
+    </div>
+
+    <!-- SCREEN: EXERCISE -->
+    <div id="s-exercise" class="screen">
+      <div class="quiz-wrap">
+        <div class="quiz-header">
+          <span id="ex-label">✏️ Упражнение</span>
+          <span class="quiz-num" id="ex-num"></span>
         </div>
+        <div class="prog-bar" style="margin-bottom:16px;"><div class="prog-fill" id="ex-prog"></div></div>
+        <div class="quiz-q" id="ex-q"></div>
+        <div class="quiz-opts" id="ex-opts"></div>
+        <div class="quiz-result" id="ex-result" style="display:none;"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="ex-next-btn" onclick="nextExercise()" style="display:none;">Следующее →</button>
       </div>
     </div>
-    <div class="keyboard">
-      <button class="btn muted-btn full" onclick="go(0)">◀ Назад</button>
+
+    <!-- SCREEN: TEST -->
+    <div id="s-test" class="screen">
+      <div class="quiz-wrap">
+        <div class="quiz-header">
+          <span id="test-label">🧪 Тест</span>
+          <span class="quiz-num" id="test-num"></span>
+        </div>
+        <div class="prog-bar" style="margin-bottom:16px;"><div class="prog-fill" id="test-prog"></div></div>
+        <div class="quiz-q" id="test-q"></div>
+        <div class="quiz-opts" id="test-opts"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="test-next-btn" onclick="nextTest()" style="display:none;">Следующий →</button>
+      </div>
     </div>
-  </div>
 
-  <!-- ══ SCREEN 2: LEVEL MENU ══ -->
-  <div id="s2" class="screen">
-    <div class="chat-area" id="chat2"></div>
-    <div class="keyboard" id="kb2"></div>
-  </div>
+    <!-- SCREEN: QUIZ RESULT -->
+    <div id="s-result" class="screen">
+      <div class="result-card" id="result-card"></div>
+      <div class="btn-row" id="result-btns"></div>
+    </div>
 
-  <!-- ══ SCREEN 3: GRAMMAR LIST ══ -->
-  <div id="s3" class="screen">
-    <div class="chat-area" id="chat3"></div>
-    <div class="keyboard" id="kb3"></div>
-  </div>
+    <!-- SCREEN: VOCABULARY MENU -->
+    <div id="s-vocab" class="screen">
+      <div class="sec-header">
+        <h2 id="vocab-title">📖 Словарный запас</h2>
+        <p id="vocab-sub"></p>
+      </div>
+      <div class="cat-grid" id="vocab-cats"></div>
+    </div>
 
-  <!-- ══ SCREEN 4: GRAMMAR TOPIC (EXPLANATION) ══ -->
-  <div id="s4" class="screen">
-    <div class="chat-area" id="chat4"></div>
-    <div class="keyboard" id="kb4"></div>
-  </div>
+    <!-- SCREEN: VOCAB WORD -->
+    <div id="s-word" class="screen">
+      <div class="word-counter" id="word-counter"></div>
+      <div class="prog-bar" style="margin-bottom:16px;"><div class="prog-fill" id="word-prog"></div></div>
+      <div class="word-card" id="word-card"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="prevWord()" id="word-prev-btn">← Назад</button>
+        <button class="btn btn-primary" onclick="nextWord()" id="word-next-btn">Следующее →</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary btn-full" onclick="go('vocab')">← К категориям</button>
+      </div>
+    </div>
 
-  <!-- ══ SCREEN 5: TASKS ══ -->
-  <div id="s5" class="screen">
-    <div class="chat-area" id="chat5"></div>
-    <div class="keyboard" id="kb5"></div>
-  </div>
+    <!-- SCREEN: PHRASES MENU -->
+    <div id="s-phrases" class="screen">
+      <div class="sec-header">
+        <h2 id="phrases-title">💬 Разговорные фразы</h2>
+        <p id="phrases-sub"></p>
+      </div>
+      <div class="cat-grid" id="phrases-list"></div>
+    </div>
 
-  <!-- ══ SCREEN 6: QUIZ ══ -->
-  <div id="s6" class="screen">
-    <div class="chat-area" id="chat6"></div>
-    <div class="keyboard" id="kb6"></div>
-  </div>
+    <!-- SCREEN: PHRASE SITUATION -->
+    <div id="s-phrase-sit" class="screen">
+      <div class="sec-header">
+        <h2 id="phrase-sit-title"></h2>
+      </div>
+      <div id="phrase-sit-items"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary btn-full" onclick="go('phrases')">← К ситуациям</button>
+      </div>
+    </div>
 
-  <!-- ══ SCREEN 7: RESULTS ══ -->
-  <div id="s7" class="screen">
-    <div class="chat-area" id="chat7"></div>
-    <div class="keyboard" id="kb7"></div>
-  </div>
+    <!-- SCREEN: MY PROGRESS -->
+    <div id="s-progress" class="screen">
+      <div class="sec-header">
+        <h2 id="prog-title">📊 Мой прогресс</h2>
+      </div>
+      <div class="stats-row" id="prog-stats"></div>
+      <div style="margin-bottom:20px;" id="prog-bars"></div>
+      <h3 style="font-size:0.95rem;color:var(--muted);margin-bottom:12px;">📋 Темы грамматики</h3>
+      <div class="prog-topic-list" id="prog-topics"></div>
+      <div class="btn-row" style="margin-top:20px;">
+        <button class="btn btn-secondary btn-full" onclick="go('level-menu')">← Меню уровня</button>
+      </div>
+    </div>
 
-  <!-- ══ SCREEN 8: VOCAB ══ -->
-  <div id="s8" class="screen">
-    <div class="chat-area" id="chat8"></div>
-    <div class="keyboard" id="kb8"></div>
   </div>
-
-  <!-- ══ SCREEN 9: PHRASES ══ -->
-  <div id="s9" class="screen">
-    <div class="chat-area" id="chat9"></div>
-    <div class="keyboard" id="kb9"></div>
-  </div>
-
-  <!-- ══ SCREEN 10: MY PROGRESS ══ -->
-  <div id="s10" class="screen">
-    <div class="chat-area" id="chat10"></div>
-    <div class="keyboard" id="kb10"></div>
-  </div>
-
 </div>
 
-<p style="color:var(--muted);font-size:0.72rem;text-align:center;margin-top:12px;">Кликай по кнопкам как в настоящем Telegram-боте</p>
-
+<script src="/content_data.js"></script>
 <script>
 // ════════════════════════════════
-// STATE
+// STATE & PROGRESS
 // ════════════════════════════════
-let S = {
-  level: null,
-  levelEmoji: '',
-  levelName: '',
-  grammarIdx: 0,
-  grammar: null,
-  quizQ: 0,
-  quizScore: 0,
-  wordIdx: 0,
-  phraseIdx: 0,
-  progress: {},   // { A1: { gramDone: [], gramTested: [], vocabDone: 0, phrasesDone: 0 } }
+let STATE = {
+  level: null,    // 'a1'..'c2'
+  topicIdx: 0,
+  exIdx: 0,
+  exScore: 0,
+  testIdx: 0,
+  testScore: 0,
+  vocabCat: 0,
+  vocabWord: 0,
+  resultType: null,  // 'exercise' | 'test'
+  prevScreen: [],
 };
 
-function getProgress(lvl) {
-  if (!S.progress[lvl]) S.progress[lvl] = { gramDone: [], gramTested: [], vocabDone: 0, phrasesDone: 0 };
-  return S.progress[lvl];
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem('ls_progress') || '{}'); } catch(e) { return {}; }
 }
-
-// ════════════════════════════════
-// DATA
-// ════════════════════════════════
-const LEVELS = {
-  A1: {
-    emoji: '🌱', name: 'A1 — Начинающий',
-    desc: 'Первые шаги: приветствия, базовые слова, простые фразы.',
-    grammar: [
-      {
-        id:'g1', icon:'🔵', title:'Глагол TO BE (am / is / are)',
-        explanation: [
-          ['📌 Глагол TO BE — "быть / являться"', 'title'],
-          ['Используется когда говоришь <b>КТО</b> ты или <b>КАКОЙ</b> ты: имя, профессия, возраст, описание.','text'],
-          ['Формы:', 'label'],
-          ['I → <b>am</b>   •   He/She/It → <b>is</b>   •   You/We/They → <b>are</b>', 'formula'],
-          ['Утверждение:', 'label'],
-          ['I <b>am</b> a student.  (Я студент.)', 'formula'],
-          ['She <b>is</b> happy.  (Она счастлива.)', 'formula'],
-          ['They <b>are</b> friends.  (Они друзья.)', 'formula'],
-          ['Отрицание:', 'label'],
-          ["I <b>am not</b> (I'm not) tired.", 'formula'],
-          ["He <b>isn't</b> at home.", 'formula'],
-          ['Вопрос:', 'label'],
-          ['<b>Are</b> you ready?  — Yes, I am. / No, I\'m not.', 'formula'],
-          ['<b>Is</b> she a teacher?  — Yes, she is.', 'formula'],
-        ],
-        tasks: [
-          "Заполни: I ___ a student. She ___ my friend.",
-          "Составь предложение: (he / a doctor / is)",
-          "Сделай отрицание: 'They are happy' →",
-          "Переведи: Я не устал.",
-          "Составь вопрос: (you / are / tired)?",
-          "Заполни: We ___ from Moscow. It ___ cold today.",
-          "Составь 3 предложения о себе с am/is/are.",
-          "Исправь ошибку: 'She am a nurse.'",
-          "Переведи диалог: — Ты студент? — Да, я студент.",
-          "Краткие ответы: Are you tired? (Yes) / Is he happy? (No)",
-        ],
-        quiz: [
-          {q:'I ___ a student.',o:['am','is','are','be'],a:0},
-          {q:'She ___ from London.',o:['am','are','is','be'],a:2},
-          {q:'Как сказать "Они не друзья"?',o:["They aren't friends","They isn't friends","They am not friends","They be not friends"],a:0},
-          {q:'They ___ happy today.',o:['am','is','are','be'],a:2},
-          {q:'"___ she a doctor?" — правильный вопрос?',o:['Am','Is','Are','Be'],a:1},
-          {q:'Краткий ответ на "Are you ready?" (нет):',o:["No, I'm not","No, I is not","No, he isn't","Yes, I am"],a:0},
-          {q:'We ___ students.',o:['am','is','are','been'],a:2},
-          {q:'Найди ошибку: "He are my brother."',o:['He is my brother','He am my brother','He be my brother','He was my brother'],a:0},
-          {q:'It ___ cold outside.',o:['am','are','is','be'],a:2},
-          {q:'Краткий ответ: Is she tired? (Yes)',o:['Yes, she is','Yes, she are','Yes, she am','Yes, is she'],a:0},
-          {q:"Отрицание от 'I am busy':",o:["I'm not busy","I isn't busy","I aren't busy","I amn't busy"],a:0},
-          {q:'You and I ___ a team.',o:['am','is','are','be'],a:2},
-          {q:"Вопрос к 'He is a pilot':",o:['Is he a pilot?','Are he a pilot?','Am he a pilot?','He is a pilot?'],a:0},
-          {q:'Переведи: "Мы не в школе."',o:["We aren't at school","We isn't at school","We am not at school","We not are at school"],a:0},
-          {q:'My name ___ Alex.',o:['am','are','is','be'],a:2},
-        ]
-      },
-      {
-        id:'g2', icon:'🟢', title:'Местоимения (I, you, he, she...)',
-        explanation: [
-          ['📌 Личные местоимения', 'title'],
-          ['Заменяют имена людей и предметов в предложении.','text'],
-          ['Единственное число:', 'label'],
-          ['<b>I</b> — я   •   <b>you</b> — ты   •   <b>he</b> — он   •   <b>she</b> — она   •   <b>it</b> — оно', 'formula'],
-          ['Множественное число:', 'label'],
-          ['<b>we</b> — мы   •   <b>you</b> — вы   •   <b>they</b> — они', 'formula'],
-          ['Примеры:', 'label'],
-          ['<b>He</b> is my brother.  (Он мой брат.)', 'formula'],
-          ['<b>She</b> is a teacher.  (Она учитель.)', 'formula'],
-          ['<b>They</b> are happy.  (Они счастливы.)', 'formula'],
-          ['<b>It</b> is a cat.  (Это кошка.)', 'formula'],
-        ],
-        tasks: [
-          "Замени: Tom → ___ is a student.",
-          "Замени: Mary → ___ is from Paris.",
-          "Замени: Tom and Mary → ___ are friends.",
-          "Переведи: Он мой учитель. Она моя мама.",
-          "Замени: The dog → ___ is small.",
-          "Составь 5 предложений используя разные местоимения.",
-          "Заполни: ___ am 18. ___ (my sister) is 20.",
-          "Исправь: 'She and I is friends.' →",
-          "Переведи: Мы студенты. Они из России.",
-          "Замени подлежащее: My brother and sister → ___",
-        ],
-        quiz: [
-          {q:'Tom is my friend. ___ is funny.',o:['He','She','It','They'],a:0},
-          {q:'Mary is a doctor. ___ works hard.',o:['He','She','It','They'],a:1},
-          {q:'The book is on the table. ___ is red.',o:['He','She','It','They'],a:2},
-          {q:'Tom and Mary are students. ___ study English.',o:['He','She','It','They'],a:3},
-          {q:'___ am from Russia.',o:['I','You','He','She'],a:0},
-          {q:'___ (ты) are my best friend.',o:['I','You','He','We'],a:1},
-          {q:'___ (мы) live in Moscow.',o:['They','He','We','You'],a:2},
-          {q:'The cat is black. ___ is cute.',o:['She','He','It','They'],a:2},
-          {q:'My parents are here. ___ are happy.',o:['He','She','It','They'],a:3},
-          {q:'___ (она) speaks three languages.',o:['I','He','She','It'],a:2},
-          {q:'___ (вы) are welcome.',o:['I','You','We','They'],a:1},
-          {q:'___ (они) are my classmates.',o:['We','I','He','They'],a:3},
-          {q:'My dog is small. ___ is brown.',o:['She','He','It','They'],a:2},
-          {q:'John and I — ___ are teammates.',o:['You','We','They','He'],a:1},
-          {q:'"___ is a cat." — правильный артикль?',o:['He','She','It','I'],a:2},
-        ]
-      },
-      {
-        id:'g3', icon:'🟡', title:'Артикли a / an / the',
-        explanation: [
-          ['📌 Артикли: A / AN / THE', 'title'],
-          ['<b>A / AN</b> — неопределённый (один из многих, первое упоминание)','text'],
-          ['<b>A</b> + согласная: a dog, a cat, a book', 'formula'],
-          ['<b>AN</b> + гласная (a,e,i,o,u): an apple, an egg, an hour', 'formula'],
-          ['<b>THE</b> — определённый (конкретный, уже известный)','label'],
-          ['the dog, the sun, the moon, the Eiffel Tower', 'formula'],
-          ['I saw <b>a</b> dog. <b>The</b> dog was big.', 'formula'],
-          ['<b>Без артикля:</b> имена, страны*, языки, множ. число (в общем)','label'],
-          ['I love <b>cats</b>. She speaks <b>English</b>.', 'formula'],
-        ],
-        tasks: [
-          "Вставь a, an или the: I saw ___ cat. ___ cat was black.",
-          "Вставь: She is ___ engineer. He is ___ honest man.",
-          "Вставь: ___ sun rises in the east.",
-          "Убери лишний: 'I love the music.'",
-          "Составь пары: первое с a/an, второе с the.",
-          "Вставь: Can I have ___ apple and ___ orange?",
-          "Вставь: We went to ___ park. ___ park was beautiful.",
-          "Переведи: Это книга. Книга интересная.",
-          "Исправь: 'She is an university student.'",
-          "5 примеров без артикля.",
-        ],
-        quiz: [
-          {q:'"___ apple a day keeps the doctor away."',o:['A','An','The','—'],a:1},
-          {q:'"She is ___ teacher."',o:['a','an','the','—'],a:0},
-          {q:'"___ Eiffel Tower is in Paris."',o:['A','An','The','—'],a:2},
-          {q:'"I love ___ dogs." (в общем смысле)',o:['a','an','the','—'],a:3},
-          {q:'"He is ___ honest person."',o:['a','an','the','—'],a:1},
-          {q:'"Pass me ___ salt, please." (конкретная)',o:['a','an','the','—'],a:2},
-          {q:'"I have ___ umbrella."',o:['a','an','the','—'],a:1},
-          {q:'"___ Russia is a big country."',o:['A','An','The','—'],a:3},
-          {q:'"She plays ___ piano."',o:['a','an','the','—'],a:2},
-          {q:'"I saw ___ movie. ___ movie was great."',o:['a/the','the/a','an/the','the/the'],a:0},
-          {q:'"He is ___ engineer."',o:['a','an','the','—'],a:0},
-          {q:'"___ sun is bright today."',o:['A','An','The','—'],a:2},
-          {q:'"She speaks ___ English."',o:['a','an','the','—'],a:3},
-          {q:'"There is ___ cat under the table."',o:['a','an','the','—'],a:0},
-          {q:'"Can I open ___ window?" (конкретное)',o:['a','an','the','—'],a:2},
-        ]
-      }
-    ],
-    vocabulary: [
-      { cat:'👋 Приветствия', words:[
-        {en:'hello',ru:'привет',tr:'[həˈloʊ]'},
-        {en:'goodbye',ru:'до свидания',tr:'[ˌɡʊdˈbaɪ]'},
-        {en:'good morning',ru:'доброе утро',tr:'[ɡʊd ˈmɔːrnɪŋ]'},
-        {en:'good night',ru:'спокойной ночи',tr:'[ɡʊd naɪt]'},
-        {en:'see you',ru:'увидимся',tr:'[siː juː]'},
-        {en:'nice to meet you',ru:'приятно познакомиться',tr:'[naɪs tə miːt juː]'},
-        {en:'how are you',ru:'как дела',tr:'[haʊ ɑːr juː]'},
-        {en:'I\'m fine',ru:'я в порядке',tr:'[aɪm faɪn]'},
-        {en:'please',ru:'пожалуйста',tr:'[pliːz]'},
-        {en:'thank you',ru:'спасибо',tr:'[θæŋk juː]'},
-        {en:'sorry',ru:'извините',tr:'[ˈsɒri]'},
-        {en:'excuse me',ru:'прошу прощения',tr:'[ɪkˈskjuːz miː]'},
-        {en:'yes',ru:'да',tr:'[jɛs]'},
-        {en:'no',ru:'нет',tr:'[noʊ]'},
-        {en:'of course',ru:'конечно',tr:'[əv kɔːrs]'},
-      ]},
-      { cat:'🏠 Дом и семья', words:[
-        {en:'family',ru:'семья',tr:'[ˈfæməli]'},
-        {en:'mother',ru:'мама',tr:'[ˈmʌðər]'},
-        {en:'father',ru:'папа',tr:'[ˈfɑːðər]'},
-        {en:'brother',ru:'брат',tr:'[ˈbrʌðər]'},
-        {en:'sister',ru:'сестра',tr:'[ˈsɪstər]'},
-        {en:'house',ru:'дом',tr:'[haʊs]'},
-        {en:'room',ru:'комната',tr:'[ruːm]'},
-        {en:'kitchen',ru:'кухня',tr:'[ˈkɪtʃɪn]'},
-        {en:'bedroom',ru:'спальня',tr:'[ˈbɛdruːm]'},
-        {en:'door',ru:'дверь',tr:'[dɔːr]'},
-        {en:'window',ru:'окно',tr:'[ˈwɪndoʊ]'},
-        {en:'table',ru:'стол',tr:'[ˈteɪbəl]'},
-        {en:'chair',ru:'стул',tr:'[tʃɛr]'},
-        {en:'bed',ru:'кровать',tr:'[bɛd]'},
-        {en:'garden',ru:'сад',tr:'[ˈɡɑːrdən]'},
-      ]},
-      { cat:'🎨 Прилагательные', words:[
-        {en:'big',ru:'большой',tr:'[bɪɡ]'},
-        {en:'small',ru:'маленький',tr:'[smɔːl]'},
-        {en:'good',ru:'хороший',tr:'[ɡʊd]'},
-        {en:'bad',ru:'плохой',tr:'[bæd]'},
-        {en:'hot',ru:'горячий',tr:'[hɒt]'},
-        {en:'cold',ru:'холодный',tr:'[koʊld]'},
-        {en:'happy',ru:'счастливый',tr:'[ˈhæpi]'},
-        {en:'sad',ru:'грустный',tr:'[sæd]'},
-        {en:'tired',ru:'усталый',tr:'[ˈtaɪəd]'},
-        {en:'hungry',ru:'голодный',tr:'[ˈhʌŋɡri]'},
-        {en:'fast',ru:'быстрый',tr:'[fɑːst]'},
-        {en:'slow',ru:'медленный',tr:'[sloʊ]'},
-        {en:'new',ru:'новый',tr:'[njuː]'},
-        {en:'old',ru:'старый',tr:'[oʊld]'},
-        {en:'beautiful',ru:'красивый',tr:'[ˈbjuːtɪfəl]'},
-      ]},
-    ],
-    phrases: [
-      { sit:'👋 Знакомство', items:[
-        {en:'What is your name?',ru:'Как тебя зовут?'},
-        {en:'My name is ...',ru:'Меня зовут ...'},
-        {en:'Where are you from?',ru:'Откуда ты?'},
-        {en:"I'm from Russia.",ru:'Я из России.'},
-        {en:'How old are you?',ru:'Сколько тебе лет?'},
-        {en:"I'm 20 years old.",ru:'Мне 20 лет.'},
-        {en:'Nice to meet you!',ru:'Приятно познакомиться!'},
-        {en:'Me too!',ru:'Взаимно!'},
-        {en:'What do you do?',ru:'Чем ты занимаешься?'},
-        {en:"I'm a student.",ru:'Я студент.'},
-      ]},
-      { sit:'🛒 Магазин', items:[
-        {en:'How much is it?',ru:'Сколько это стоит?'},
-        {en:"It's five dollars.",ru:'Пять долларов.'},
-        {en:'Can I help you?',ru:'Могу я вам помочь?'},
-        {en:"I'm just looking.",ru:'Я просто смотрю.'},
-        {en:'Do you have...?',ru:'У вас есть...?'},
-        {en:'Can I try this on?',ru:'Могу я это примерить?'},
-        {en:'The bill, please.',ru:'Счёт, пожалуйста.'},
-        {en:'Do you take cards?',ru:'Вы принимаете карты?'},
-      ]},
-      { sit:'🗺 В городе', items:[
-        {en:'Where is...?',ru:'Где находится...?'},
-        {en:'Straight ahead.',ru:'Прямо.'},
-        {en:'Turn left.',ru:'Повернуть налево.'},
-        {en:'Turn right.',ru:'Повернуть направо.'},
-        {en:'How far is it?',ru:'Как далеко это?'},
-        {en:"It's near here.",ru:'Это рядом.'},
-        {en:'I need a taxi.',ru:'Мне нужно такси.'},
-        {en:'Stop here, please.',ru:'Остановитесь здесь, пожалуйста.'},
-      ]},
-    ]
-  }
-};
-
-// Fill other levels with same structure (simplified)
-['A2','B1','B2','C1','C2'].forEach(k => {
-  LEVELS[k] = JSON.parse(JSON.stringify(LEVELS.A1));
-  const names = {A2:'🌿 A2 — Элементарный',B1:'🌳 B1 — Средний',B2:'🌲 B2 — Выше среднего',C1:'⭐ C1 — Продвинутый',C2:'🏆 C2 — Совершенный'};
-  const emojis = {A2:'🌿',B1:'🌳',B2:'🌲',C1:'⭐',C2:'🏆'};
-  const descs = {
-    A2:'Элементарный уровень: регулярные действия, прошлое, будущее, сравнения.',
-    B1:'Средний: Present Perfect, условные предложения, страдательный залог.',
-    B2:'Выше среднего: сложные времена, модальные глаголы, косвенная речь.',
-    C1:'Продвинутый: сложные структуры, академический стиль, нюансы.',
-    C2:'Совершенный: всё на уровне носителя языка.',
-  };
-  LEVELS[k].emoji = emojis[k];
-  LEVELS[k].name = names[k];
-  LEVELS[k].desc = descs[k];
-});
+function saveProgress(p) {
+  try { localStorage.setItem('ls_progress', JSON.stringify(p)); } catch(e) {}
+}
+function getLevel(key) {
+  return LEVELS_DATA[key];
+}
+function getProg(lvl) {
+  let p = loadProgress();
+  if (!p[lvl]) p[lvl] = { gramDone: [], gramTested: [], vocabDone: [], phrasesDone: [] };
+  return p[lvl];
+}
+function setProg(lvl, prog) {
+  let p = loadProgress();
+  p[lvl] = prog;
+  saveProgress(p);
+}
+function pct(a, b) { return b ? Math.round(a / b * 100) : 0; }
+function progBar(done, total) {
+  const p = pct(done, total);
+  return `<div class="prog-bar"><div class="prog-fill" style="width:${p}%"></div></div>`;
+}
 
 // ════════════════════════════════
 // NAVIGATION
 // ════════════════════════════════
-let screenStack = [0];
+let _stack = ['home'];
 
-function go(n) {
-  if (screenStack[screenStack.length-1] !== n) screenStack.push(n);
-  _render(n);
+function go(screen) {
+  if (_stack[_stack.length - 1] !== screen) _stack.push(screen);
+  _render(screen);
 }
 
 function goBack() {
-  if (screenStack.length > 1) {
-    screenStack.pop();
-    _render(screenStack[screenStack.length-1]);
+  if (_stack.length > 1) {
+    _stack.pop();
+    _render(_stack[_stack.length - 1]);
   }
 }
 
-function _render(n) {
+function _render(screen) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById('s'+n);
+  const el = document.getElementById('s-' + screen);
   if (el) el.classList.add('active');
 
   const backBtn = document.getElementById('back-btn');
-  const progWrap = document.getElementById('prog-bar-wrap');
+  backBtn.className = _stack.length > 1 ? 'visible' : '';
 
-  backBtn.style.display = screenStack.length > 1 ? '' : 'none';
-  progWrap.classList.remove('show');
+  document.getElementById('topbar-title').textContent = '';
 
-  if (n === 2) buildLevelMenu();
-  if (n === 3) buildGrammarList();
-  if (n === 8) buildVocabMenu();
-  if (n === 9) buildPhrasesMenu();
-  if (n === 10) buildProgress();
+  // Build each screen
+  if (screen === 'levels') buildLevels();
+  if (screen === 'level-menu') buildLevelMenu();
+  if (screen === 'grammar') buildGrammarList();
+  if (screen === 'topic') buildTopic();
+  if (screen === 'vocab') buildVocabMenu();
+  if (screen === 'phrases') buildPhrasesMenu();
+  if (screen === 'progress') buildProgress();
+  if (screen === 'word') buildWord();
+  if (screen === 'phrase-sit') buildPhraseSit();
 
-  setTimeout(() => {
-    const chat = document.getElementById('chat'+n);
-    if (chat) chat.scrollTop = chat.scrollHeight;
-  }, 50);
-}
-
-function setProgBar(label, val, pct) {
-  document.getElementById('prog-bar-wrap').classList.add('show');
-  document.getElementById('prog-label').textContent = label;
-  document.getElementById('prog-val').textContent = pct + '%';
-  document.getElementById('prog-fill').style.width = pct + '%';
+  window.scrollTo(0, 0);
 }
 
 // ════════════════════════════════
-// BOT MESSAGE HELPERS
+// LEVELS SCREEN
 // ════════════════════════════════
-function botMsg(chatId, html, delay=0) {
-  return new Promise(resolve => setTimeout(() => {
-    const chat = document.getElementById('chat'+chatId);
-    const wrap = document.createElement('div');
-    wrap.className = 'msg-wrap';
-    wrap.innerHTML = `<div class="msg-icon">🎯</div><div class="bubble bot">${html}</div>`;
-    chat.appendChild(wrap);
-    chat.scrollTop = chat.scrollHeight;
-    resolve();
-  }, delay));
+function buildLevels() {
+  const grid = document.getElementById('level-grid');
+  const keys = ['a1','a2','b1','b2','c1','c2'];
+  grid.innerHTML = keys.map(k => {
+    const lv = getLevel(k);
+    const prog = getProg(k);
+    const totalG = lv.grammar.length;
+    const doneG = prog.gramDone.length;
+    const p = pct(doneG, totalG);
+    return `<div class="level-card" onclick="pickLevel('${k}')">
+      <div class="level-card-emoji">${lv.emoji}</div>
+      <div class="level-card-name">${lv.name}</div>
+      <div class="level-card-desc">${(lv.description||'').replace(/[*_]/g,'').split('\n')[0]}</div>
+      ${doneG > 0 ? `<div class="level-card-prog">
+        <div style="font-size:0.72rem;color:var(--muted);">Грамматика: ${doneG}/${totalG}</div>
+        <div class="mini-bar"><div class="mini-bar-fill" style="width:${p}%"></div></div>
+      </div>` : ''}
+    </div>`;
+  }).join('');
 }
 
-function userMsg(chatId, text) {
-  const chat = document.getElementById('chat'+chatId);
-  const wrap = document.createElement('div');
-  wrap.className = 'msg-wrap user';
-  wrap.innerHTML = `<div class="bubble user">${text}</div>`;
-  chat.appendChild(wrap);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-// ════════════════════════════════
-// LEVEL PICK
-// ════════════════════════════════
-function pickLevel(key, emoji, name, desc) {
-  S.level = key;
-  S.levelEmoji = emoji;
-  S.levelName = name;
-  go(2);
+function pickLevel(key) {
+  STATE.level = key;
+  go('level-menu');
 }
 
 // ════════════════════════════════
-// LEVEL MENU
+// LEVEL MENU SCREEN
 // ════════════════════════════════
 function buildLevelMenu() {
-  const d = LEVELS[S.level];
-  const prog = getProgress(S.level);
-  const totalG = d.grammar.length;
+  const lv = getLevel(STATE.level);
+  const prog = getProg(STATE.level);
+  const totalG = lv.grammar.length;
   const doneG = prog.gramDone.length;
   const testedG = prog.gramTested.length;
-  const totalV = d.vocabulary.length;
-  const totalPh = d.phrases.length;
-  const totalWords = d.vocabulary.reduce((s,c)=>s+c.words.length,0);
-  const totalPhrItems = d.phrases.reduce((s,p)=>s+p.items.length,0);
+  const totalV = lv.vocabulary.length;
+  const doneV = prog.vocabDone.length;
+  const totalPh = lv.phrases.length;
+  const donePh = prog.phrasesDone.length;
+  const totalWords = lv.vocabulary.reduce((s,c)=>s+c.words.length, 0);
+  const totalPhrItems = lv.phrases.reduce((s,p)=>s+p.items.length, 0);
 
-  document.getElementById('chat2').innerHTML = `
-    <div class="msg-wrap user"><div class="bubble user">${S.levelEmoji} ${S.levelName}</div></div>
-    <div class="msg-wrap">
-      <div class="msg-icon">🎯</div>
-      <div class="bubble bot">
-        <b>${S.levelEmoji} ${d.name}</b><br>
-        <span class="muted">${d.desc}</span>
-        <div class="stats" style="margin-top:8px;">
-          <div class="stat"><div class="stat-val">${totalG}</div><div class="stat-lbl">тем грамм.</div></div>
-          <div class="stat"><div class="stat-val">${totalWords}</div><div class="stat-lbl">слов</div></div>
-          <div class="stat"><div class="stat-val">${totalPhrItems}</div><div class="stat-lbl">фраз</div></div>
-          <div class="stat"><div class="stat-val">${testedG}/${totalG}</div><div class="stat-lbl">тестов</div></div>
-        </div>
-        <hr>
-        <div class="prog-list">
-          <div class="prog-row"><span class="lbl">📚 Грамматика</span><div class="prog-track"><div class="prog-track-fill" style="width:${pct(doneG,totalG)}%"></div></div><span class="pct">${pct(doneG,totalG)}%</span></div>
-          <div class="prog-row"><span class="lbl">🧪 Тесты</span><div class="prog-track"><div class="prog-track-fill" style="width:${pct(testedG,totalG)}%"></div></div><span class="pct">${pct(testedG,totalG)}%</span></div>
-          <div class="prog-row"><span class="lbl">📖 Словарь</span><div class="prog-track"><div class="prog-track-fill" style="width:${pct(prog.vocabDone,totalV)}%"></div></div><span class="pct">${pct(prog.vocabDone,totalV)}%</span></div>
-          <div class="prog-row"><span class="lbl">💬 Фразы</span><div class="prog-track"><div class="prog-track-fill" style="width:${pct(prog.phrasesDone,totalPh)}%"></div></div><span class="pct">${pct(prog.phrasesDone,totalPh)}%</span></div>
-        </div>
-      </div>
-    </div>`;
+  document.getElementById('topbar-title').textContent = lv.name;
+  document.getElementById('level-menu-header').innerHTML = `
+    <h2>${lv.emoji} ${lv.name}</h2>
+    <p>${lv.description ? lv.description.replace(/[*_\n]/g,' ').slice(0,120)+'...' : ''}</p>`;
 
-  document.getElementById('kb2').innerHTML = `
-    <button class="btn primary full" onclick="go(3)">📚 Грамматика</button>
-    <button class="btn full" onclick="go(8)">📖 Словарный запас (${totalWords} слов)</button>
-    <button class="btn full" onclick="go(9)">💬 Разговорные фразы (${totalPhrItems} фраз)</button>
-    <button class="btn full" onclick="go(10)">📊 Мой прогресс</button>
-    <button class="btn muted-btn full" onclick="go(1)">◀ Сменить уровень</button>`;
+  document.getElementById('level-stats').innerHTML = `
+    <div class="stat-box"><div class="stat-val">${totalG}</div><div class="stat-lbl">тем грамм.</div></div>
+    <div class="stat-box"><div class="stat-val">${totalWords}</div><div class="stat-lbl">слов</div></div>
+    <div class="stat-box"><div class="stat-val">${totalPhrItems}</div><div class="stat-lbl">фраз</div></div>
+    <div class="stat-box"><div class="stat-val">${testedG}/${totalG}</div><div class="stat-lbl">тестов</div></div>`;
+
+  document.getElementById('level-sections').innerHTML = `
+    <button class="sec-btn" onclick="go('grammar')">
+      <span class="icon">📚</span>
+      <div><div class="label">Грамматика</div><div class="sub">${totalG} тем • ${doneG} изучено • ${testedG} тестов</div></div>
+      <span class="prog-pill">${pct(doneG,totalG)}%</span>
+      <span class="arrow">›</span>
+    </button>
+    <button class="sec-btn" onclick="go('vocab')">
+      <span class="icon">📖</span>
+      <div><div class="label">Словарный запас</div><div class="sub">${totalWords} слов • ${totalV} категорий • ${doneV} пройдено</div></div>
+      <span class="prog-pill">${pct(doneV,totalV)}%</span>
+      <span class="arrow">›</span>
+    </button>
+    <button class="sec-btn" onclick="go('phrases')">
+      <span class="icon">💬</span>
+      <div><div class="label">Разговорные фразы</div><div class="sub">${totalPhrItems} фраз • ${totalPh} ситуаций • ${donePh} пройдено</div></div>
+      <span class="prog-pill">${pct(donePh,totalPh)}%</span>
+      <span class="arrow">›</span>
+    </button>
+    <button class="sec-btn" onclick="go('progress')">
+      <span class="icon">📊</span>
+      <div><div class="label">Мой прогресс</div><div class="sub">Детальная статистика по уровню</div></div>
+      <span class="arrow">›</span>
+    </button>`;
 }
 
-function pct(a,b) { return b ? Math.round(a/b*100) : 0; }
-
 // ════════════════════════════════
-// GRAMMAR LIST
+// GRAMMAR SCREEN
 // ════════════════════════════════
 function buildGrammarList() {
-  const d = LEVELS[S.level];
-  const prog = getProgress(S.level);
+  const lv = getLevel(STATE.level);
+  const prog = getProg(STATE.level);
+  const totalG = lv.grammar.length;
   const doneG = prog.gramDone.length;
-  const totalG = d.grammar.length;
 
-  let topics = d.grammar.map((g,i) => {
+  document.getElementById('topbar-title').textContent = 'Грамматика';
+  document.getElementById('grammar-title').textContent = `📚 Грамматика — ${lv.name}`;
+  document.getElementById('grammar-prog-bar').innerHTML = `
+    <div class="prog-item">
+      <div class="prog-item-header"><span>Изучено тем</span><span>${doneG}/${totalG}</span></div>
+      ${progBar(doneG, totalG)}
+    </div>`;
+
+  document.getElementById('grammar-list').innerHTML = lv.grammar.map((g, i) => {
     let status = '⬜';
-    if (prog.gramTested.includes(g.id)) status = '✅';
-    else if (prog.gramDone.includes(g.id)) status = '📖';
-    return `<button class="topic-item" onclick="openGrammar(${i})">
-      <span class="status">${status}</span>
-      <span class="icon">${g.icon}</span>
-      <span class="title">${g.title}</span>
-      <span style="color:var(--muted);font-size:0.7rem;">→</span>
+    let badge = `<span class="badge badge-muted">не начато</span>`;
+    if (prog.gramTested.includes(g.id)) {
+      status = '✅'; badge = `<span class="badge badge-green">тест пройден</span>`;
+    } else if (prog.gramDone.includes(g.id)) {
+      status = '📖'; badge = `<span class="badge badge-blue">изучено</span>`;
+    }
+    return `<button class="topic-item" onclick="openTopic(${i})">
+      <span class="t-icon">${g.icon || '📌'}</span>
+      <span class="t-title">${g.title}</span>
+      ${badge}
     </button>`;
   }).join('');
+}
 
-  document.getElementById('chat3').innerHTML = `
-    <div class="msg-wrap">
-      <div class="msg-icon">🎯</div>
-      <div class="bubble bot">
-        <b>📚 Грамматика — ${S.levelName}</b><br><br>
-        Прогресс: ${doneG}/${totalG} тем изучено<br>
-        <div class="prog-list" style="margin-top:5px;">
-          <div class="prog-row"><span class="lbl">Изучено</span><div class="prog-track"><div class="prog-track-fill" style="width:${pct(doneG,totalG)}%"></div></div><span class="pct">${pct(doneG,totalG)}%</span></div>
-          <div class="prog-row"><span class="lbl">Тестов</span><div class="prog-track"><div class="prog-track-fill" style="width:${pct(prog.gramTested.length,totalG)}%"></div></div><span class="pct">${pct(prog.gramTested.length,totalG)}%</span></div>
-        </div>
-        <span class="muted">✅ тест пройден &nbsp;📖 изучено &nbsp;⬜ не начато</span>
-        <div style="margin-top:8px;display:flex;flex-direction:column;gap:5px;">${topics}</div>
-      </div>
-    </div>`;
-
-  document.getElementById('kb3').innerHTML = `
-    <button class="btn muted-btn full" onclick="go(2)">◀ Назад к разделам</button>`;
+function openTopic(idx) {
+  STATE.topicIdx = idx;
+  go('topic');
 }
 
 // ════════════════════════════════
-// GRAMMAR TOPIC
+// TOPIC SCREEN
 // ════════════════════════════════
-function openGrammar(idx) {
-  S.grammarIdx = idx;
-  S.grammar = LEVELS[S.level].grammar[idx];
-  S.quizQ = 0; S.quizScore = 0;
-  const g = S.grammar;
-  const d = LEVELS[S.level];
-  const prog = getProgress(S.level);
-  if (!prog.gramDone.includes(g.id)) prog.gramDone.push(g.id);
+function buildTopic() {
+  const lv = getLevel(STATE.level);
+  const topic = lv.grammar[STATE.topicIdx];
+  const prog = getProg(STATE.level);
 
-  setProgBar(`Тема ${idx+1} / ${d.grammar.length}`, '', pct(idx, d.grammar.length));
-
-  let expHtml = '';
-  g.explanation.forEach(([text, type]) => {
-    if (type === 'title') expHtml += `<div style="color:var(--accent);font-weight:700;font-size:0.88rem;margin-bottom:6px;">${text}</div>`;
-    else if (type === 'formula') expHtml += `<div class="formula">${text}</div>`;
-    else if (type === 'label') expHtml += `<div style="color:var(--text);font-weight:600;margin:5px 0 2px;">${text}</div>`;
-    else expHtml += `<div style="margin-bottom:4px;">${text}</div>`;
-  });
-
-  document.getElementById('chat4').innerHTML = `
-    <div class="msg-wrap">
-      <div class="msg-icon">🎯</div>
-      <div class="bubble bot">
-        <b>${g.icon} ${g.title}</b>
-        <div class="gram-box" style="margin-top:8px;">${expHtml}</div>
-      </div>
-    </div>
-    <div class="msg-wrap">
-      <div class="msg-icon">🎯</div>
-      <div class="bubble bot">Объяснение прочитано! Теперь выбери что делать дальше:</div>
-    </div>`;
-
-  document.getElementById('kb4').innerHTML = `
-    <button class="btn primary full" onclick="showTasks()">✏️ 10 заданий для тетради</button>
-    <button class="btn green-btn full" onclick="startQuiz()">🧪 Тест (${g.quiz.length} вопросов)</button>
-    <button class="btn full" onclick="openGrammar(${idx})">🔄 Повторить объяснение</button>
-    <button class="btn muted-btn full" onclick="go(3)">◀ К темам</button>`;
-
-  go(4);
-}
-
-// ════════════════════════════════
-// TASKS
-// ════════════════════════════════
-function showTasks() {
-  const g = S.grammar;
-  userMsg(5, '✏️ Показать задания');
-
-  document.getElementById('chat5').innerHTML = `
-    <div class="msg-wrap">
-      <div class="msg-icon">🎯</div>
-      <div class="bubble bot">
-        <b>✏️ Задания для тетради</b><br>
-        Тема: <span class="yellow">${g.title}</span><br><br>
-        <span class="muted">Реши задания в тетради. Когда будешь готов — нажми "Перейти к тесту"</span>
-        <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
-          ${g.tasks.map((t,i)=>`<div class="task-item"><span class="task-num">${i+1}.</span>${t}</div>`).join('')}
-        </div>
-      </div>
-    </div>
-    <div class="msg-wrap">
-      <div class="msg-icon">🎯</div>
-      <div class="bubble bot">✅ Выполнил все ${g.tasks.length} заданий? Можно переходить к тесту!</div>
-    </div>`;
-
-  document.getElementById('kb5').innerHTML = `
-    <button class="btn primary full green-btn" onclick="startQuiz()">🧪 Перейти к тесту</button>
-    <button class="btn full" onclick="openGrammar(${S.grammarIdx})">📖 Вернуться к объяснению</button>
-    <button class="btn muted-btn full" onclick="go(3)">◀ К темам</button>`;
-
-  go(5);
-}
-
-// ════════════════════════════════
-// QUIZ
-// ════════════════════════════════
-function startQuiz() {
-  S.quizQ = 0; S.quizScore = 0;
-  renderQuestion();
-  go(6);
-}
-
-function renderQuestion() {
-  const g = S.grammar;
-  const q = g.quiz[S.quizQ];
-  const total = g.quiz.length;
-  const p = pct(S.quizQ, total);
-
-  setProgBar(`Вопрос ${S.quizQ+1} / ${total}`, '', p);
-
-  document.getElementById('chat6').innerHTML = `
-    <div class="msg-wrap">
-      <div class="msg-icon">🎯</div>
-      <div class="bubble bot">
-        <b>🧪 Вопрос ${S.quizQ+1} / ${total}</b><br>
-        <span class="muted">✅ ${S.quizScore} верных</span><br><br>
-        ${q.q}
-      </div>
-    </div>`;
-
-  document.getElementById('kb6').innerHTML = q.o.map((opt,i) => `
-    <button class="quiz-opt" onclick="checkAns(${i})">${String.fromCharCode(65+i)}) ${opt}</button>`).join('');
-}
-
-function checkAns(i) {
-  const g = S.grammar;
-  const q = g.quiz[S.quizQ];
-  const kb = document.getElementById('kb6');
-  const btns = kb.querySelectorAll('.quiz-opt');
-  btns.forEach(b => b.classList.add('disabled'));
-  btns[q.a].classList.add('correct');
-
-  if (i === q.a) {
-    S.quizScore++;
-    setProgBar(`Вопрос ${S.quizQ+1} / ${g.quiz.length}`, '', pct(S.quizQ, g.quiz.length));
-    botMsg(6, `✅ <span class="green">Правильно!</span>`);
-  } else {
-    btns[i].classList.add('wrong');
-    botMsg(6, `❌ <span class="red">Неверно.</span> Правильный ответ: <b>${q.o[q.a]}</b>`);
+  // Mark as done
+  if (!prog.gramDone.includes(topic.id)) {
+    prog.gramDone.push(topic.id);
+    setProg(STATE.level, prog);
   }
 
-  setTimeout(() => {
-    S.quizQ++;
-    if (S.quizQ < g.quiz.length) renderQuestion();
-    else showResults();
-  }, 1400);
+  document.getElementById('topbar-title').textContent = topic.title;
+  document.getElementById('topic-title').textContent = `${topic.icon || '📌'} ${topic.title}`;
+
+  document.getElementById('topic-tabs').innerHTML = `
+    <button class="tab-btn active" id="tab-explain" onclick="showTab('explain')">📖 Объяснение</button>
+    <button class="tab-btn" id="tab-ex" onclick="showTab('exercises')">✏️ Упражнения (${topic.exercises.length})</button>
+    <button class="tab-btn" id="tab-test" onclick="showTab('test')">🧪 Тест (${topic.test.length})</button>`;
+
+  showTab('explain');
+}
+
+function showTab(tab) {
+  ['explain','exercises','test'].forEach(t => {
+    const btn = document.getElementById('tab-' + t);
+    if (btn) btn.classList.remove('active');
+  });
+  document.getElementById('tab-' + tab).classList.add('active');
+
+  const lv = getLevel(STATE.level);
+  const topic = lv.grammar[STATE.topicIdx];
+  const content = document.getElementById('topic-content');
+
+  if (tab === 'explain') {
+    // Render explanation text, converting markdown-like formatting
+    const text = (topic.explanation || '').replace(/\*(.*?)\*/g, '<b>$1</b>');
+    content.innerHTML = `<div class="explanation">${text}</div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="showTab('exercises')">✏️ Начать упражнения</button>
+        <button class="btn btn-secondary" onclick="showTab('test')">🧪 Перейти к тесту</button>
+      </div>`;
+  } else if (tab === 'exercises') {
+    STATE.exIdx = 0;
+    STATE.exScore = 0;
+    go('exercise');
+  } else if (tab === 'test') {
+    STATE.testIdx = 0;
+    STATE.testScore = 0;
+    go('test');
+  }
 }
 
 // ════════════════════════════════
-// RESULTS
+// EXERCISE SCREEN
 // ════════════════════════════════
-function showResults() {
-  const g = S.grammar;
-  const total = g.quiz.length;
-  const score = S.quizScore;
+function buildExercise() {
+  const lv = getLevel(STATE.level);
+  const topic = lv.grammar[STATE.topicIdx];
+  const exercises = topic.exercises;
+
+  if (STATE.exIdx >= exercises.length) {
+    showExerciseResult();
+    return;
+  }
+
+  const ex = exercises[STATE.exIdx];
+  const total = exercises.length;
+  const p = pct(STATE.exIdx, total);
+
+  document.getElementById('ex-num').textContent = `${STATE.exIdx + 1} / ${total}`;
+  document.getElementById('ex-prog').style.width = p + '%';
+  document.getElementById('ex-q').textContent = ex.q;
+  document.getElementById('ex-result').style.display = 'none';
+  document.getElementById('ex-next-btn').style.display = 'none';
+
+  document.getElementById('ex-opts').innerHTML = ex.o.map((opt, i) =>
+    `<button class="opt-btn" onclick="answerEx(${i})">${'ABCD'[i]}. ${opt}</button>`
+  ).join('');
+}
+
+function answerEx(idx) {
+  const lv = getLevel(STATE.level);
+  const ex = lv.grammar[STATE.topicIdx].exercises[STATE.exIdx];
+  const correct = idx === ex.a;
+  if (correct) STATE.exScore++;
+
+  document.querySelectorAll('#ex-opts .opt-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === ex.a) btn.classList.add('correct');
+    else if (i === idx && !correct) btn.classList.add('wrong');
+  });
+
+  const res = document.getElementById('ex-result');
+  res.style.display = 'block';
+  res.className = 'quiz-result ' + (correct ? 'ok' : 'fail');
+  res.innerHTML = correct
+    ? `✅ Правильно!${ex.e ? '<br><small>' + ex.e + '</small>' : ''}`
+    : `❌ Неправильно. Правильный ответ: <b>${ex.o[ex.a]}</b>${ex.e ? '<br><small>' + ex.e + '</small>' : ''}`;
+
+  const nextBtn = document.getElementById('ex-next-btn');
+  nextBtn.style.display = 'block';
+  nextBtn.textContent = STATE.exIdx + 1 < lv.grammar[STATE.topicIdx].exercises.length ? 'Следующее →' : '🏁 Результат';
+}
+
+function nextExercise() {
+  STATE.exIdx++;
+  buildExercise();
+}
+
+function showExerciseResult() {
+  const lv = getLevel(STATE.level);
+  const total = lv.grammar[STATE.topicIdx].exercises.length;
+  const score = STATE.exScore;
   const p = pct(score, total);
-  const prog = getProgress(S.level);
+  let emoji, msg;
+  if (p === 100) { emoji = '🌟'; msg = 'Идеально! Все верно!'; }
+  else if (p >= 70) { emoji = '👍'; msg = 'Отлично! Переходи к тесту!'; }
+  else { emoji = '📚'; msg = 'Советую повторить тему и попробовать ещё раз.'; }
 
-  if (p >= 60 && !prog.gramTested.includes(g.id)) prog.gramTested.push(g.id);
+  document.getElementById('result-card').innerHTML = `
+    <div class="result-emoji">${emoji}</div>
+    <div class="result-title">Упражнения завершены!</div>
+    <div class="result-score">${score}/${total}</div>
+    <div class="prog-bar" style="max-width:200px;margin:0 auto 12px;"><div class="prog-fill" style="width:${p}%"></div></div>
+    <div class="result-msg">${msg}</div>`;
 
-  let emoji, color, msg;
-  if (p >= 90) { emoji='🏆'; color='var(--green)'; msg='Отлично! Тема полностью освоена!'; }
-  else if (p >= 70) { emoji='🌟'; color='var(--accent)'; msg='Хорошо! Небольшое повторение — и будет идеально.'; }
-  else if (p >= 50) { emoji='💪'; color='var(--yellow)'; msg='Неплохо! Советую повторить объяснение.'; }
-  else { emoji='📖'; color='var(--red)'; msg='Нужно повторить тему. Не сдавайся!'; }
+  document.getElementById('result-btns').innerHTML = `
+    <button class="btn btn-primary" onclick="startTest()">🧪 Перейти к тесту</button>
+    <button class="btn btn-secondary" onclick="retryEx()">🔄 Повторить</button>
+    <button class="btn btn-secondary btn-full" onclick="go('topic')">📖 К теме</button>`;
 
-  document.getElementById('chat7').innerHTML = `
-    <div class="msg-wrap">
-      <div class="msg-icon">🎯</div>
-      <div class="bubble bot">
-        <div class="result-box">
-          <div class="result-emoji">${emoji}</div>
-          <div class="result-score" style="color:${color}">${p}%</div>
-          <div class="result-sub">Правильно: ${score} из ${total}</div>
-          <div class="result-msg">${msg}</div>
-        </div>
-        <div class="stats" style="margin-top:10px;">
-          <div class="stat"><div class="stat-val" style="color:var(--green)">${score}</div><div class="stat-lbl">верно</div></div>
-          <div class="stat"><div class="stat-val" style="color:var(--red)">${total-score}</div><div class="stat-lbl">ошибок</div></div>
-          <div class="stat"><div class="stat-val">${p}%</div><div class="stat-lbl">результат</div></div>
-        </div>
-        ${p >= 60 ? '<hr><span class="green">✅ Тест засчитан в прогресс!</span>' : ''}
-      </div>
-    </div>`;
+  STATE.resultType = 'exercise';
+  go('result');
+}
 
-  document.getElementById('kb7').innerHTML = `
-    <button class="btn primary full" onclick="go(3)">📚 К другим темам</button>
-    <button class="btn full" onclick="startQuiz()">🧪 Пройти тест снова</button>
-    <button class="btn full" onclick="openGrammar(${S.grammarIdx})">🔄 Повторить тему</button>
-    <button class="btn muted-btn full" onclick="go(2)">◀ Меню уровня</button>`;
+function retryEx() {
+  STATE.exIdx = 0;
+  STATE.exScore = 0;
+  go('exercise');
+}
 
-  go(7);
+function startTest() {
+  STATE.testIdx = 0;
+  STATE.testScore = 0;
+  go('test');
 }
 
 // ════════════════════════════════
-// VOCAB
+// TEST SCREEN
+// ════════════════════════════════
+function buildTest() {
+  const lv = getLevel(STATE.level);
+  const topic = lv.grammar[STATE.topicIdx];
+  const tests = topic.test;
+
+  if (STATE.testIdx >= tests.length) {
+    showTestResult();
+    return;
+  }
+
+  const t = tests[STATE.testIdx];
+  const total = tests.length;
+  const p = pct(STATE.testIdx, total);
+
+  document.getElementById('test-num').textContent = `${STATE.testIdx + 1} / ${total}`;
+  document.getElementById('test-prog').style.width = p + '%';
+  document.getElementById('test-q').textContent = t.q;
+  document.getElementById('test-next-btn').style.display = 'none';
+
+  document.getElementById('test-opts').innerHTML = t.o.map((opt, i) =>
+    `<button class="opt-btn" onclick="answerTest(${i})">${'ABCD'[i]}. ${opt}</button>`
+  ).join('');
+}
+
+function answerTest(idx) {
+  const lv = getLevel(STATE.level);
+  const t = lv.grammar[STATE.topicIdx].test[STATE.testIdx];
+  const correct = idx === t.a;
+  if (correct) STATE.testScore++;
+
+  document.querySelectorAll('#test-opts .opt-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === t.a) btn.classList.add('correct');
+    else if (i === idx && !correct) btn.classList.add('wrong');
+  });
+
+  const nextBtn = document.getElementById('test-next-btn');
+  nextBtn.style.display = 'block';
+  nextBtn.textContent = STATE.testIdx + 1 < lv.grammar[STATE.topicIdx].test.length ? 'Следующий →' : '🏁 Результат теста';
+}
+
+function nextTest() {
+  STATE.testIdx++;
+  buildTest();
+}
+
+function showTestResult() {
+  const lv = getLevel(STATE.level);
+  const topic = lv.grammar[STATE.topicIdx];
+  const total = topic.test.length;
+  const score = STATE.testScore;
+  const p = pct(score, total);
+
+  let emoji, grade, note;
+  if (p >= 80) { emoji = '🌟'; grade = 'Отлично!'; note = 'Тема освоена! Можно переходить к следующей.'; }
+  else if (p >= 60) { emoji = '👍'; grade = 'Хорошо!'; note = 'Советую ещё раз повторить объяснение.'; }
+  else { emoji = '📚'; grade = 'Нужно повторить'; note = 'Перечитай объяснение и пройди упражнения снова.'; }
+
+  // Mark as tested if ≥ 60%
+  if (p >= 60) {
+    const prog = getProg(STATE.level);
+    if (!prog.gramTested.includes(topic.id)) {
+      prog.gramTested.push(topic.id);
+      setProg(STATE.level, prog);
+    }
+  }
+
+  document.getElementById('result-card').innerHTML = `
+    <div class="result-emoji">${emoji}</div>
+    <div class="result-title">${grade}</div>
+    <div class="result-score">${score}/${total} (${p}%)</div>
+    <div class="prog-bar" style="max-width:200px;margin:0 auto 12px;"><div class="prog-fill" style="width:${p}%"></div></div>
+    <div class="result-msg">${note}</div>`;
+
+  document.getElementById('result-btns').innerHTML = `
+    <button class="btn btn-primary" onclick="retryTest()">🔄 Пройти снова</button>
+    <button class="btn btn-secondary" onclick="go('topic')">📖 К теме</button>
+    <button class="btn btn-secondary btn-full" onclick="go('grammar')">← К темам</button>`;
+
+  STATE.resultType = 'test';
+  go('result');
+}
+
+function retryTest() {
+  STATE.testIdx = 0;
+  STATE.testScore = 0;
+  go('test');
+}
+
+// ════════════════════════════════
+// VOCAB SCREEN
 // ════════════════════════════════
 function buildVocabMenu() {
-  const d = LEVELS[S.level];
-  const prog = getProgress(S.level);
+  const lv = getLevel(STATE.level);
+  const prog = getProg(STATE.level);
+  const totalWords = lv.vocabulary.reduce((s,c) => s + c.words.length, 0);
+  const doneV = prog.vocabDone.length;
+  const totalV = lv.vocabulary.length;
 
-  let cats = d.vocabulary.map((c,i) => {
-    const status = i < prog.vocabDone ? '✅' : '⬜';
-    return `<button class="topic-item" onclick="openVocabCat(${i})">
-      <span class="status">${status}</span>
-      <span class="icon">${c.cat.split(' ')[0]}</span>
-      <span class="title">${c.cat.split(' ').slice(1).join(' ')} (${c.words.length} слов)</span>
-      <span style="color:var(--muted);font-size:0.7rem;">→</span>
+  document.getElementById('topbar-title').textContent = 'Словарь';
+  document.getElementById('vocab-title').textContent = `📖 Словарный запас — ${lv.name}`;
+  document.getElementById('vocab-sub').textContent = `${totalWords} слов • ${doneV}/${totalV} категорий пройдено`;
+
+  document.getElementById('vocab-cats').innerHTML = lv.vocabulary.map((cat, i) => {
+    const done = prog.vocabDone.includes(i);
+    return `<button class="cat-item" onclick="openVocabCat(${i})">
+      <span class="c-icon">${cat.icon || '📖'}</span>
+      <div>
+        <div class="c-name">${cat.category}</div>
+        <div class="c-count">${cat.words.length} слов</div>
+      </div>
+      <span class="c-status">${done ? '✅' : '⬜'}</span>
     </button>`;
   }).join('');
-
-  const totalWords = d.vocabulary.reduce((s,c)=>s+c.words.length,0);
-
-  document.getElementById('chat8').innerHTML = `
-    <div class="msg-wrap">
-      <div class="msg-icon">🎯</div>
-      <div class="bubble bot">
-        <b>📖 Словарный запас — ${S.levelName}</b><br><br>
-        Всего слов в уровне: <b>${totalWords}</b><br>
-        <div class="prog-list" style="margin-top:5px;">
-          <div class="prog-row"><span class="lbl">Пройдено</span><div class="prog-track"><div class="prog-track-fill" style="width:${pct(prog.vocabDone,d.vocabulary.length)}%"></div></div><span class="pct">${pct(prog.vocabDone,d.vocabulary.length)}%</span></div>
-        </div>
-        <div style="margin-top:8px;display:flex;flex-direction:column;gap:5px;">${cats}</div>
-      </div>
-    </div>`;
-
-  document.getElementById('kb8').innerHTML = `
-    <button class="btn muted-btn full" onclick="go(2)">◀ Назад к разделам</button>`;
 }
 
-let vocabCatIdx = 0;
-let vocabWordIdx = 0;
-
-function openVocabCat(catIdx) {
-  vocabCatIdx = catIdx;
-  vocabWordIdx = 0;
-  showVocabWord();
+function openVocabCat(idx) {
+  STATE.vocabCat = idx;
+  STATE.vocabWord = 0;
+  go('word');
 }
 
-function showVocabWord() {
-  const cat = LEVELS[S.level].vocabulary[vocabCatIdx];
+function buildWord() {
+  const lv = getLevel(STATE.level);
+  const cat = lv.vocabulary[STATE.vocabCat];
   const words = cat.words;
-  const w = words[vocabWordIdx];
-  const prog = getProgress(S.level);
 
-  setProgBar(`${cat.cat} — ${vocabWordIdx+1}/${words.length}`, '', pct(vocabWordIdx+1, words.length));
+  if (STATE.vocabWord >= words.length) {
+    // Done with category
+    const prog = getProg(STATE.level);
+    if (!prog.vocabDone.includes(STATE.vocabCat)) {
+      prog.vocabDone.push(STATE.vocabCat);
+      setProg(STATE.level, prog);
+    }
+    document.getElementById('word-card').innerHTML = `
+      <div style="font-size:2.5rem;margin-bottom:12px;">🎉</div>
+      <div style="font-size:1.2rem;font-weight:700;margin-bottom:8px;">Категория завершена!</div>
+      <div style="color:var(--muted);">Ты изучил все ${words.length} слов в «${cat.category}»!</div>`;
+    document.getElementById('word-counter').textContent = '';
+    document.getElementById('word-prog').style.width = '100%';
+    document.getElementById('word-next-btn').textContent = '🔄 Повторить';
+    document.getElementById('word-next-btn').onclick = () => { STATE.vocabWord = 0; buildWord(); };
+    document.getElementById('word-prev-btn').style.display = 'none';
+    return;
+  }
 
-  document.getElementById('chat8').innerHTML = `
-    <div class="msg-wrap user"><div class="bubble user">${cat.cat}</div></div>
-    <div class="msg-wrap">
-      <div class="msg-icon">🎯</div>
-      <div class="bubble bot">
-        <b>${cat.cat}</b><br>
-        <span class="muted">Слово ${vocabWordIdx+1} из ${words.length}</span>
-        <div class="word-card">
-          <div><div class="word-en">${w.en}</div><div class="word-tr">${w.tr}</div></div>
-          <div class="word-ru">${w.ru}</div>
-        </div>
-        ${vocabWordIdx > 0 ? `<div style="margin-top:6px;font-size:0.73rem;color:var(--muted);">Предыдущее: <b>${words[vocabWordIdx-1].en}</b> — ${words[vocabWordIdx-1].ru}</div>` : ''}
-      </div>
-    </div>`;
+  const w = words[STATE.vocabWord];
+  const total = words.length;
+  const p = pct(STATE.vocabWord + 1, total);
 
-  const isLast = vocabWordIdx >= words.length - 1;
-  document.getElementById('kb8').innerHTML = `
-    <button class="btn primary half" onclick="nextWord()">${isLast ? '✅ Завершить' : '➡️ Следующее'}</button>
-    <button class="btn half" onclick="prevWord()" ${vocabWordIdx===0?'style="opacity:0.4"':''}>◀ Назад</button>
-    <button class="btn muted-btn full" onclick="buildVocabMenu()">← К категориям</button>`;
+  document.getElementById('topbar-title').textContent = cat.category;
+  document.getElementById('word-counter').textContent = `${cat.icon || '📖'} ${cat.category} — слово ${STATE.vocabWord + 1} из ${total}`;
+  document.getElementById('word-prog').style.width = p + '%';
+
+  document.getElementById('word-card').innerHTML = `
+    <div class="word-en">🇬🇧 ${w.en}</div>
+    <div class="word-ru">🇷🇺 ${w.ru}</div>
+    ${w.ex ? `<div class="word-ex">💬 ${w.ex}</div>` : ''}`;
+
+  const prevBtn = document.getElementById('word-prev-btn');
+  const nextBtn = document.getElementById('word-next-btn');
+  prevBtn.style.display = STATE.vocabWord > 0 ? '' : 'none';
+  prevBtn.onclick = prevWord;
+  nextBtn.textContent = STATE.vocabWord + 1 < total ? 'Следующее →' : '✅ Завершить';
+  nextBtn.onclick = nextWord;
 }
 
 function nextWord() {
-  const words = LEVELS[S.level].vocabulary[vocabCatIdx].words;
-  const prog = getProgress(S.level);
-  if (vocabWordIdx < words.length - 1) {
-    vocabWordIdx++;
-    showVocabWord();
-  } else {
-    if (vocabCatIdx >= prog.vocabDone) prog.vocabDone = vocabCatIdx + 1;
-    document.getElementById('chat8').innerHTML += `
-      <div class="msg-wrap">
-        <div class="msg-icon">🎯</div>
-        <div class="bubble bot">🎉 <span class="green">Категория завершена!</span> Ты изучил все ${words.length} слов!</div>
-      </div>`;
-    document.getElementById('kb8').innerHTML = `
-      <button class="btn primary full" onclick="openVocabCat(${vocabCatIdx})">🔄 Повторить категорию</button>
-      <button class="btn full" onclick="buildVocabMenu()">◀ К категориям</button>`;
-    document.getElementById('prog-bar-wrap').classList.remove('show');
-  }
+  STATE.vocabWord++;
+  buildWord();
 }
-
 function prevWord() {
-  if (vocabWordIdx > 0) { vocabWordIdx--; showVocabWord(); }
+  if (STATE.vocabWord > 0) { STATE.vocabWord--; buildWord(); }
 }
 
 // ════════════════════════════════
-// PHRASES
+// PHRASES SCREEN
 // ════════════════════════════════
-let phraseSitIdx = 0;
-
 function buildPhrasesMenu() {
-  const d = LEVELS[S.level];
-  const prog = getProgress(S.level);
+  const lv = getLevel(STATE.level);
+  const prog = getProg(STATE.level);
+  const totalItems = lv.phrases.reduce((s,p) => s + p.items.length, 0);
+  const donePh = prog.phrasesDone.length;
+  const totalPh = lv.phrases.length;
 
-  let sits = d.phrases.map((p,i) => {
-    const status = i < prog.phrasesDone ? '✅' : '⬜';
-    return `<button class="topic-item" onclick="openPhraseSit(${i})">
-      <span class="status">${status}</span>
-      <span class="icon">${p.sit.split(' ')[0]}</span>
-      <span class="title">${p.sit.split(' ').slice(1).join(' ')} (${p.items.length} фраз)</span>
-      <span style="color:var(--muted);font-size:0.7rem;">→</span>
+  document.getElementById('topbar-title').textContent = 'Фразы';
+  document.getElementById('phrases-title').textContent = `💬 Разговорные фразы — ${lv.name}`;
+  document.getElementById('phrases-sub').textContent = `${totalItems} фраз • ${donePh}/${totalPh} ситуаций пройдено`;
+
+  document.getElementById('phrases-list').innerHTML = lv.phrases.map((sit, i) => {
+    const done = prog.phrasesDone.includes(i);
+    return `<button class="cat-item" onclick="openPhraseSit(${i})">
+      <span class="c-icon">${sit.icon || '💬'}</span>
+      <div>
+        <div class="c-name">${sit.situation}</div>
+        <div class="c-count">${sit.items.length} фраз</div>
+      </div>
+      <span class="c-status">${done ? '✅' : '⬜'}</span>
     </button>`;
   }).join('');
-
-  const totalPhr = d.phrases.reduce((s,p)=>s+p.items.length,0);
-
-  document.getElementById('chat9').innerHTML = `
-    <div class="msg-wrap">
-      <div class="msg-icon">🎯</div>
-      <div class="bubble bot">
-        <b>💬 Разговорные фразы — ${S.levelName}</b><br><br>
-        Всего фраз в уровне: <b>${totalPhr}</b><br>
-        <div class="prog-list" style="margin-top:5px;">
-          <div class="prog-row"><span class="lbl">Пройдено</span><div class="prog-track"><div class="prog-track-fill" style="width:${pct(prog.phrasesDone,d.phrases.length)}%"></div></div><span class="pct">${pct(prog.phrasesDone,d.phrases.length)}%</span></div>
-        </div>
-        <div style="margin-top:8px;display:flex;flex-direction:column;gap:5px;">${sits}</div>
-      </div>
-    </div>`;
-
-  document.getElementById('kb9').innerHTML = `
-    <button class="btn muted-btn full" onclick="go(2)">◀ Назад к разделам</button>`;
 }
 
-let phraseItemIdx = 0;
+function openPhraseSit(idx) {
+  const lv = getLevel(STATE.level);
+  const prog = getProg(STATE.level);
+  if (!prog.phrasesDone.includes(idx)) {
+    prog.phrasesDone.push(idx);
+    setProg(STATE.level, prog);
+  }
+  const sit = lv.phrases[idx];
 
-function openPhraseSit(sitIdx) {
-  phraseSitIdx = sitIdx;
-  phraseItemIdx = 0;
-  const sit = LEVELS[S.level].phrases[sitIdx];
-  const prog = getProgress(S.level);
-  if (sitIdx >= prog.phrasesDone) prog.phrasesDone = sitIdx + 1;
-
-  let items = sit.items.map(it => `
-    <div style="background:#0f1d2d;border:1px solid #1e3a5a;border-radius:8px;padding:8px 10px;margin-top:5px;">
-      <div style="color:#8bb8e8;font-weight:600;font-size:0.82rem;">🇬🇧 ${it.en}</div>
-      <div style="color:var(--muted);font-size:0.78rem;margin-top:2px;">🇷🇺 ${it.ru}</div>
+  document.getElementById('topbar-title').textContent = sit.situation;
+  document.getElementById('phrase-sit-title').textContent = `${sit.icon || '💬'} ${sit.situation}`;
+  document.getElementById('phrase-sit-items').innerHTML = sit.items.map(item => `
+    <div class="phrase-card">
+      <div class="phrase-en">🇬🇧 ${item.en}</div>
+      <div class="phrase-ru">🇷🇺 ${item.ru}</div>
+      ${item.note ? `<div class="phrase-note">📌 ${item.note}</div>` : ''}
     </div>`).join('');
 
-  document.getElementById('chat9').innerHTML = `
-    <div class="msg-wrap user"><div class="bubble user">${sit.sit}</div></div>
-    <div class="msg-wrap">
-      <div class="msg-icon">🎯</div>
-      <div class="bubble bot">
-        <b>${sit.sit}</b>
-        ${items}
-      </div>
-    </div>`;
-
-  setProgBar(sit.sit, '', pct(sitIdx+1, LEVELS[S.level].phrases.length));
-
-  document.getElementById('kb9').innerHTML = `
-    <button class="btn primary full" onclick="openPhraseSit(${sitIdx})">🔄 Повторить ситуацию</button>
-    <button class="btn full" onclick="buildPhrasesMenu()">◀ К ситуациям</button>
-    <button class="btn muted-btn full" onclick="go(10)">📊 Мой прогресс</button>`;
+  go('phrase-sit');
 }
 
 // ════════════════════════════════
-// MY PROGRESS
+// PROGRESS SCREEN
 // ════════════════════════════════
 function buildProgress() {
-  const d = LEVELS[S.level];
-  const prog = getProgress(S.level);
-  const totalG = d.grammar.length;
-  const totalV = d.vocabulary.length;
-  const totalPh = d.phrases.length;
+  const lv = getLevel(STATE.level);
+  const prog = getProg(STATE.level);
+  const totalG = lv.grammar.length;
   const doneG = prog.gramDone.length;
   const testedG = prog.gramTested.length;
-  const totalWords = d.vocabulary.reduce((s,c)=>s+c.words.length,0);
-  const totalPhrItems = d.phrases.reduce((s,p)=>s+p.items.length,0);
+  const totalV = lv.vocabulary.length;
+  const doneV = prog.vocabDone.length;
+  const totalPh = lv.phrases.length;
+  const donePh = prog.phrasesDone.length;
+  const totalWords = lv.vocabulary.reduce((s,c) => s + c.words.length, 0);
 
-  let topicsList = d.grammar.map(g => {
-    let status = '⬜ не начато';
-    let color = 'var(--muted)';
-    if (prog.gramTested.includes(g.id)) { status = '✅ тест пройден'; color = 'var(--green)'; }
-    else if (prog.gramDone.includes(g.id)) { status = '📖 изучено'; color = 'var(--accent)'; }
-    return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:0.77rem;">
-      <span>${g.icon} ${g.title}</span>
-      <span style="color:${color};flex-shrink:0;margin-left:8px;">${status}</span>
+  document.getElementById('topbar-title').textContent = 'Прогресс';
+  document.getElementById('prog-title').textContent = `📊 Прогресс — ${lv.name}`;
+
+  document.getElementById('prog-stats').innerHTML = `
+    <div class="stat-box"><div class="stat-val">${doneG}/${totalG}</div><div class="stat-lbl">тем изучено</div></div>
+    <div class="stat-box"><div class="stat-val">${testedG}/${totalG}</div><div class="stat-lbl">тестов</div></div>
+    <div class="stat-box"><div class="stat-val">${doneV}/${totalV}</div><div class="stat-lbl">кат. словаря</div></div>
+    <div class="stat-box"><div class="stat-val">${donePh}/${totalPh}</div><div class="stat-lbl">ситуаций</div></div>`;
+
+  document.getElementById('prog-bars').innerHTML = `
+    <div class="prog-item">
+      <div class="prog-item-header"><span>📚 Грамматика изучено</span><span>${pct(doneG,totalG)}%</span></div>
+      ${progBar(doneG, totalG)}
+    </div>
+    <div class="prog-item">
+      <div class="prog-item-header"><span>🧪 Тестов пройдено</span><span>${pct(testedG,totalG)}%</span></div>
+      ${progBar(testedG, totalG)}
+    </div>
+    <div class="prog-item">
+      <div class="prog-item-header"><span>📖 Словарный запас</span><span>${pct(doneV,totalV)}%</span></div>
+      ${progBar(doneV, totalV)}
+    </div>
+    <div class="prog-item">
+      <div class="prog-item-header"><span>💬 Разговорные фразы</span><span>${pct(donePh,totalPh)}%</span></div>
+      ${progBar(donePh, totalPh)}
+    </div>`;
+
+  document.getElementById('prog-topics').innerHTML = lv.grammar.map(g => {
+    let badge;
+    if (prog.gramTested.includes(g.id)) badge = `<span class="badge badge-green">✅ тест</span>`;
+    else if (prog.gramDone.includes(g.id)) badge = `<span class="badge badge-blue">📖 изучено</span>`;
+    else badge = `<span class="badge badge-muted">⬜ не начато</span>`;
+    return `<div class="prog-topic-item">
+      <span class="pt-title">${g.icon || '📌'} ${g.title}</span>
+      ${badge}
     </div>`;
   }).join('');
-
-  document.getElementById('chat10').innerHTML = `
-    <div class="msg-wrap">
-      <div class="msg-icon">🎯</div>
-      <div class="bubble bot">
-        <b>📊 Прогресс — ${S.levelName}</b>
-        <div class="prog-list" style="margin-top:8px;">
-          <div class="prog-row"><span class="lbl">📚 Изучено</span><div class="prog-track"><div class="prog-track-fill" style="width:${pct(doneG,totalG)}%"></div></div><span class="pct">${pct(doneG,totalG)}%</span></div>
-          <div class="prog-row"><span class="lbl">🧪 Тестов</span><div class="prog-track"><div class="prog-track-fill" style="width:${pct(testedG,totalG)}%"></div></div><span class="pct">${pct(testedG,totalG)}%</span></div>
-          <div class="prog-row"><span class="lbl">📖 Словарь</span><div class="prog-track"><div class="prog-track-fill" style="width:${pct(prog.vocabDone,totalV)}%"></div></div><span class="pct">${pct(prog.vocabDone,totalV)}%</span></div>
-          <div class="prog-row"><span class="lbl">💬 Фразы</span><div class="prog-track"><div class="prog-track-fill" style="width:${pct(prog.phrasesDone,totalPh)}%"></div></div><span class="pct">${pct(prog.phrasesDone,totalPh)}%</span></div>
-        </div>
-        <div class="stats" style="margin-top:8px;">
-          <div class="stat"><div class="stat-val">${doneG}/${totalG}</div><div class="stat-lbl">тем грамм.</div></div>
-          <div class="stat"><div class="stat-val">${testedG}/${totalG}</div><div class="stat-lbl">тестов</div></div>
-          <div class="stat"><div class="stat-val">${totalWords}</div><div class="stat-lbl">слов</div></div>
-          <div class="stat"><div class="stat-val">${totalPhrItems}</div><div class="stat-lbl">фраз</div></div>
-        </div>
-        <hr>
-        <div style="font-size:0.8rem;font-weight:600;color:var(--accent);margin-bottom:5px;">📋 Темы грамматики:</div>
-        ${topicsList}
-      </div>
-    </div>`;
-
-  document.getElementById('kb10').innerHTML = `
-    <button class="btn full" onclick="go(3)">📚 К грамматике</button>
-    <button class="btn muted-btn full" onclick="go(2)">◀ Меню уровня</button>`;
 }
+
+// ════════════════════════════════
+// SCREEN HOOKS (called on navigation)
+// ════════════════════════════════
+const _origRender = _render;
+window._render = function(screen) {
+  _origRender(screen);
+  if (screen === 'exercise') buildExercise();
+  if (screen === 'test') buildTest();
+};
+
+// Patch go/goBack to use window._render
+const _origGo = go;
+function go(screen) {
+  if (_stack[_stack.length - 1] !== screen) _stack.push(screen);
+  window._render(screen);
+}
+
+// Initial render
+window._render('home');
 </script>
 </body>
 </html>
