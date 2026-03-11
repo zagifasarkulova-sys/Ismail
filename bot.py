@@ -74,7 +74,10 @@ def progress_bar(done, total, length=10):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.clear()
-    keyboard = [[InlineKeyboardButton("🚀 Начать обучение", callback_data="begin")]]
+    keyboard = [
+        [InlineKeyboardButton("🚀 Начать обучение", callback_data="begin")],
+        [InlineKeyboardButton("🌐 Открыть веб-версию", url="https://ismail-py59.onrender.com")],
+    ]
     text = APP_DESCRIPTION
     markup = build_markup(keyboard)
 
