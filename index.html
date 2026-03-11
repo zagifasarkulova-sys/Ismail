@@ -1,1190 +1,661 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LinguaStep — Учи английский</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ISEnglishMaster</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-:root {
-  --bg: #0d1117;
-  --card: #161b22;
-  --card2: #1c2230;
-  --accent: #5288c1;
-  --accent2: #7c3aed;
-  --green: #4caf7d;
-  --red: #e05c5c;
-  --yellow: #f0b132;
-  --text: #d8e0e8;
-  --muted: #627d8f;
-  --border: #21262d;
+:root{
+  --cream:#fffdf7; --white:#ffffff;
+  --blue:#3b6cf7; --blue-l:#eef2ff; --blue-m:#c7d4fd; --blue-d:#2451d3;
+  --green:#16a34a; --green-l:#dcfce7; --green-m:#86efac;
+  --amber:#d97706; --amber-l:#fef3c7; --amber-m:#fde68a;
+  --red:#dc2626; --red-l:#fee2e2;
+  --purple:#7c3aed; --purple-l:#ede9fe;
+  --pink:#db2777; --pink-l:#fce7f3;
+  --ink:#1a1208; --ink2:#5a4e38; --ink3:#9c8f7a;
+  --border:#e8dfc8; --border2:#f0e9d8;
+  --sh:0 2px 12px rgba(26,18,8,.07);
+  --sh2:0 6px 28px rgba(26,18,8,.12);
+  --r:18px;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  min-height: 100vh;
-}
-
-/* ─── LAYOUT ─── */
-#app { display: flex; flex-direction: column; min-height: 100vh; }
-
-/* ─── TOPBAR ─── */
-#topbar {
-  position: sticky; top: 0; z-index: 100;
-  background: rgba(13,17,23,0.92);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--border);
-  padding: 0 16px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-#topbar-logo { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
-#topbar-title { font-size: 0.85rem; color: var(--muted); flex: 1; }
-#back-btn {
-  background: none; border: none; color: var(--accent);
-  font-size: 0.85rem; cursor: pointer; padding: 6px 10px;
-  border-radius: 8px; display: none; align-items: center; gap: 4px;
-  font-family: inherit;
-}
-#back-btn:hover { background: rgba(82,136,193,0.15); }
-#back-btn.visible { display: flex; }
-
-/* ─── MAIN CONTENT ─── */
-#main { flex: 1; padding: 20px 16px; max-width: 760px; margin: 0 auto; width: 100%; }
-
-/* ─── SCREENS ─── */
-.screen { display: none; animation: fadeIn 0.2s ease; }
-.screen.active { display: block; }
-@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
-
-/* ─── HERO ─── */
-.hero {
-  text-align: center;
-  padding: 48px 0 32px;
-}
-.hero-icon { font-size: 3.5rem; margin-bottom: 16px; }
-.hero h1 { font-size: 2rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-.hero p { color: var(--muted); font-size: 0.95rem; max-width: 480px; margin: 0 auto 28px; line-height: 1.6; }
-.hero-features {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px; max-width: 400px; margin: 0 auto 28px;
-}
-.feat-item {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 0.82rem;
-  color: var(--muted);
-  text-align: left;
-}
-.feat-item span { display: block; font-size: 1.1rem; margin-bottom: 4px; }
-
-/* ─── LEVEL GRID ─── */
-.level-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
-}
-.level-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px 16px;
-  cursor: pointer;
-  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
-}
-.level-card:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(82,136,193,0.15);
-}
-.level-card-emoji { font-size: 2rem; margin-bottom: 8px; }
-.level-card-name { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
-.level-card-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
-.level-card-prog { margin-top: 10px; }
-.mini-bar { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; margin-top: 4px; }
-.mini-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; }
-
-/* ─── SECTION HEADER ─── */
-.sec-header {
-  margin-bottom: 20px;
-}
-.sec-header h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 6px; }
-.sec-header p { color: var(--muted); font-size: 0.88rem; }
-
-/* ─── STATS ROW ─── */
-.stats-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-.stat-box {
-  flex: 1; min-width: 80px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 10px;
-  text-align: center;
-}
-.stat-val { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
-.stat-lbl { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
-
-/* ─── SECTION MENU ─── */
-.section-menu { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-.sec-btn {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 18px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  transition: border-color 0.2s, background 0.2s;
-  text-align: left;
-  color: var(--text);
-  font-family: inherit;
-}
-.sec-btn:hover { border-color: var(--accent); background: var(--card2); }
-.sec-btn .icon { font-size: 1.5rem; flex-shrink: 0; }
-.sec-btn .label { font-weight: 600; font-size: 0.95rem; }
-.sec-btn .sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-.sec-btn .arrow { margin-left: auto; color: var(--muted); font-size: 0.9rem; }
-.sec-btn .prog-pill {
-  margin-left: auto; margin-right: 8px;
-  font-size: 0.72rem; color: var(--accent);
-  background: rgba(82,136,193,0.12);
-  border-radius: 20px;
-  padding: 2px 8px;
-}
-
-/* ─── PROGRESS BARS ─── */
-.prog-item { margin-bottom: 10px; }
-.prog-item-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
-.prog-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
-.prog-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width 0.4s; }
-
-/* ─── TOPIC LIST ─── */
-.topic-list { display: flex; flex-direction: column; gap: 8px; }
-.topic-item {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: border-color 0.2s, background 0.2s;
-  text-align: left;
-  color: var(--text);
-  font-family: inherit;
-  width: 100%;
-}
-.topic-item:hover { border-color: var(--accent); background: var(--card2); }
-.topic-item .t-icon { font-size: 1.2rem; flex-shrink: 0; }
-.topic-item .t-title { font-size: 0.9rem; font-weight: 500; flex: 1; }
-.topic-item .t-status { font-size: 0.85rem; flex-shrink: 0; }
-
-/* ─── EXPLANATION ─── */
-.explanation {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 16px;
-  line-height: 1.7;
-  font-size: 0.9rem;
-  white-space: pre-wrap;
-}
-.explanation b, .explanation strong { color: #8bb8e8; }
-
-/* ─── QUIZ / EXERCISE ─── */
-.quiz-wrap {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 16px;
-}
-.quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-.quiz-num { font-size: 0.8rem; color: var(--muted); }
-.quiz-q { font-size: 1rem; font-weight: 600; margin-bottom: 16px; line-height: 1.5; }
-.quiz-opts { display: flex; flex-direction: column; gap: 8px; }
-.opt-btn {
-  background: var(--card2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 11px 14px;
-  cursor: pointer;
-  font-size: 0.88rem;
-  color: var(--text);
-  text-align: left;
-  font-family: inherit;
-  transition: border-color 0.15s, background 0.15s;
-}
-.opt-btn:hover { border-color: var(--accent); }
-.opt-btn.correct { border-color: var(--green); background: rgba(76,175,125,0.12); color: var(--green); }
-.opt-btn.wrong { border-color: var(--red); background: rgba(224,92,92,0.12); color: var(--red); }
-.opt-btn:disabled { cursor: default; }
-.quiz-result {
-  margin-top: 12px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 0.88rem;
-  line-height: 1.5;
-}
-.quiz-result.ok { background: rgba(76,175,125,0.1); border: 1px solid var(--green); color: var(--green); }
-.quiz-result.fail { background: rgba(224,92,92,0.1); border: 1px solid var(--red); color: var(--red); }
-
-/* ─── RESULT CARD ─── */
-.result-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 28px 24px;
-  text-align: center;
-  margin-bottom: 16px;
-}
-.result-emoji { font-size: 3rem; margin-bottom: 12px; }
-.result-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
-.result-score { font-size: 2rem; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
-.result-msg { font-size: 0.88rem; color: var(--muted); line-height: 1.5; }
-
-/* ─── VOCAB ─── */
-.word-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 24px;
-  text-align: center;
-  margin-bottom: 16px;
-}
-.word-en { font-size: 1.8rem; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
-.word-ru { font-size: 1.1rem; color: var(--text); margin-bottom: 8px; }
-.word-ex { font-size: 0.85rem; color: var(--muted); font-style: italic; }
-.word-counter { font-size: 0.8rem; color: var(--muted); margin-bottom: 16px; }
-
-/* ─── PHRASE CARD ─── */
-.phrase-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 10px;
-}
-.phrase-en { font-size: 0.95rem; font-weight: 600; color: #8bb8e8; margin-bottom: 4px; }
-.phrase-ru { font-size: 0.85rem; color: var(--muted); }
-.phrase-note { font-size: 0.78rem; color: var(--yellow); margin-top: 3px; }
-
-/* ─── TOPIC ACTIONS ─── */
-.topic-actions {
-  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;
-}
-.tab-btn {
-  flex: 1; min-width: 120px;
-  background: var(--card);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  color: var(--text);
-  font-family: inherit;
-  transition: border-color 0.2s, background 0.2s;
-}
-.tab-btn:hover { border-color: var(--accent); }
-.tab-btn.active { border-color: var(--accent); background: rgba(82,136,193,0.12); color: var(--accent); font-weight: 600; }
-
-/* ─── BUTTONS ─── */
-.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-.btn {
-  flex: 1; min-width: 100px;
-  padding: 12px 18px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-size: 0.88rem;
-  font-family: inherit;
-  font-weight: 500;
-  transition: opacity 0.2s, transform 0.1s;
-}
-.btn:hover { opacity: 0.88; transform: translateY(-1px); }
-.btn:active { transform: translateY(0); }
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-secondary { background: var(--card); border: 1px solid var(--border); color: var(--text); }
-.btn-success { background: var(--green); color: #fff; }
-.btn-full { width: 100%; min-width: unset; }
-
-/* ─── CATEGORY CARDS ─── */
-.cat-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-.cat-item {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 16px;
-  cursor: pointer;
-  display: flex; align-items: center; gap: 12px;
-  transition: border-color 0.2s, background 0.2s;
-  width: 100%;
-  color: var(--text);
-  font-family: inherit;
-  text-align: left;
-}
-.cat-item:hover { border-color: var(--accent); background: var(--card2); }
-.cat-item .c-icon { font-size: 1.3rem; }
-.cat-item .c-name { font-weight: 500; font-size: 0.9rem; flex: 1; }
-.cat-item .c-count { font-size: 0.78rem; color: var(--muted); }
-.cat-item .c-status { font-size: 0.85rem; margin-left: 8px; }
-
-/* ─── PROGRESS SCREEN ─── */
-.prog-topic-list { display: flex; flex-direction: column; gap: 6px; }
-.prog-topic-item {
-  display: flex; justify-content: space-between; align-items: center;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  padding: 10px 14px;
-  font-size: 0.83rem;
-}
-.prog-topic-item .pt-title { color: var(--text); }
-.prog-topic-item .pt-status { font-size: 0.8rem; }
-
-.badge {
-  display: inline-block;
-  font-size: 0.72rem;
-  border-radius: 20px;
-  padding: 2px 8px;
-  font-weight: 500;
-}
-.badge-green { background: rgba(76,175,125,0.15); color: var(--green); }
-.badge-blue { background: rgba(82,136,193,0.15); color: var(--accent); }
-.badge-muted { background: rgba(98,125,143,0.15); color: var(--muted); }
-
-/* ─── NEXT QUIZ BTN ─── */
-#quiz-next-btn { display: none; }
-
-@media (max-width: 480px) {
-  .hero h1 { font-size: 1.5rem; }
-  .hero-features { grid-template-columns: 1fr 1fr; }
-  #main { padding: 14px 12px; }
-  .level-grid { grid-template-columns: 1fr 1fr; }
-}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--cream);color:var(--ink);font-family:'Bricolage Grotesque',sans-serif;min-height:100vh;max-width:430px;margin:0 auto}
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.88);opacity:0}65%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
+@keyframes shine{0%{background-position:200% center}100%{background-position:-200% center}}
+.a1{animation:up .35s ease both}
+.a2{animation:up .35s .07s ease both}
+.a3{animation:up .35s .14s ease both}
+.a4{animation:up .35s .21s ease both}
+.a5{animation:up .35s .28s ease both}
+.hdr{display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--white);border-bottom:1.5px solid var(--border2);position:sticky;top:0;z-index:20}
+.back-btn{width:38px;height:38px;border-radius:12px;border:1.5px solid var(--border);background:var(--cream);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;color:var(--ink2);transition:all .2s;flex-shrink:0}
+.back-btn:hover{background:var(--amber-l);border-color:var(--amber-m);transform:translateX(-2px)}
+.hdr-title{font-size:16px;font-weight:700}
+.hdr-sub{font-size:12px;color:var(--ink3);margin-top:1px}
+.btn{width:100%;border:none;border-radius:var(--r);padding:17px;font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn:active{transform:scale(.97)}
+.btn-blue{background:linear-gradient(135deg,#3b6cf7,#6690fa);color:#fff;box-shadow:0 4px 20px rgba(59,108,247,.3)}
+.btn-blue:hover{box-shadow:0 6px 28px rgba(59,108,247,.42);transform:translateY(-1px)}
+.btn-out{background:var(--white);color:var(--ink);border:1.5px solid var(--border)}
+.btn-out:hover{background:var(--amber-l)}
+.btn:disabled{opacity:.4;pointer-events:none}
+#s-w{padding:0}
+.w-hero{background:linear-gradient(145deg,#fff8ed 0%,#eef4ff 55%,#f3eeff 100%);padding:36px 24px 28px;border-bottom:1.5px solid var(--border2);position:relative;overflow:hidden}
+.w-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(59,108,247,.12) 0%,transparent 70%);pointer-events:none}
+.w-hero::after{content:'';position:absolute;bottom:-50px;left:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(217,119,6,.1) 0%,transparent 70%);pointer-events:none}
+.w-logo{display:inline-flex;align-items:center;gap:10px;margin-bottom:22px}
+.w-logo-icon{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,#3b6cf7,#818cf8);display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 18px rgba(59,108,247,.38);flex-shrink:0}
+.w-logo-name{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.w-logo-name .hi{color:var(--blue)}
+.w-title{font-size:clamp(30px,8vw,40px);font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:12px;position:relative}
+.w-title .grad{background:linear-gradient(135deg,var(--blue),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:200% auto;animation:shine 4s linear infinite}
+.w-sub{font-size:15px;color:var(--ink2);line-height:1.65;max-width:320px;position:relative}
+.w-stats{display:grid;grid-template-columns:repeat(3,1fr);background:var(--white);border-bottom:1.5px solid var(--border2)}
+.ws{padding:18px 12px;text-align:center;border-right:1.5px solid var(--border2)}
+.ws:last-child{border-right:none}
+.ws-n{font-size:26px;font-weight:800;letter-spacing:-.03em;background:linear-gradient(135deg,var(--blue),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.ws-l{font-size:11px;color:var(--ink3);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.w-feats{padding:22px 20px;flex:1}
+.w-sect-lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px}
+.feat-card{background:var(--white);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:10px;box-shadow:var(--sh);transition:all .22s;cursor:default}
+.feat-card:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+.feat-ico{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.fi-b{background:var(--blue-l)} .fi-a{background:var(--amber-l)} .fi-g{background:var(--green-l)} .fi-p{background:var(--purple-l)}
+.feat-txt .fn{font-size:15px;font-weight:700;margin-bottom:3px}
+.feat-txt .fd{font-size:12px;color:var(--ink3);line-height:1.5}
+.feat-pill{margin-left:auto;flex-shrink:0;font-size:10px;font-weight:800;padding:4px 9px;border-radius:7px;letter-spacing:.04em}
+.fp-blue{background:var(--blue-l);color:var(--blue)}
+.fp-amber{background:var(--amber-l);color:var(--amber)}
+.fp-green{background:var(--green-l);color:var(--green)}
+.fp-purple{background:var(--purple-l);color:var(--purple)}
+.w-cta{padding:4px 20px 36px;display:flex;flex-direction:column;gap:10px}
+#s-l{padding:0}
+.l-body{flex:1;padding:24px 20px;overflow-y:auto}
+.l-chip{display:inline-block;padding:4px 12px;border-radius:100px;background:var(--blue-l);color:var(--blue);font-size:12px;font-weight:700;margin-bottom:10px}
+.l-h{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin-bottom:8px}
+.l-sub{font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:24px}
+.lvl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+.lv{background:var(--white);border:2px solid var(--border2);border-radius:var(--r);padding:16px;cursor:pointer;transition:all .2s;box-shadow:var(--sh);position:relative;overflow:hidden}
+.lv:hover{transform:translateY(-2px);box-shadow:var(--sh2);border-color:var(--blue-m)}
+.lv.sel{border-color:var(--blue);background:linear-gradient(135deg,#eef2ff,#f0f7ff)}
+.lv.sel::after{content:'✓';position:absolute;top:10px;right:12px;font-size:13px;color:var(--blue);font-weight:800}
+.lv-code{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+.lv[data-lv="A1"] .lv-code{color:#16a34a} .lv[data-lv="A2"] .lv-code{color:#65a30d}
+.lv[data-lv="B1"] .lv-code{color:#d97706} .lv[data-lv="B2"] .lv-code{color:#ea580c}
+.lv[data-lv="C1"] .lv-code{color:#dc2626} .lv[data-lv="C2"] .lv-code{color:#7c3aed}
+.lv-name{font-size:12px;font-weight:700;margin-bottom:3px}
+.lv-desc{font-size:11px;color:var(--ink3);line-height:1.4}
+.l-tip{background:var(--amber-l);border:1.5px solid var(--amber-m);border-radius:var(--r);padding:14px 16px;font-size:13px;color:#92400e;line-height:1.6;margin-bottom:28px}
+#s-d{padding:0}
+.d-hero{background:linear-gradient(145deg,#fff8ed,#eef4ff);padding:22px 20px 18px;border-bottom:1.5px solid var(--border2)}
+.d-top-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.d-greet{font-size:13px;color:var(--ink3);font-weight:500;margin-bottom:3px}
+.d-title{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.d-lvl-pill{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:7px 13px;font-size:13px;font-weight:700;color:var(--blue);box-shadow:var(--sh);cursor:pointer;transition:all .2s;white-space:nowrap}
+.d-lvl-pill:hover{background:var(--blue-l);border-color:var(--blue-m)}
+.d-streak-row{display:flex;gap:8px}
+.streak-chip{display:flex;align-items:center;gap:6px;background:var(--white);border:1.5px solid var(--border2);border-radius:10px;padding:7px 12px;font-size:13px;font-weight:700;box-shadow:var(--sh)}
+.streak-chip.fire{color:var(--amber)}
+.streak-chip.star{color:var(--blue)}
+.d-scroll{flex:1;overflow-y:auto;padding-bottom:24px}
+.d-prog-wrap{padding:16px 20px 0}
+.prog-card{background:var(--white);border:1.5px solid var(--border2);border-radius:var(--r);padding:18px;box-shadow:var(--sh)}
+.pc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.pc-lbl{font-size:14px;font-weight:700}
+.pc-pct{font-size:14px;color:var(--blue);font-weight:800}
+.pc-track{background:var(--border2);border-radius:100px;height:9px;overflow:hidden;margin-bottom:14px}
+.pc-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--blue),#818cf8);width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.pc-stats{display:flex;gap:0}
+.pcs{flex:1;text-align:center}
+.pcs:not(:last-child){border-right:1px solid var(--border2)}
+.pcs .n{font-size:22px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+.pcs .l{font-size:11px;color:var(--ink3);margin-top:1px;font-weight:600}
+.goals-wrap{padding:16px 20px 0}
+.goals-card{background:var(--white);border:1.5px solid var(--border2);border-radius:var(--r);padding:18px;box-shadow:var(--sh)}
+.gc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.gc-title{font-size:14px;font-weight:700}
+.gc-edit{font-size:12px;color:var(--blue);font-weight:600;cursor:pointer}
+.gc-edit:hover{text-decoration:underline}
+.goal-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.goal-row:last-child{margin-bottom:0}
+.goal-ico{font-size:18px;flex-shrink:0}
+.goal-info{flex:1}
+.goal-name{font-size:13px;font-weight:600;margin-bottom:4px}
+.goal-bar{background:var(--border2);border-radius:100px;height:6px;overflow:hidden}
+.goal-fill{height:100%;border-radius:100px;transition:width 1s cubic-bezier(.4,0,.2,1) .2s}
+.gf-blue{background:var(--blue)} .gf-amber{background:var(--amber)} .gf-green{background:var(--green)}
+.goal-nums{font-size:11px;color:var(--ink3);font-weight:600;white-space:nowrap}
+.d-sects-wrap{padding:16px 20px 0}
+.d-sects-lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px}
+.sect-card{background:var(--white);border:1.5px solid var(--border2);border-radius:var(--r);padding:17px;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;gap:14px;box-shadow:var(--sh);transition:all .22s;position:relative;overflow:hidden}
+.sect-card::before{content:'';position:absolute;inset:0;background:var(--sc-color,var(--blue-l));opacity:0;transition:opacity .2s}
+.sect-card:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+.sect-card:hover::before{opacity:.4}
+.sect-ico{width:50px;height:50px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;position:relative}
+.sect-inf{flex:1;position:relative}
+.sect-name{font-size:16px;font-weight:700;margin-bottom:3px}
+.sect-desc{font-size:12px;color:var(--ink3)}
+.sect-prog{margin-top:8px;background:var(--border2);border-radius:100px;height:4px;overflow:hidden}
+.sect-pf{height:100%;border-radius:100px;width:0;transition:width 1s cubic-bezier(.4,0,.2,1) .3s}
+.sect-arr{width:30px;height:30px;border-radius:9px;background:var(--cream);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ink3);flex-shrink:0;position:relative}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,18,8,.4);z-index:100;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--white);border-radius:24px 24px 0 0;padding:28px 24px 40px;width:100%;max-width:430px;animation:up .3s ease}
+.modal-title{font-size:20px;font-weight:800;margin-bottom:6px;letter-spacing:-.02em}
+.modal-sub{font-size:13px;color:var(--ink3);margin-bottom:22px}
+.goal-set-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border2)}
+.goal-set-row:last-of-type{border-bottom:none}
+.gsr-ico{font-size:22px;flex-shrink:0}
+.gsr-inf{flex:1}
+.gsr-name{font-size:14px;font-weight:700;margin-bottom:3px}
+.gsr-sub{font-size:12px;color:var(--ink3)}
+.gsr-stepper{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.step-btn{width:30px;height:30px;border-radius:9px;border:1.5px solid var(--border);background:var(--cream);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--ink2);transition:all .15s}
+.step-btn:hover{background:var(--blue-l);border-color:var(--blue-m);color:var(--blue)}
+.step-val{font-size:16px;font-weight:800;min-width:28px;text-align:center;color:var(--ink)}
+.modal-save{margin-top:22px}
+.modal-close{position:absolute;top:18px;right:20px;font-size:22px;cursor:pointer;color:var(--ink3);background:none;border:none;padding:4px}
+#s-g{padding:0}
+.t-body{flex:1;padding:20px;overflow-y:auto}
+.t-sec-lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px}
+.topic-row{background:var(--white);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;margin-bottom:10px;box-shadow:var(--sh);transition:all .22s}
+.topic-row:hover{transform:translateX(4px);box-shadow:var(--sh2);border-color:var(--blue-m)}
+.topic-num{width:36px;height:36px;border-radius:12px;background:var(--blue-l);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--blue);flex-shrink:0}
+.topic-nm{font-size:14px;font-weight:700;margin-bottom:3px}
+.topic-ct{font-size:11px;color:var(--ink3)}
+.topic-go{background:var(--blue-l);color:var(--blue);font-size:10px;font-weight:800;padding:4px 10px;border-radius:7px;flex-shrink:0}
+#s-ex{padding:0}
+.ex-hdr{padding:14px 20px;background:var(--white);border-bottom:1.5px solid var(--border2);position:sticky;top:0;z-index:10}
+.ex-top-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.ex-inf{flex:1}
+.ex-tn{font-size:15px;font-weight:700}
+.ex-qn{font-size:12px;color:var(--ink3);margin-top:1px}
+.ex-bar{background:var(--border2);border-radius:100px;height:7px;overflow:hidden}
+.ex-bar-f{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--blue),#818cf8);transition:width .4s ease}
+.ex-body{flex:1;padding:26px 20px 20px;overflow-y:auto;display:flex;flex-direction:column}
+.ex-tag{display:inline-flex;align-items:center;gap:6px;background:var(--blue-l);border:1.5px solid var(--blue-m);color:var(--blue);border-radius:8px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:4px 12px;margin-bottom:18px}
+.ex-q{font-family:'Lora',serif;font-size:22px;font-weight:600;line-height:1.45;margin-bottom:7px}
+.ex-hint{font-size:13px;color:var(--ink3);margin-bottom:22px}
+.ex-opts{display:flex;flex-direction:column;gap:10px}
+.ex-opt{background:var(--white);border:2px solid var(--border2);border-radius:16px;padding:15px 18px;display:flex;align-items:center;gap:13px;cursor:pointer;font-size:14px;font-weight:500;text-align:left;box-shadow:var(--sh);transition:all .18s}
+.ex-opt:hover:not(.dis){border-color:var(--blue-m);background:var(--blue-l);transform:translateX(3px)}
+.ex-opt.ok{border-color:var(--green);background:var(--green-l)}
+.ex-opt.err{border-color:var(--red);background:var(--red-l)}
+.ex-opt.dis{cursor:default}
+.opt-l{width:32px;height:32px;border-radius:10px;background:var(--cream);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;transition:all .18s}
+.ex-opt.ok .opt-l{background:var(--green);border-color:var(--green);color:#fff}
+.ex-opt.err .opt-l{background:var(--red);border-color:var(--red);color:#fff}
+.ex-expl{margin-top:14px;padding:15px 18px;background:linear-gradient(135deg,var(--blue-l),#f4f0ff);border:1.5px solid var(--blue-m);border-radius:var(--r);font-size:13px;color:var(--ink2);line-height:1.7;display:none}
+.ex-expl.show{display:block;animation:up .3s ease}
+.ex-expl strong{color:var(--blue);font-weight:700}
+.ex-nxt{margin-top:18px;display:none}
+.ex-nxt.show{display:block;animation:up .3s ease}
+#s-v{padding:0}
+.v-body{flex:1;padding:20px;overflow-y:auto}
+.v-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.v-cnt{font-size:13px;color:var(--ink3);font-weight:500}
+.v-cnt strong{color:var(--ink)}
+.v-dots{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+.vdot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .2s}
+.vdot.cur{background:var(--blue)} .vdot.kn{background:var(--green)}
+.fc-wrap{perspective:1200px;cursor:pointer;margin-bottom:18px}
+.fc{width:100%;height:226px;position:relative;transform-style:preserve-3d;transition:transform .58s cubic-bezier(.4,0,.2,1)}
+.fc.flip{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;backface-visibility:hidden;padding:28px}
+.fc-front{background:linear-gradient(145deg,#eef2ff,#f5f3ff);border:2px solid var(--blue-m);box-shadow:var(--sh2)}
+.fc-back{transform:rotateY(180deg);background:linear-gradient(145deg,#dcfce7,#f0fdf4);border:2px solid var(--green-m);box-shadow:var(--sh2)}
+.fc-word{font-family:'Lora',serif;font-size:40px;font-weight:600;letter-spacing:-.02em;color:var(--ink)}
+.fc-pos{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);margin-top:8px;font-weight:600}
+.fc-tap{font-size:12px;color:var(--blue);margin-top:16px;font-weight:500}
+.fc-trans{font-family:'Lora',serif;font-size:30px;font-weight:600;color:var(--green);text-align:center}
+.fc-ex{font-size:13px;color:var(--ink2);text-align:center;margin-top:10px;line-height:1.6;font-style:italic}
+.v-nav{display:flex;gap:10px}
+.vbtn{flex:1;padding:15px;border-radius:var(--r);font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .18s;border:2px solid var(--border);background:var(--white);color:var(--ink2)}
+.vbtn:active{transform:scale(.96)}
+.vbtn-no:hover{border-color:var(--red);color:var(--red);background:var(--red-l)}
+.vbtn-yes:hover{border-color:var(--green);color:var(--green);background:var(--green-l)}
+.v-done-card{background:linear-gradient(135deg,var(--green-l),#f0fdf4);border:2px solid var(--green-m);border-radius:22px;padding:38px 24px;text-align:center;margin-bottom:16px}
+.vd-icon{font-size:54px;margin-bottom:14px;animation:pop .5s ease}
+.vd-title{font-family:'Lora',serif;font-size:26px;margin-bottom:8px}
+.vd-sub{font-size:14px;color:var(--ink2)}
+#s-ph{padding:0}
+.ph-body{flex:1;padding:20px;overflow-y:auto}
+.ph-cat{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-top:22px;margin-bottom:10px}
+.ph-cat:first-child{margin-top:0}
+.ph-card{background:var(--white);border:1.5px solid var(--border2);border-radius:var(--r);padding:15px 18px;margin-bottom:8px;cursor:pointer;box-shadow:var(--sh);transition:all .2s}
+.ph-card:hover{border-color:var(--blue-m);transform:translateX(3px)}
+.ph-card.open{border-color:var(--blue);background:var(--blue-l)}
+.ph-top{display:flex;align-items:center;justify-content:space-between}
+.ph-en{font-size:14px;font-weight:600}
+.ph-arr{font-size:13px;color:var(--ink3);transition:transform .3s;flex-shrink:0}
+.ph-card.open .ph-arr{transform:rotate(180deg)}
+.ph-details{max-height:0;overflow:hidden;opacity:0;transition:max-height .35s,opacity .3s;margin-top:0}
+.ph-card.open .ph-details{max-height:100px;opacity:1;margin-top:10px}
+.ph-ru{font-size:13px;color:var(--green);font-weight:600;margin-bottom:4px}
+.ph-use{font-size:12px;color:var(--ink3);font-style:italic}
+#s-res{justify-content:center;align-items:center;padding:40px 24px;text-align:center;background:linear-gradient(160deg,#fff8ed,#eef4ff)}
+.res-emoji{font-size:72px;margin-bottom:20px;animation:pop .6s ease}
+.res-ring{width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--blue) calc(var(--p,0) * 1%),#e8dfc8 0);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;position:relative;box-shadow:0 6px 28px rgba(59,108,247,.25)}
+.res-ring::before{content:'';position:absolute;inset:12px;border-radius:50%;background:var(--cream)}
+.res-score{position:relative;font-family:'Lora',serif;font-size:30px;font-weight:600;letter-spacing:-.02em}
+.res-title{font-family:'Lora',serif;font-size:30px;font-weight:600;margin-bottom:10px;letter-spacing:-.02em}
+.res-sub{font-size:14px;color:var(--ink2);margin-bottom:36px;line-height:1.7}
+.res-btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:360px}
+.tab-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--white);border-top:1.5px solid var(--border2);display:flex;z-index:30;padding:8px 0 12px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 0;transition:all .15s}
+.tab-ico{font-size:20px}
+.tab-lbl{font-size:10px;font-weight:700;letter-spacing:.03em;color:var(--ink3);transition:color .15s}
+.tab.active .tab-lbl{color:var(--blue)}
+.tab.active .tab-ico{transform:scale(1.12)}
+.screen-with-tabs{padding-bottom:72px}
 </style>
 </head>
 <body>
-<div id="app">
-  <div id="topbar">
-    <button id="back-btn" onclick="goBack()">← Назад</button>
-    <div id="topbar-logo">🎯 LinguaStep</div>
-    <div id="topbar-title"></div>
-  </div>
-  <div id="main">
-
-    <!-- SCREEN: HOME -->
-    <div id="s-home" class="screen active">
-      <div class="hero">
-        <div class="hero-icon">🎯</div>
-        <h1>LinguaStep</h1>
-        <p>Твой умный помощник в изучении английского языка — от нуля до уровня носителя.</p>
-        <div class="hero-features">
-          <div class="feat-item"><span>📚</span> 6 уровней<br>A1 → C2</div>
-          <div class="feat-item"><span>✏️</span> Упражнения<br>по темам</div>
-          <div class="feat-item"><span>🧪</span> Тесты<br>с оценкой</div>
-          <div class="feat-item"><span>📊</span> Прогресс<br>сохраняется</div>
-        </div>
-        <button class="btn btn-primary" onclick="go('levels')" style="font-size:1rem;padding:14px 32px;">🚀 Начать обучение</button>
+<div class="modal-overlay" id="goals-modal" onclick="closeGoalsIfOutside(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeGoals()">✕</button>
+    <div class="modal-title">🎯 Мои цели</div>
+    <div class="modal-sub">Установи ежедневные цели по каждому разделу</div>
+    <div class="goal-set-row">
+      <div class="gsr-ico">📐</div>
+      <div class="gsr-inf"><div class="gsr-name">Грамматика</div><div class="gsr-sub">заданий в день</div></div>
+      <div class="gsr-stepper">
+        <button class="step-btn" onclick="step('g',-5)">−</button>
+        <div class="step-val" id="sv-g">10</div>
+        <button class="step-btn" onclick="step('g',5)">+</button>
       </div>
     </div>
-
-    <!-- SCREEN: LEVELS -->
-    <div id="s-levels" class="screen">
-      <div class="sec-header">
-        <h2>Выбери уровень</h2>
-        <p>Начни с подходящего уровня или продолжи с того, где остановился</p>
-      </div>
-      <div class="level-grid" id="level-grid"></div>
-    </div>
-
-    <!-- SCREEN: LEVEL MENU -->
-    <div id="s-level-menu" class="screen">
-      <div id="level-menu-header" class="sec-header"></div>
-      <div class="stats-row" id="level-stats"></div>
-      <div class="section-menu" id="level-sections"></div>
-    </div>
-
-    <!-- SCREEN: GRAMMAR LIST -->
-    <div id="s-grammar" class="screen">
-      <div class="sec-header">
-        <h2 id="grammar-title">📚 Грамматика</h2>
-        <div id="grammar-prog-bar" class="prog-item" style="margin-top:10px;"></div>
-      </div>
-      <div class="topic-list" id="grammar-list"></div>
-    </div>
-
-    <!-- SCREEN: GRAMMAR TOPIC -->
-    <div id="s-topic" class="screen">
-      <div class="sec-header">
-        <h2 id="topic-title"></h2>
-      </div>
-      <div class="topic-actions" id="topic-tabs"></div>
-      <div id="topic-content"></div>
-    </div>
-
-    <!-- SCREEN: EXERCISE -->
-    <div id="s-exercise" class="screen">
-      <div class="quiz-wrap">
-        <div class="quiz-header">
-          <span id="ex-label">✏️ Упражнение</span>
-          <span class="quiz-num" id="ex-num"></span>
-        </div>
-        <div class="prog-bar" style="margin-bottom:16px;"><div class="prog-fill" id="ex-prog"></div></div>
-        <div class="quiz-q" id="ex-q"></div>
-        <div class="quiz-opts" id="ex-opts"></div>
-        <div class="quiz-result" id="ex-result" style="display:none;"></div>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" id="ex-next-btn" onclick="nextExercise()" style="display:none;">Следующее →</button>
+    <div class="goal-set-row">
+      <div class="gsr-ico">🃏</div>
+      <div class="gsr-inf"><div class="gsr-name">Словарный запас</div><div class="gsr-sub">слов в день</div></div>
+      <div class="gsr-stepper">
+        <button class="step-btn" onclick="step('v',-5)">−</button>
+        <div class="step-val" id="sv-v">10</div>
+        <button class="step-btn" onclick="step('v',5)">+</button>
       </div>
     </div>
-
-    <!-- SCREEN: TEST -->
-    <div id="s-test" class="screen">
-      <div class="quiz-wrap">
-        <div class="quiz-header">
-          <span id="test-label">🧪 Тест</span>
-          <span class="quiz-num" id="test-num"></span>
-        </div>
-        <div class="prog-bar" style="margin-bottom:16px;"><div class="prog-fill" id="test-prog"></div></div>
-        <div class="quiz-q" id="test-q"></div>
-        <div class="quiz-opts" id="test-opts"></div>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" id="test-next-btn" onclick="nextTest()" style="display:none;">Следующий →</button>
+    <div class="goal-set-row">
+      <div class="gsr-ico">💬</div>
+      <div class="gsr-inf"><div class="gsr-name">Фразы</div><div class="gsr-sub">фраз в день</div></div>
+      <div class="gsr-stepper">
+        <button class="step-btn" onclick="step('p',-5)">−</button>
+        <div class="step-val" id="sv-p">5</div>
+        <button class="step-btn" onclick="step('p',5)">+</button>
       </div>
     </div>
-
-    <!-- SCREEN: QUIZ RESULT -->
-    <div id="s-result" class="screen">
-      <div class="result-card" id="result-card"></div>
-      <div class="btn-row" id="result-btns"></div>
-    </div>
-
-    <!-- SCREEN: VOCABULARY MENU -->
-    <div id="s-vocab" class="screen">
-      <div class="sec-header">
-        <h2 id="vocab-title">📖 Словарный запас</h2>
-        <p id="vocab-sub"></p>
-      </div>
-      <div class="cat-grid" id="vocab-cats"></div>
-    </div>
-
-    <!-- SCREEN: VOCAB WORD -->
-    <div id="s-word" class="screen">
-      <div class="word-counter" id="word-counter"></div>
-      <div class="prog-bar" style="margin-bottom:16px;"><div class="prog-fill" id="word-prog"></div></div>
-      <div class="word-card" id="word-card"></div>
-      <div class="btn-row">
-        <button class="btn btn-secondary" onclick="prevWord()" id="word-prev-btn">← Назад</button>
-        <button class="btn btn-primary" onclick="nextWord()" id="word-next-btn">Следующее →</button>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-secondary btn-full" onclick="go('vocab')">← К категориям</button>
-      </div>
-    </div>
-
-    <!-- SCREEN: PHRASES MENU -->
-    <div id="s-phrases" class="screen">
-      <div class="sec-header">
-        <h2 id="phrases-title">💬 Разговорные фразы</h2>
-        <p id="phrases-sub"></p>
-      </div>
-      <div class="cat-grid" id="phrases-list"></div>
-    </div>
-
-    <!-- SCREEN: PHRASE SITUATION -->
-    <div id="s-phrase-sit" class="screen">
-      <div class="sec-header">
-        <h2 id="phrase-sit-title"></h2>
-      </div>
-      <div id="phrase-sit-items"></div>
-      <div class="btn-row">
-        <button class="btn btn-secondary btn-full" onclick="go('phrases')">← К ситуациям</button>
-      </div>
-    </div>
-
-    <!-- SCREEN: MY PROGRESS -->
-    <div id="s-progress" class="screen">
-      <div class="sec-header">
-        <h2 id="prog-title">📊 Мой прогресс</h2>
-      </div>
-      <div class="stats-row" id="prog-stats"></div>
-      <div style="margin-bottom:20px;" id="prog-bars"></div>
-      <h3 style="font-size:0.95rem;color:var(--muted);margin-bottom:12px;">📋 Темы грамматики</h3>
-      <div class="prog-topic-list" id="prog-topics"></div>
-      <div class="btn-row" style="margin-top:20px;">
-        <button class="btn btn-secondary btn-full" onclick="go('level-menu')">← Меню уровня</button>
-      </div>
-    </div>
-
+    <div class="modal-save"><button class="btn btn-blue" onclick="saveGoals()">Сохранить цели ✓</button></div>
   </div>
 </div>
-
+<div id="s-w" class="screen active">
+  <div class="w-hero">
+    <div class="w-logo a1"><div class="w-logo-icon">📖</div><div class="w-logo-name">IS<span class="hi">English</span>Master</div></div>
+    <div class="w-title a2">Learn English<br><span class="grad">the smart way</span></div>
+    <div class="w-sub a3">Грамматика, слова и фразы — по твоему уровню. Без воды, только результат.</div>
+  </div>
+  <div class="w-stats a4">
+    <div class="ws"><div class="ws-n">600+</div><div class="ws-l">Заданий</div></div>
+    <div class="ws"><div class="ws-n">100+</div><div class="ws-l">Слов/уровень</div></div>
+    <div class="ws"><div class="ws-n">6</div><div class="ws-l">Уровней</div></div>
+  </div>
+  <div class="w-feats a5">
+    <div class="w-sect-lbl">Что тебя ждёт</div>
+    <div class="feat-card"><div class="feat-ico fi-b">📐</div><div class="feat-txt"><div class="fn">Грамматика</div><div class="fd">100+ заданий на каждую тему · объяснения</div></div><div class="feat-pill fp-blue">100+</div></div>
+    <div class="feat-card"><div class="feat-ico fi-a">🃏</div><div class="feat-txt"><div class="fn">Словарный запас</div><div class="fd">Flip-карточки · 100+ слов на уровень</div></div><div class="feat-pill fp-amber">100+</div></div>
+    <div class="feat-card"><div class="feat-ico fi-g">💬</div><div class="feat-txt"><div class="fn">Разговорные фразы</div><div class="fd">Реальные выражения · перевод и контекст</div></div><div class="feat-pill fp-green">Live</div></div>
+    <div class="feat-card"><div class="feat-ico fi-p">🎯</div><div class="feat-txt"><div class="fn">Цели и прогресс</div><div class="fd">Ставь ежедневные цели и следи за ростом</div></div><div class="feat-pill fp-purple">NEW</div></div>
+  </div>
+  <div class="w-cta"><button class="btn btn-blue" onclick="go('s-l')">Начать обучение →</button></div>
+</div>
+<div id="s-l" class="screen">
+  <div class="hdr">
+    <div class="back-btn" onclick="go('s-w')">←</div>
+    <div><div class="hdr-title">Выбор уровня</div><div class="hdr-sub">CEFR — общеевропейская шкала</div></div>
+  </div>
+  <div class="l-body">
+    <div class="l-chip a1">Шаг 1 из 1</div>
+    <div class="l-h a2">Какой у тебя уровень?</div>
+    <div class="l-sub a3">Выбери честно — материал подстраивается под тебя</div>
+    <div class="lvl-grid a4">
+      <div class="lv" data-lv="A1" onclick="pickLvl('A1',this)"><div class="lv-code">A1</div><div class="lv-name">Начинающий</div><div class="lv-desc">Первые слова и фразы</div></div>
+      <div class="lv" data-lv="A2" onclick="pickLvl('A2',this)"><div class="lv-code">A2</div><div class="lv-name">Элементарный</div><div class="lv-desc">Базовые ситуации</div></div>
+      <div class="lv" data-lv="B1" onclick="pickLvl('B1',this)"><div class="lv-code">B1</div><div class="lv-name">Средний</div><div class="lv-desc">Свободное общение</div></div>
+      <div class="lv" data-lv="B2" onclick="pickLvl('B2',this)"><div class="lv-code">B2</div><div class="lv-name">Выше среднего</div><div class="lv-desc">Сложные темы</div></div>
+      <div class="lv" data-lv="C1" onclick="pickLvl('C1',this)"><div class="lv-code">C1</div><div class="lv-name">Продвинутый</div><div class="lv-desc">Нюансы языка</div></div>
+      <div class="lv" data-lv="C2" onclick="pickLvl('C2',this)"><div class="lv-code">C2</div><div class="lv-name">Мастерство</div><div class="lv-desc">Уровень носителя</div></div>
+    </div>
+    <div class="l-tip a5">💡 Если сомневаешься — выбирай уровень ниже. Лучше укрепить базу.</div>
+    <button class="btn btn-blue" id="btn-lvl" disabled onclick="confirmLvl()">Продолжить</button>
+  </div>
+</div>
+<div id="s-d" class="screen screen-with-tabs">
+  <div class="d-hero">
+    <div class="d-top-row">
+      <div><div class="d-greet">Добро пожаловать 👋</div><div class="d-title">Что учим сегодня?</div></div>
+      <div class="d-lvl-pill" onclick="go('s-l')">Уровень <span id="d-lvl-txt">B1</span> ✎</div>
+    </div>
+    <div class="d-streak-row">
+      <div class="streak-chip fire">🔥 Серия: <span id="streak-n">0</span> дн.</div>
+      <div class="streak-chip star">⭐ Очки: <span id="score-n">0</span></div>
+    </div>
+  </div>
+  <div class="d-scroll">
+    <div class="d-prog-wrap">
+      <div class="prog-card">
+        <div class="pc-top"><span class="pc-lbl">Общий прогресс</span><span class="pc-pct" id="d-pct">0%</span></div>
+        <div class="pc-track"><div class="pc-fill" id="d-bar"></div></div>
+        <div class="pc-stats">
+          <div class="pcs"><div class="n" id="d-tasks">0</div><div class="l">Заданий</div></div>
+          <div class="pcs"><div class="n" id="d-words">0</div><div class="l">Слов</div></div>
+          <div class="pcs"><div class="n" id="d-phrases">0</div><div class="l">Фраз</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="goals-wrap">
+      <div class="goals-card">
+        <div class="gc-head"><div class="gc-title">🎯 Цели на сегодня</div><div class="gc-edit" onclick="openGoals()">Изменить</div></div>
+        <div class="goal-row">
+          <div class="goal-ico">📐</div>
+          <div class="goal-info"><div class="goal-name">Грамматика — <span id="gl-g-done">0</span> / <span id="gl-g-target">10</span> заданий</div><div class="goal-bar"><div class="goal-fill gf-blue" id="gl-g-bar"></div></div></div>
+          <div class="goal-nums" id="gl-g-pct">0%</div>
+        </div>
+        <div class="goal-row">
+          <div class="goal-ico">🃏</div>
+          <div class="goal-info"><div class="goal-name">Словарный запас — <span id="gl-v-done">0</span> / <span id="gl-v-target">10</span> слов</div><div class="goal-bar"><div class="goal-fill gf-amber" id="gl-v-bar"></div></div></div>
+          <div class="goal-nums" id="gl-v-pct">0%</div>
+        </div>
+        <div class="goal-row">
+          <div class="goal-ico">💬</div>
+          <div class="goal-info"><div class="goal-name">Фразы — <span id="gl-p-done">0</span> / <span id="gl-p-target">5</span> фраз</div><div class="goal-bar"><div class="goal-fill gf-green" id="gl-p-bar"></div></div></div>
+          <div class="goal-nums" id="gl-p-pct">0%</div>
+        </div>
+      </div>
+    </div>
+    <div class="d-sects-wrap">
+      <div class="d-sects-lbl">Разделы</div>
+      <div class="sect-card" style="--sc-color:var(--blue-l)" onclick="go('s-g')">
+        <div class="sect-ico fi-b">📐</div>
+        <div class="sect-inf"><div class="sect-name">Грамматика</div><div class="sect-desc">Темы с 100+ заданиями каждая</div><div class="sect-prog"><div class="sect-pf" id="pg-g" style="background:var(--blue)"></div></div></div>
+        <div class="sect-arr">›</div>
+      </div>
+      <div class="sect-card" style="--sc-color:var(--amber-l)" onclick="go('s-v')">
+        <div class="sect-ico fi-a">🃏</div>
+        <div class="sect-inf"><div class="sect-name">Словарный запас</div><div class="sect-desc">100+ слов · Flip-карточки</div><div class="sect-prog"><div class="sect-pf" id="pg-v" style="background:var(--amber)"></div></div></div>
+        <div class="sect-arr">›</div>
+      </div>
+      <div class="sect-card" style="--sc-color:var(--green-l)" onclick="go('s-ph')">
+        <div class="sect-ico fi-g">💬</div>
+        <div class="sect-inf"><div class="sect-name">Разговорные фразы</div><div class="sect-desc">Выражения для реальных ситуаций</div><div class="sect-prog"><div class="sect-pf" id="pg-p" style="background:var(--green)"></div></div></div>
+        <div class="sect-arr">›</div>
+      </div>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab active" onclick="tabGo('s-d',this)"><div class="tab-ico">🏠</div><div class="tab-lbl">Главная</div></div>
+    <div class="tab" onclick="tabGo('s-g',this)"><div class="tab-ico">📐</div><div class="tab-lbl">Грамматика</div></div>
+    <div class="tab" onclick="tabGo('s-v',this)"><div class="tab-ico">🃏</div><div class="tab-lbl">Слова</div></div>
+    <div class="tab" onclick="tabGo('s-ph',this)"><div class="tab-ico">💬</div><div class="tab-lbl">Фразы</div></div>
+    <div class="tab" onclick="openGoals()"><div class="tab-ico">🎯</div><div class="tab-lbl">Цели</div></div>
+  </div>
+</div>
+<div id="s-g" class="screen screen-with-tabs">
+  <div class="hdr">
+    <div class="back-btn" onclick="go('s-d')">←</div>
+    <div><div class="hdr-title">Грамматика</div><div class="hdr-sub" id="g-sub">Уровень B1</div></div>
+  </div>
+  <div class="t-body" id="t-body"></div>
+  <div class="tab-bar">
+    <div class="tab" onclick="tabGo('s-d',this)"><div class="tab-ico">🏠</div><div class="tab-lbl">Главная</div></div>
+    <div class="tab active" onclick="tabGo('s-g',this)"><div class="tab-ico">📐</div><div class="tab-lbl">Грамматика</div></div>
+    <div class="tab" onclick="tabGo('s-v',this)"><div class="tab-ico">🃏</div><div class="tab-lbl">Слова</div></div>
+    <div class="tab" onclick="tabGo('s-ph',this)"><div class="tab-ico">💬</div><div class="tab-lbl">Фразы</div></div>
+    <div class="tab" onclick="openGoals()"><div class="tab-ico">🎯</div><div class="tab-lbl">Цели</div></div>
+  </div>
+</div>
+<div id="s-ex" class="screen">
+  <div class="ex-hdr">
+    <div class="ex-top-row">
+      <div class="back-btn" onclick="go('s-g')">←</div>
+      <div class="ex-inf"><div class="ex-tn" id="ex-tn">—</div><div class="ex-qn" id="ex-qn">Вопрос 1 из 10</div></div>
+    </div>
+    <div class="ex-bar"><div class="ex-bar-f" id="ex-bar"></div></div>
+  </div>
+  <div class="ex-body" id="ex-body"></div>
+</div>
+<div id="s-v" class="screen screen-with-tabs">
+  <div class="hdr">
+    <div class="back-btn" onclick="go('s-d')">←</div>
+    <div><div class="hdr-title">Словарный запас</div><div class="hdr-sub" id="v-sub">Уровень B1</div></div>
+  </div>
+  <div class="v-body" id="v-body"></div>
+  <div class="tab-bar">
+    <div class="tab" onclick="tabGo('s-d',this)"><div class="tab-ico">🏠</div><div class="tab-lbl">Главная</div></div>
+    <div class="tab" onclick="tabGo('s-g',this)"><div class="tab-ico">📐</div><div class="tab-lbl">Грамматика</div></div>
+    <div class="tab active" onclick="tabGo('s-v',this)"><div class="tab-ico">🃏</div><div class="tab-lbl">Слова</div></div>
+    <div class="tab" onclick="tabGo('s-ph',this)"><div class="tab-ico">💬</div><div class="tab-lbl">Фразы</div></div>
+    <div class="tab" onclick="openGoals()"><div class="tab-ico">🎯</div><div class="tab-lbl">Цели</div></div>
+  </div>
+</div>
+<div id="s-ph" class="screen screen-with-tabs">
+  <div class="hdr">
+    <div class="back-btn" onclick="go('s-d')">←</div>
+    <div><div class="hdr-title">Разговорные фразы</div><div class="hdr-sub" id="ph-sub">Уровень B1</div></div>
+  </div>
+  <div class="ph-body" id="ph-body"></div>
+  <div class="tab-bar">
+    <div class="tab" onclick="tabGo('s-d',this)"><div class="tab-ico">🏠</div><div class="tab-lbl">Главная</div></div>
+    <div class="tab" onclick="tabGo('s-g',this)"><div class="tab-ico">📐</div><div class="tab-lbl">Грамматика</div></div>
+    <div class="tab" onclick="tabGo('s-v',this)"><div class="tab-ico">🃏</div><div class="tab-lbl">Слова</div></div>
+    <div class="tab active" onclick="tabGo('s-ph',this)"><div class="tab-ico">💬</div><div class="tab-lbl">Фразы</div></div>
+    <div class="tab" onclick="openGoals()"><div class="tab-ico">🎯</div><div class="tab-lbl">Цели</div></div>
+  </div>
+</div>
+<div id="s-res" class="screen">
+  <div class="res-emoji" id="r-ico">🎉</div>
+  <div class="res-ring" id="r-ring"><div class="res-score" id="r-pct">0%</div></div>
+  <div class="res-title" id="r-title">Отлично!</div>
+  <div class="res-sub" id="r-sub">—</div>
+  <div class="res-btns">
+    <button class="btn btn-blue" onclick="retryEx()">🔄 Попробовать снова</button>
+    <button class="btn btn-out" onclick="go('s-g')">← К темам</button>
+    <button class="btn btn-out" onclick="go('s-d')">🏠 На главную</button>
+  </div>
+</div>
 <script src="/content_data.js"></script>
 <script>
-// ════════════════════════════════
-// STATE & PROGRESS
-// ════════════════════════════════
-let STATE = {
-  level: null,    // 'a1'..'c2'
-  topicIdx: 0,
-  exIdx: 0,
-  exScore: 0,
-  testIdx: 0,
-  testScore: 0,
-  vocabCat: 0,
-  vocabWord: 0,
-  resultType: null,  // 'exercise' | 'test'
-  prevScreen: [],
+const S={
+  level:'B1',topic:null,exercises:[],exIdx:0,correct:0,
+  vocabIdx:0,known:[],
+  tasksDone:0,wordsKnown:0,phrasesDone:0,
+  score:0,streak:1,
+  goals:{g:10,v:10,p:5},
+  tempGoals:{g:10,v:10,p:5},
 };
-
-function loadProgress() {
-  try { return JSON.parse(localStorage.getItem('ls_progress') || '{}'); } catch(e) { return {}; }
+function shuffleQ(q){
+  const pairs=q.o.map((opt,i)=>({opt,correct:i===q.a}));
+  for(let i=pairs.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pairs[i],pairs[j]]=[pairs[j],pairs[i]];}
+  return {...q,o:pairs.map(p=>p.opt),a:pairs.findIndex(p=>p.correct)};
 }
-function saveProgress(p) {
-  try { localStorage.setItem('ls_progress', JSON.stringify(p)); } catch(e) {}
+function getEx(tid){
+  const b=window.EX&&window.EX[tid];
+  if(b) return [...b].sort(()=>Math.random()-.5).slice(0,10).map(shuffleQ);
+  return Array.from({length:10},(_,i)=>({q:'Practice question '+(i+1)+'.',o:['Option A','Option B','Option C','Option D'],a:Math.floor(Math.random()*4),e:'Practice exercise.'}));
 }
-function getLevel(key) {
-  return LEVELS_DATA[key];
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='s-g')  renderTopics();
+  if(id==='s-v')  initVocab();
+  if(id==='s-ph') renderPhrases();
+  if(id==='s-d')  updateDash();
 }
-function getProg(lvl) {
-  let p = loadProgress();
-  if (!p[lvl]) p[lvl] = { gramDone: [], gramTested: [], vocabDone: [], phrasesDone: [] };
-  return p[lvl];
+function tabGo(id,el){ go(id); }
+function pickLvl(lvl,el){
+  document.querySelectorAll('.lv').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel'); S.level=lvl;
+  const b=document.getElementById('btn-lvl');
+  b.disabled=false; b.textContent='Начать с уровня '+lvl+' →';
 }
-function setProg(lvl, prog) {
-  let p = loadProgress();
-  p[lvl] = prog;
-  saveProgress(p);
+function confirmLvl(){ document.getElementById('d-lvl-txt').textContent=S.level; go('s-d'); }
+function openGoals(){
+  S.tempGoals={...S.goals};
+  document.getElementById('sv-g').textContent=S.goals.g;
+  document.getElementById('sv-v').textContent=S.goals.v;
+  document.getElementById('sv-p').textContent=S.goals.p;
+  document.getElementById('goals-modal').classList.add('open');
 }
-function pct(a, b) { return b ? Math.round(a / b * 100) : 0; }
-function progBar(done, total) {
-  const p = pct(done, total);
-  return `<div class="prog-bar"><div class="prog-fill" style="width:${p}%"></div></div>`;
+function closeGoals(){ document.getElementById('goals-modal').classList.remove('open'); }
+function closeGoalsIfOutside(e){ if(e.target===document.getElementById('goals-modal')) closeGoals(); }
+function step(key,delta){
+  S.tempGoals[key]=Math.max(5,Math.min(50,(S.tempGoals[key]||10)+delta));
+  document.getElementById('sv-'+key).textContent=S.tempGoals[key];
 }
-
-// ════════════════════════════════
-// NAVIGATION
-// ════════════════════════════════
-let _stack = ['home'];
-
-function go(screen) {
-  if (_stack[_stack.length - 1] !== screen) _stack.push(screen);
-  _render(screen);
-}
-
-function goBack() {
-  if (_stack.length > 1) {
-    _stack.pop();
-    _render(_stack[_stack.length - 1]);
-  }
-}
-
-function _render(screen) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById('s-' + screen);
-  if (el) el.classList.add('active');
-
-  const backBtn = document.getElementById('back-btn');
-  backBtn.className = _stack.length > 1 ? 'visible' : '';
-
-  document.getElementById('topbar-title').textContent = '';
-
-  // Build each screen
-  if (screen === 'levels') buildLevels();
-  if (screen === 'level-menu') buildLevelMenu();
-  if (screen === 'grammar') buildGrammarList();
-  if (screen === 'topic') buildTopic();
-  if (screen === 'vocab') buildVocabMenu();
-  if (screen === 'phrases') buildPhrasesMenu();
-  if (screen === 'progress') buildProgress();
-  if (screen === 'word') buildWord();
-  if (screen === 'phrase-sit') buildPhraseSit();
-
-  window.scrollTo(0, 0);
-}
-
-// ════════════════════════════════
-// LEVELS SCREEN
-// ════════════════════════════════
-function buildLevels() {
-  const grid = document.getElementById('level-grid');
-  const keys = ['a1','a2','b1','b2','c1','c2'];
-  grid.innerHTML = keys.map(k => {
-    const lv = getLevel(k);
-    const prog = getProg(k);
-    const totalG = lv.grammar.length;
-    const doneG = prog.gramDone.length;
-    const p = pct(doneG, totalG);
-    return `<div class="level-card" onclick="pickLevel('${k}')">
-      <div class="level-card-emoji">${lv.emoji}</div>
-      <div class="level-card-name">${lv.name}</div>
-      <div class="level-card-desc">${(lv.description||'').replace(/[*_]/g,'').split('\n')[0]}</div>
-      ${doneG > 0 ? `<div class="level-card-prog">
-        <div style="font-size:0.72rem;color:var(--muted);">Грамматика: ${doneG}/${totalG}</div>
-        <div class="mini-bar"><div class="mini-bar-fill" style="width:${p}%"></div></div>
-      </div>` : ''}
-    </div>`;
-  }).join('');
-}
-
-function pickLevel(key) {
-  STATE.level = key;
-  go('level-menu');
-}
-
-// ════════════════════════════════
-// LEVEL MENU SCREEN
-// ════════════════════════════════
-function buildLevelMenu() {
-  const lv = getLevel(STATE.level);
-  const prog = getProg(STATE.level);
-  const totalG = lv.grammar.length;
-  const doneG = prog.gramDone.length;
-  const testedG = prog.gramTested.length;
-  const totalV = lv.vocabulary.length;
-  const doneV = prog.vocabDone.length;
-  const totalPh = lv.phrases.length;
-  const donePh = prog.phrasesDone.length;
-  const totalWords = lv.vocabulary.reduce((s,c)=>s+c.words.length, 0);
-  const totalPhrItems = lv.phrases.reduce((s,p)=>s+p.items.length, 0);
-
-  document.getElementById('topbar-title').textContent = lv.name;
-  document.getElementById('level-menu-header').innerHTML = `
-    <h2>${lv.emoji} ${lv.name}</h2>
-    <p>${lv.description ? lv.description.replace(/[*_\n]/g,' ').slice(0,120)+'...' : ''}</p>`;
-
-  document.getElementById('level-stats').innerHTML = `
-    <div class="stat-box"><div class="stat-val">${totalG}</div><div class="stat-lbl">тем грамм.</div></div>
-    <div class="stat-box"><div class="stat-val">${totalWords}</div><div class="stat-lbl">слов</div></div>
-    <div class="stat-box"><div class="stat-val">${totalPhrItems}</div><div class="stat-lbl">фраз</div></div>
-    <div class="stat-box"><div class="stat-val">${testedG}/${totalG}</div><div class="stat-lbl">тестов</div></div>`;
-
-  document.getElementById('level-sections').innerHTML = `
-    <button class="sec-btn" onclick="go('grammar')">
-      <span class="icon">📚</span>
-      <div><div class="label">Грамматика</div><div class="sub">${totalG} тем • ${doneG} изучено • ${testedG} тестов</div></div>
-      <span class="prog-pill">${pct(doneG,totalG)}%</span>
-      <span class="arrow">›</span>
-    </button>
-    <button class="sec-btn" onclick="go('vocab')">
-      <span class="icon">📖</span>
-      <div><div class="label">Словарный запас</div><div class="sub">${totalWords} слов • ${totalV} категорий • ${doneV} пройдено</div></div>
-      <span class="prog-pill">${pct(doneV,totalV)}%</span>
-      <span class="arrow">›</span>
-    </button>
-    <button class="sec-btn" onclick="go('phrases')">
-      <span class="icon">💬</span>
-      <div><div class="label">Разговорные фразы</div><div class="sub">${totalPhrItems} фраз • ${totalPh} ситуаций • ${donePh} пройдено</div></div>
-      <span class="prog-pill">${pct(donePh,totalPh)}%</span>
-      <span class="arrow">›</span>
-    </button>
-    <button class="sec-btn" onclick="go('progress')">
-      <span class="icon">📊</span>
-      <div><div class="label">Мой прогресс</div><div class="sub">Детальная статистика по уровню</div></div>
-      <span class="arrow">›</span>
-    </button>`;
-}
-
-// ════════════════════════════════
-// GRAMMAR SCREEN
-// ════════════════════════════════
-function buildGrammarList() {
-  const lv = getLevel(STATE.level);
-  const prog = getProg(STATE.level);
-  const totalG = lv.grammar.length;
-  const doneG = prog.gramDone.length;
-
-  document.getElementById('topbar-title').textContent = 'Грамматика';
-  document.getElementById('grammar-title').textContent = `📚 Грамматика — ${lv.name}`;
-  document.getElementById('grammar-prog-bar').innerHTML = `
-    <div class="prog-item">
-      <div class="prog-item-header"><span>Изучено тем</span><span>${doneG}/${totalG}</span></div>
-      ${progBar(doneG, totalG)}
-    </div>`;
-
-  document.getElementById('grammar-list').innerHTML = lv.grammar.map((g, i) => {
-    let status = '⬜';
-    let badge = `<span class="badge badge-muted">не начато</span>`;
-    if (prog.gramTested.includes(g.id)) {
-      status = '✅'; badge = `<span class="badge badge-green">тест пройден</span>`;
-    } else if (prog.gramDone.includes(g.id)) {
-      status = '📖'; badge = `<span class="badge badge-blue">изучено</span>`;
-    }
-    return `<button class="topic-item" onclick="openTopic(${i})">
-      <span class="t-icon">${g.icon || '📌'}</span>
-      <span class="t-title">${g.title}</span>
-      ${badge}
-    </button>`;
-  }).join('');
-}
-
-function openTopic(idx) {
-  STATE.topicIdx = idx;
-  go('topic');
-}
-
-// ════════════════════════════════
-// TOPIC SCREEN
-// ════════════════════════════════
-function buildTopic() {
-  const lv = getLevel(STATE.level);
-  const topic = lv.grammar[STATE.topicIdx];
-  const prog = getProg(STATE.level);
-
-  // Mark as done
-  if (!prog.gramDone.includes(topic.id)) {
-    prog.gramDone.push(topic.id);
-    setProg(STATE.level, prog);
-  }
-
-  document.getElementById('topbar-title').textContent = topic.title;
-  document.getElementById('topic-title').textContent = `${topic.icon || '📌'} ${topic.title}`;
-
-  document.getElementById('topic-tabs').innerHTML = `
-    <button class="tab-btn active" id="tab-explain" onclick="showTab('explain')">📖 Объяснение</button>
-    <button class="tab-btn" id="tab-ex" onclick="showTab('exercises')">✏️ Упражнения (${topic.exercises.length})</button>
-    <button class="tab-btn" id="tab-test" onclick="showTab('test')">🧪 Тест (${topic.test.length})</button>`;
-
-  showTab('explain');
-}
-
-function showTab(tab) {
-  ['explain','exercises','test'].forEach(t => {
-    const btn = document.getElementById('tab-' + t);
-    if (btn) btn.classList.remove('active');
+function saveGoals(){ S.goals={...S.tempGoals}; updateGoalUI(); closeGoals(); }
+function updateGoalUI(){
+  ['g','v','p'].forEach(k=>{
+    const done=k==='g'?S.tasksDone:k==='v'?S.wordsKnown:S.phrasesDone;
+    const target=S.goals[k];
+    const pct=Math.min(Math.round(done/target*100),100);
+    document.getElementById('gl-'+k+'-done').textContent=done;
+    document.getElementById('gl-'+k+'-target').textContent=target;
+    document.getElementById('gl-'+k+'-pct').textContent=pct+'%';
+    const bar=document.getElementById('gl-'+k+'-bar');
+    if(bar) setTimeout(()=>bar.style.width=pct+'%',100);
   });
-  document.getElementById('tab-' + tab).classList.add('active');
-
-  const lv = getLevel(STATE.level);
-  const topic = lv.grammar[STATE.topicIdx];
-  const content = document.getElementById('topic-content');
-
-  if (tab === 'explain') {
-    // Render explanation text, converting markdown-like formatting
-    const text = (topic.explanation || '').replace(/\*(.*?)\*/g, '<b>$1</b>');
-    content.innerHTML = `<div class="explanation">${text}</div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="showTab('exercises')">✏️ Начать упражнения</button>
-        <button class="btn btn-secondary" onclick="showTab('test')">🧪 Перейти к тесту</button>
-      </div>`;
-  } else if (tab === 'exercises') {
-    STATE.exIdx = 0;
-    STATE.exScore = 0;
-    go('exercise');
-  } else if (tab === 'test') {
-    STATE.testIdx = 0;
-    STATE.testScore = 0;
-    go('test');
-  }
 }
-
-// ════════════════════════════════
-// EXERCISE SCREEN
-// ════════════════════════════════
-function buildExercise() {
-  const lv = getLevel(STATE.level);
-  const topic = lv.grammar[STATE.topicIdx];
-  const exercises = topic.exercises;
-
-  if (STATE.exIdx >= exercises.length) {
-    showExerciseResult();
+function updateDash(){
+  document.getElementById('d-lvl-txt').textContent=S.level;
+  document.getElementById('d-tasks').textContent=S.tasksDone;
+  document.getElementById('d-words').textContent=S.wordsKnown;
+  document.getElementById('d-phrases').textContent=S.phrasesDone;
+  document.getElementById('streak-n').textContent=S.streak;
+  document.getElementById('score-n').textContent=S.score;
+  const tot=S.tasksDone+S.wordsKnown+S.phrasesDone;
+  const pct=Math.min(Math.round(tot/50*100),100);
+  document.getElementById('d-pct').textContent=pct+'%';
+  setTimeout(()=>{
+    document.getElementById('d-bar').style.width=pct+'%';
+    document.getElementById('pg-g').style.width=Math.min(S.tasksDone*3,100)+'%';
+    document.getElementById('pg-v').style.width=Math.min(S.wordsKnown*2,100)+'%';
+    document.getElementById('pg-p').style.width=Math.min(S.phrasesDone*5,100)+'%';
+  },100);
+  updateGoalUI();
+}
+function renderTopics(){
+  const TOPICS=window.TOPICS||{};
+  const tops=TOPICS[S.level]||TOPICS.B1||[];
+  document.getElementById('g-sub').textContent='Уровень '+S.level;
+  document.getElementById('t-body').innerHTML=
+    '<div class="t-sec-lbl">'+tops.length+' тем · 100+ заданий каждая</div>'+
+    tops.map((t,i)=>
+      '<div class="topic-row" onclick="startEx(\''+t.id+'\',\''+t.name.replace(/'/g,"\\'")+'\')">'+'<div class="topic-num">'+(i+1)+'</div>'+'<div><div class="topic-nm">'+t.name+'</div><div class="topic-ct">📝 '+t.n+' заданий в базе</div></div>'+'<div class="topic-go">Начать →</div></div>'
+    ).join('');
+}
+function startEx(tid,tname){
+  S.topic={id:tid,name:tname}; S.exercises=getEx(tid); S.exIdx=0; S.correct=0;
+  go('s-ex'); renderEx();
+}
+function renderEx(){
+  const e=S.exercises[S.exIdx]; if(!e){showResult();return;}
+  const tot=S.exercises.length;
+  document.getElementById('ex-tn').textContent=S.topic.name;
+  document.getElementById('ex-qn').textContent='Вопрос '+(S.exIdx+1)+' из '+tot;
+  document.getElementById('ex-bar').style.width=(S.exIdx/tot*100)+'%';
+  document.getElementById('ex-body').innerHTML=
+    '<div class="ex-tag">📝 Multiple Choice</div>'+
+    '<div class="ex-q">'+e.q+'</div>'+
+    '<div class="ex-hint">Выбери правильный вариант</div>'+
+    '<div class="ex-opts">'+
+    e.o.map((o,i)=>'<button class="ex-opt" onclick="checkAns('+i+')"><div class="opt-l">'+String.fromCharCode(65+i)+'</div><span>'+o+'</span></button>').join('')+
+    '</div>'+
+    '<div class="ex-expl" id="expl">'+e.e+'</div>'+
+    '<div class="ex-nxt" id="enxt"><button class="btn btn-blue" onclick="nextEx()">'+(S.exIdx<tot-1?'Следующий вопрос →':'Посмотреть результат 🎉')+'</button></div>';
+}
+function checkAns(i){
+  const e=S.exercises[S.exIdx];
+  document.querySelectorAll('.ex-opt').forEach(o=>o.classList.add('dis'));
+  if(i===e.a){document.querySelectorAll('.ex-opt')[i].classList.add('ok');S.correct++;S.score+=10;}
+  else{document.querySelectorAll('.ex-opt')[i].classList.add('err');document.querySelectorAll('.ex-opt')[e.a].classList.add('ok');}
+  document.getElementById('expl').classList.add('show');
+  document.getElementById('enxt').classList.add('show');
+}
+function nextEx(){S.exIdx++;if(S.exIdx>=S.exercises.length)showResult();else renderEx();}
+function retryEx(){startEx(S.topic.id,S.topic.name);}
+function showResult(){
+  S.tasksDone+=S.correct;
+  const tot=S.exercises.length,pct=Math.round(S.correct/tot*100);
+  document.getElementById('r-ico').textContent=pct>=80?'🎉':pct>=50?'👍':'💪';
+  document.getElementById('r-title').textContent=pct>=80?'Отличный результат!':pct>=50?'Хорошая работа!':'Продолжай практиковаться!';
+  document.getElementById('r-sub').textContent='Правильных: '+S.correct+' из '+tot+' · +'+S.correct*10+' очков';
+  document.getElementById('r-pct').textContent=pct+'%';
+  document.getElementById('r-ring').style.setProperty('--p',pct);
+  go('s-res');
+}
+function initVocab(){
+  const VOCAB=window.VOCAB||{};
+  const words=VOCAB[S.level]||VOCAB.B1||[];
+  S.vocabIdx=0; S.known=new Array(words.length).fill(null);
+  document.getElementById('v-sub').textContent='Уровень '+S.level+' · '+words.length+' слов';
+  renderVocab();
+}
+function renderVocab(){
+  const VOCAB=window.VOCAB||{};
+  const words=VOCAB[S.level]||VOCAB.B1||[];
+  const body=document.getElementById('v-body');
+  if(S.vocabIdx>=words.length){
+    const kn=S.known.filter(Boolean).length;
+    body.innerHTML='<div class="v-done-card"><div class="vd-icon">🎊</div><div class="vd-title">Все карточки пройдены!</div><div class="vd-sub">Знаешь '+kn+' из '+words.length+' слов · +'+kn*5+' очков</div></div><button class="btn btn-out" style="margin-top:10px" onclick="initVocab()">🔄 Начать заново</button>';
     return;
   }
-
-  const ex = exercises[STATE.exIdx];
-  const total = exercises.length;
-  const p = pct(STATE.exIdx, total);
-
-  document.getElementById('ex-num').textContent = `${STATE.exIdx + 1} / ${total}`;
-  document.getElementById('ex-prog').style.width = p + '%';
-  document.getElementById('ex-q').textContent = ex.q;
-  document.getElementById('ex-result').style.display = 'none';
-  document.getElementById('ex-next-btn').style.display = 'none';
-
-  document.getElementById('ex-opts').innerHTML = ex.o.map((opt, i) =>
-    `<button class="opt-btn" onclick="answerEx(${i})">${'ABCD'[i]}. ${opt}</button>`
+  const w=words[S.vocabIdx];
+  const maxDots=Math.min(words.length,50);
+  const dots=Array.from({length:maxDots},(_,i)=>{
+    const ri=Math.floor(i*words.length/maxDots);
+    return '<div class="vdot '+(ri<S.vocabIdx?(S.known[ri]?'kn':''):(ri===S.vocabIdx?'cur':''))+'"></div>';
+  }).join('');
+  body.innerHTML=
+    '<div class="v-top"><div class="v-cnt">Карточка <strong>'+(S.vocabIdx+1)+'</strong> из '+words.length+'</div></div>'+
+    '<div class="v-dots">'+dots+'</div>'+
+    '<div class="fc-wrap" onclick="flipCard()"><div class="fc" id="fc">'+
+    '<div class="fc-face fc-front"><div class="fc-word">'+w.w+'</div><div class="fc-pos">'+w.pos+'</div><div class="fc-tap">👆 Нажми — увидишь перевод</div></div>'+
+    '<div class="fc-face fc-back"><div class="fc-trans">'+w.tr+'</div><div class="fc-ex">'+w.ex+'</div></div>'+
+    '</div></div>'+
+    '<div class="v-nav"><button class="vbtn vbtn-no" onclick="vocabNext(false)">✕ Не знаю</button><button class="vbtn vbtn-yes" onclick="vocabNext(true)">✓ Знаю</button></div>';
+}
+function flipCard(){ const f=document.getElementById('fc'); if(f)f.classList.toggle('flip'); }
+function vocabNext(know){
+  S.known[S.vocabIdx]=know;
+  if(know){S.wordsKnown++;S.score+=5;}
+  S.vocabIdx++;
+  renderVocab();
+}
+function renderPhrases(){
+  const PHRASES=window.PHRASES||{};
+  const data=PHRASES[S.level]||PHRASES.B1||{};
+  document.getElementById('ph-sub').textContent='Уровень '+S.level;
+  document.getElementById('ph-body').innerHTML=Object.entries(data).map(([cat,items])=>
+    '<div class="ph-cat">'+cat+'</div>'+
+    items.map(p=>
+      '<div class="ph-card" onclick="togglePh(this)">'+
+      '<div class="ph-top"><div class="ph-en">'+p.en+'</div><div class="ph-arr">▾</div></div>'+
+      '<div class="ph-details"><div class="ph-ru">🇷🇺 '+p.ru+'</div><div class="ph-use">📌 '+p.use+'</div></div>'+
+      '</div>'
+    ).join('')
   ).join('');
 }
-
-function answerEx(idx) {
-  const lv = getLevel(STATE.level);
-  const ex = lv.grammar[STATE.topicIdx].exercises[STATE.exIdx];
-  const correct = idx === ex.a;
-  if (correct) STATE.exScore++;
-
-  document.querySelectorAll('#ex-opts .opt-btn').forEach((btn, i) => {
-    btn.disabled = true;
-    if (i === ex.a) btn.classList.add('correct');
-    else if (i === idx && !correct) btn.classList.add('wrong');
-  });
-
-  const res = document.getElementById('ex-result');
-  res.style.display = 'block';
-  res.className = 'quiz-result ' + (correct ? 'ok' : 'fail');
-  res.innerHTML = correct
-    ? `✅ Правильно!${ex.e ? '<br><small>' + ex.e + '</small>' : ''}`
-    : `❌ Неправильно. Правильный ответ: <b>${ex.o[ex.a]}</b>${ex.e ? '<br><small>' + ex.e + '</small>' : ''}`;
-
-  const nextBtn = document.getElementById('ex-next-btn');
-  nextBtn.style.display = 'block';
-  nextBtn.textContent = STATE.exIdx + 1 < lv.grammar[STATE.topicIdx].exercises.length ? 'Следующее →' : '🏁 Результат';
+function togglePh(el){
+  const was=el.classList.contains('open');
+  document.querySelectorAll('.ph-card').forEach(c=>c.classList.remove('open'));
+  if(!was){ el.classList.add('open'); S.phrasesDone=Math.max(S.phrasesDone,document.querySelectorAll('.ph-card.open').length); }
 }
-
-function nextExercise() {
-  STATE.exIdx++;
-  buildExercise();
-}
-
-function showExerciseResult() {
-  const lv = getLevel(STATE.level);
-  const total = lv.grammar[STATE.topicIdx].exercises.length;
-  const score = STATE.exScore;
-  const p = pct(score, total);
-  let emoji, msg;
-  if (p === 100) { emoji = '🌟'; msg = 'Идеально! Все верно!'; }
-  else if (p >= 70) { emoji = '👍'; msg = 'Отлично! Переходи к тесту!'; }
-  else { emoji = '📚'; msg = 'Советую повторить тему и попробовать ещё раз.'; }
-
-  document.getElementById('result-card').innerHTML = `
-    <div class="result-emoji">${emoji}</div>
-    <div class="result-title">Упражнения завершены!</div>
-    <div class="result-score">${score}/${total}</div>
-    <div class="prog-bar" style="max-width:200px;margin:0 auto 12px;"><div class="prog-fill" style="width:${p}%"></div></div>
-    <div class="result-msg">${msg}</div>`;
-
-  document.getElementById('result-btns').innerHTML = `
-    <button class="btn btn-primary" onclick="startTest()">🧪 Перейти к тесту</button>
-    <button class="btn btn-secondary" onclick="retryEx()">🔄 Повторить</button>
-    <button class="btn btn-secondary btn-full" onclick="go('topic')">📖 К теме</button>`;
-
-  STATE.resultType = 'exercise';
-  go('result');
-}
-
-function retryEx() {
-  STATE.exIdx = 0;
-  STATE.exScore = 0;
-  go('exercise');
-}
-
-function startTest() {
-  STATE.testIdx = 0;
-  STATE.testScore = 0;
-  go('test');
-}
-
-// ════════════════════════════════
-// TEST SCREEN
-// ════════════════════════════════
-function buildTest() {
-  const lv = getLevel(STATE.level);
-  const topic = lv.grammar[STATE.topicIdx];
-  const tests = topic.test;
-
-  if (STATE.testIdx >= tests.length) {
-    showTestResult();
-    return;
-  }
-
-  const t = tests[STATE.testIdx];
-  const total = tests.length;
-  const p = pct(STATE.testIdx, total);
-
-  document.getElementById('test-num').textContent = `${STATE.testIdx + 1} / ${total}`;
-  document.getElementById('test-prog').style.width = p + '%';
-  document.getElementById('test-q').textContent = t.q;
-  document.getElementById('test-next-btn').style.display = 'none';
-
-  document.getElementById('test-opts').innerHTML = t.o.map((opt, i) =>
-    `<button class="opt-btn" onclick="answerTest(${i})">${'ABCD'[i]}. ${opt}</button>`
-  ).join('');
-}
-
-function answerTest(idx) {
-  const lv = getLevel(STATE.level);
-  const t = lv.grammar[STATE.topicIdx].test[STATE.testIdx];
-  const correct = idx === t.a;
-  if (correct) STATE.testScore++;
-
-  document.querySelectorAll('#test-opts .opt-btn').forEach((btn, i) => {
-    btn.disabled = true;
-    if (i === t.a) btn.classList.add('correct');
-    else if (i === idx && !correct) btn.classList.add('wrong');
-  });
-
-  const nextBtn = document.getElementById('test-next-btn');
-  nextBtn.style.display = 'block';
-  nextBtn.textContent = STATE.testIdx + 1 < lv.grammar[STATE.topicIdx].test.length ? 'Следующий →' : '🏁 Результат теста';
-}
-
-function nextTest() {
-  STATE.testIdx++;
-  buildTest();
-}
-
-function showTestResult() {
-  const lv = getLevel(STATE.level);
-  const topic = lv.grammar[STATE.topicIdx];
-  const total = topic.test.length;
-  const score = STATE.testScore;
-  const p = pct(score, total);
-
-  let emoji, grade, note;
-  if (p >= 80) { emoji = '🌟'; grade = 'Отлично!'; note = 'Тема освоена! Можно переходить к следующей.'; }
-  else if (p >= 60) { emoji = '👍'; grade = 'Хорошо!'; note = 'Советую ещё раз повторить объяснение.'; }
-  else { emoji = '📚'; grade = 'Нужно повторить'; note = 'Перечитай объяснение и пройди упражнения снова.'; }
-
-  // Mark as tested if ≥ 60%
-  if (p >= 60) {
-    const prog = getProg(STATE.level);
-    if (!prog.gramTested.includes(topic.id)) {
-      prog.gramTested.push(topic.id);
-      setProg(STATE.level, prog);
-    }
-  }
-
-  document.getElementById('result-card').innerHTML = `
-    <div class="result-emoji">${emoji}</div>
-    <div class="result-title">${grade}</div>
-    <div class="result-score">${score}/${total} (${p}%)</div>
-    <div class="prog-bar" style="max-width:200px;margin:0 auto 12px;"><div class="prog-fill" style="width:${p}%"></div></div>
-    <div class="result-msg">${note}</div>`;
-
-  document.getElementById('result-btns').innerHTML = `
-    <button class="btn btn-primary" onclick="retryTest()">🔄 Пройти снова</button>
-    <button class="btn btn-secondary" onclick="go('topic')">📖 К теме</button>
-    <button class="btn btn-secondary btn-full" onclick="go('grammar')">← К темам</button>`;
-
-  STATE.resultType = 'test';
-  go('result');
-}
-
-function retryTest() {
-  STATE.testIdx = 0;
-  STATE.testScore = 0;
-  go('test');
-}
-
-// ════════════════════════════════
-// VOCAB SCREEN
-// ════════════════════════════════
-function buildVocabMenu() {
-  const lv = getLevel(STATE.level);
-  const prog = getProg(STATE.level);
-  const totalWords = lv.vocabulary.reduce((s,c) => s + c.words.length, 0);
-  const doneV = prog.vocabDone.length;
-  const totalV = lv.vocabulary.length;
-
-  document.getElementById('topbar-title').textContent = 'Словарь';
-  document.getElementById('vocab-title').textContent = `📖 Словарный запас — ${lv.name}`;
-  document.getElementById('vocab-sub').textContent = `${totalWords} слов • ${doneV}/${totalV} категорий пройдено`;
-
-  document.getElementById('vocab-cats').innerHTML = lv.vocabulary.map((cat, i) => {
-    const done = prog.vocabDone.includes(i);
-    return `<button class="cat-item" onclick="openVocabCat(${i})">
-      <span class="c-icon">${cat.icon || '📖'}</span>
-      <div>
-        <div class="c-name">${cat.category}</div>
-        <div class="c-count">${cat.words.length} слов</div>
-      </div>
-      <span class="c-status">${done ? '✅' : '⬜'}</span>
-    </button>`;
-  }).join('');
-}
-
-function openVocabCat(idx) {
-  STATE.vocabCat = idx;
-  STATE.vocabWord = 0;
-  go('word');
-}
-
-function buildWord() {
-  const lv = getLevel(STATE.level);
-  const cat = lv.vocabulary[STATE.vocabCat];
-  const words = cat.words;
-
-  if (STATE.vocabWord >= words.length) {
-    // Done with category
-    const prog = getProg(STATE.level);
-    if (!prog.vocabDone.includes(STATE.vocabCat)) {
-      prog.vocabDone.push(STATE.vocabCat);
-      setProg(STATE.level, prog);
-    }
-    document.getElementById('word-card').innerHTML = `
-      <div style="font-size:2.5rem;margin-bottom:12px;">🎉</div>
-      <div style="font-size:1.2rem;font-weight:700;margin-bottom:8px;">Категория завершена!</div>
-      <div style="color:var(--muted);">Ты изучил все ${words.length} слов в «${cat.category}»!</div>`;
-    document.getElementById('word-counter').textContent = '';
-    document.getElementById('word-prog').style.width = '100%';
-    document.getElementById('word-next-btn').textContent = '🔄 Повторить';
-    document.getElementById('word-next-btn').onclick = () => { STATE.vocabWord = 0; buildWord(); };
-    document.getElementById('word-prev-btn').style.display = 'none';
-    return;
-  }
-
-  const w = words[STATE.vocabWord];
-  const total = words.length;
-  const p = pct(STATE.vocabWord + 1, total);
-
-  document.getElementById('topbar-title').textContent = cat.category;
-  document.getElementById('word-counter').textContent = `${cat.icon || '📖'} ${cat.category} — слово ${STATE.vocabWord + 1} из ${total}`;
-  document.getElementById('word-prog').style.width = p + '%';
-
-  document.getElementById('word-card').innerHTML = `
-    <div class="word-en">🇬🇧 ${w.en}</div>
-    <div class="word-ru">🇷🇺 ${w.ru}</div>
-    ${w.ex ? `<div class="word-ex">💬 ${w.ex}</div>` : ''}`;
-
-  const prevBtn = document.getElementById('word-prev-btn');
-  const nextBtn = document.getElementById('word-next-btn');
-  prevBtn.style.display = STATE.vocabWord > 0 ? '' : 'none';
-  prevBtn.onclick = prevWord;
-  nextBtn.textContent = STATE.vocabWord + 1 < total ? 'Следующее →' : '✅ Завершить';
-  nextBtn.onclick = nextWord;
-}
-
-function nextWord() {
-  STATE.vocabWord++;
-  buildWord();
-}
-function prevWord() {
-  if (STATE.vocabWord > 0) { STATE.vocabWord--; buildWord(); }
-}
-
-// ════════════════════════════════
-// PHRASES SCREEN
-// ════════════════════════════════
-function buildPhrasesMenu() {
-  const lv = getLevel(STATE.level);
-  const prog = getProg(STATE.level);
-  const totalItems = lv.phrases.reduce((s,p) => s + p.items.length, 0);
-  const donePh = prog.phrasesDone.length;
-  const totalPh = lv.phrases.length;
-
-  document.getElementById('topbar-title').textContent = 'Фразы';
-  document.getElementById('phrases-title').textContent = `💬 Разговорные фразы — ${lv.name}`;
-  document.getElementById('phrases-sub').textContent = `${totalItems} фраз • ${donePh}/${totalPh} ситуаций пройдено`;
-
-  document.getElementById('phrases-list').innerHTML = lv.phrases.map((sit, i) => {
-    const done = prog.phrasesDone.includes(i);
-    return `<button class="cat-item" onclick="openPhraseSit(${i})">
-      <span class="c-icon">${sit.icon || '💬'}</span>
-      <div>
-        <div class="c-name">${sit.situation}</div>
-        <div class="c-count">${sit.items.length} фраз</div>
-      </div>
-      <span class="c-status">${done ? '✅' : '⬜'}</span>
-    </button>`;
-  }).join('');
-}
-
-function openPhraseSit(idx) {
-  const lv = getLevel(STATE.level);
-  const prog = getProg(STATE.level);
-  if (!prog.phrasesDone.includes(idx)) {
-    prog.phrasesDone.push(idx);
-    setProg(STATE.level, prog);
-  }
-  const sit = lv.phrases[idx];
-
-  document.getElementById('topbar-title').textContent = sit.situation;
-  document.getElementById('phrase-sit-title').textContent = `${sit.icon || '💬'} ${sit.situation}`;
-  document.getElementById('phrase-sit-items').innerHTML = sit.items.map(item => `
-    <div class="phrase-card">
-      <div class="phrase-en">🇬🇧 ${item.en}</div>
-      <div class="phrase-ru">🇷🇺 ${item.ru}</div>
-      ${item.note ? `<div class="phrase-note">📌 ${item.note}</div>` : ''}
-    </div>`).join('');
-
-  go('phrase-sit');
-}
-
-// ════════════════════════════════
-// PROGRESS SCREEN
-// ════════════════════════════════
-function buildProgress() {
-  const lv = getLevel(STATE.level);
-  const prog = getProg(STATE.level);
-  const totalG = lv.grammar.length;
-  const doneG = prog.gramDone.length;
-  const testedG = prog.gramTested.length;
-  const totalV = lv.vocabulary.length;
-  const doneV = prog.vocabDone.length;
-  const totalPh = lv.phrases.length;
-  const donePh = prog.phrasesDone.length;
-  const totalWords = lv.vocabulary.reduce((s,c) => s + c.words.length, 0);
-
-  document.getElementById('topbar-title').textContent = 'Прогресс';
-  document.getElementById('prog-title').textContent = `📊 Прогресс — ${lv.name}`;
-
-  document.getElementById('prog-stats').innerHTML = `
-    <div class="stat-box"><div class="stat-val">${doneG}/${totalG}</div><div class="stat-lbl">тем изучено</div></div>
-    <div class="stat-box"><div class="stat-val">${testedG}/${totalG}</div><div class="stat-lbl">тестов</div></div>
-    <div class="stat-box"><div class="stat-val">${doneV}/${totalV}</div><div class="stat-lbl">кат. словаря</div></div>
-    <div class="stat-box"><div class="stat-val">${donePh}/${totalPh}</div><div class="stat-lbl">ситуаций</div></div>`;
-
-  document.getElementById('prog-bars').innerHTML = `
-    <div class="prog-item">
-      <div class="prog-item-header"><span>📚 Грамматика изучено</span><span>${pct(doneG,totalG)}%</span></div>
-      ${progBar(doneG, totalG)}
-    </div>
-    <div class="prog-item">
-      <div class="prog-item-header"><span>🧪 Тестов пройдено</span><span>${pct(testedG,totalG)}%</span></div>
-      ${progBar(testedG, totalG)}
-    </div>
-    <div class="prog-item">
-      <div class="prog-item-header"><span>📖 Словарный запас</span><span>${pct(doneV,totalV)}%</span></div>
-      ${progBar(doneV, totalV)}
-    </div>
-    <div class="prog-item">
-      <div class="prog-item-header"><span>💬 Разговорные фразы</span><span>${pct(donePh,totalPh)}%</span></div>
-      ${progBar(donePh, totalPh)}
-    </div>`;
-
-  document.getElementById('prog-topics').innerHTML = lv.grammar.map(g => {
-    let badge;
-    if (prog.gramTested.includes(g.id)) badge = `<span class="badge badge-green">✅ тест</span>`;
-    else if (prog.gramDone.includes(g.id)) badge = `<span class="badge badge-blue">📖 изучено</span>`;
-    else badge = `<span class="badge badge-muted">⬜ не начато</span>`;
-    return `<div class="prog-topic-item">
-      <span class="pt-title">${g.icon || '📌'} ${g.title}</span>
-      ${badge}
-    </div>`;
-  }).join('');
-}
-
-// ════════════════════════════════
-// SCREEN HOOKS (called on navigation)
-// ════════════════════════════════
-const _origRender = _render;
-window._render = function(screen) {
-  _origRender(screen);
-  if (screen === 'exercise') buildExercise();
-  if (screen === 'test') buildTest();
-};
-
-// Patch go/goBack to use window._render
-const _origGo = go;
-function go(screen) {
-  if (_stack[_stack.length - 1] !== screen) _stack.push(screen);
-  window._render(screen);
-}
-
-// Initial render
-window._render('home');
+document.addEventListener('DOMContentLoaded',()=>{
+  if(window.Telegram&&window.Telegram.WebApp){ Telegram.WebApp.ready(); Telegram.WebApp.expand(); }
+  go('s-w');
+});
 </script>
 </body>
 </html>
